@@ -3,31 +3,23 @@ syntax = "proto3";
 message TriggerPredicate {
   // represents the trigger condition
   string name = 1;
-  enum TriggerPredicateType {
-    CUSTOM = 0;
-    HAS = 1;
-    LOCATION = 2;
-  };
-  TriggerPredicateType type = 2;
+  // use a string instead of enum here 
+  // since the predicate operator is likely to be changed/added frequently
+  // while the serialization protocol shouldn't change frequently
+  string type = 2; 
+  map<string, bytes> kwargs = 3; // arguments
 }
 
 message Processor {
   // represent feature extraction modules
-  // the output of these modules are recorded as the application state for a
-  // single frame
+  // input are images
+  // outputs are key/value pairs that represents application state
   string name = 1;
-  enum ProcessorType {
-    CUSTOM = 0;
-    TPOD_DNN = 1;
-  };
-
-  // TPOD DNN
-  string tpod_dnn_model_uri = 2;
-
-  // define more processor here ...
-
-  // custom
-  bytes custom = 100;
+  // use a string to represent a type instead of enum
+  // because the processors should be easily added/changed
+  // without changing the serialization protocol
+  string type = 2;
+  map<string, bytes> kwargs = 3; // arguments
 }
 
 message Transition {
@@ -45,8 +37,8 @@ message Instruction {
 
 message State {
   string name = 1;
-  repeated Processor processors = 4; // extract features
-  repeated Transition transitions = 2;
+  repeated Processor processors = 2; // extract features
+  repeated Transition transitions = 3;
 }
 
 message StateMachine {
