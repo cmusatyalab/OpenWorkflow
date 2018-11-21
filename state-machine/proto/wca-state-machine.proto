@@ -22,7 +22,7 @@ message Processor {
   };
 
   // TPOD DNN
-  string tpod_dnn_uri = 2;
+  string tpod_dnn_model_uri = 2;
 
   // define more processor here ...
 
