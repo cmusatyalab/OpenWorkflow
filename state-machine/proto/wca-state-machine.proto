@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+message TriggerPredicate {
+  // represents the trigger condition
+  string name = 1;
+  enum TriggerPredicateType {
+    CUSTOM = 0;
+    HAS = 1;
+    LOCATION = 2;
+  };
+  TriggerPredicateType type = 2;
+}
+
+message Processor {
+  // represent feature extraction modules
+  // the output of these modules are recorded as the application state for a
+  // single frame
+  string name = 1;
+  enum ProcessorType {
+    CUSTOM = 0;
+    TPOD_DNN = 1;
+  };
+
+  // TPOD DNN
+  string tpod_dnn_uri = 2;
+
+  // define more processor here ...
+
+  // custom
+  bytes custom = 100;
+}
+
+message Transition {
+  string name = 1;
+  repeated TriggerPredicate trigger_predicates = 2; // function name of the trigger condition
+  Instruction instruction = 3;
+  string next_state = 4;
+}
+
+message Instruction {
+  string audio = 1; // audio in text format.
+  bytes image = 2;
+  bytes video = 3;
+}
+
+message State {
+  string name = 1;
+  repeated Processor processors = 4; // extract features
+  repeated Transition transitions = 2;
+}
+
+message StateMachine {
+  string name = 1;
+  repeated State states = 2; // all states
+  map<string, bytes> assets = 3; // shared assets
+}
