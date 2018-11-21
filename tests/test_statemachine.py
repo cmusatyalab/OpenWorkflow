@@ -22,3 +22,11 @@ def test_statemachine_serialization(tmpdir):
     with open(fsm_path, 'rb') as f:
         fsm_read.ParseFromString(f.read())
     assert fsm_read.states[0].name == state.name
+
+
+def test_statemachine_processor_call():
+    test = wca_state_machine_pb2.Processor()
+    test.name = 'test'
+    test.type = 'tpod_dnn'
+    test_p = Processor(test)
+    test_p(None)
