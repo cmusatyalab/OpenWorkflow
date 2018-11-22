@@ -10,6 +10,20 @@ message TriggerPredicate {
   map<string, bytes> kwargs = 3; // arguments
 }
 
+message Instruction {
+  string name = 1;
+  string audio = 2; // audio in text format.
+  bytes image = 3;
+  bytes video = 4;
+}
+
+message Transition {
+  string name = 1;
+  repeated TriggerPredicate trigger_predicates = 2; // function name of the trigger condition
+  Instruction instruction = 3;
+  string next_state = 4;
+}
+
 message Processor {
   // represent feature extraction modules
   // input are images
@@ -20,19 +34,6 @@ message Processor {
   // without changing the serialization protocol
   string type = 2;
   map<string, bytes> kwargs = 3; // arguments
-}
-
-message Transition {
-  string name = 1;
-  repeated TriggerPredicate trigger_predicates = 2; // function name of the trigger condition
-  Instruction instruction = 3;
-  string next_state = 4;
-}
-
-message Instruction {
-  string audio = 1; // audio in text format.
-  bytes image = 2;
-  bytes video = 3;
 }
 
 message State {
