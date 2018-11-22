@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1dproto/wca-state-machine.proto\"\x8c\x01\n\x10TriggerPredicate\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12-\n\x06kwargs\x18\x03 \x03(\x0b\x32\x1d.TriggerPredicate.KwargsEntry\x1a-\n\x0bKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"~\n\tProcessor\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12&\n\x06kwargs\x18\x03 \x03(\x0b\x32\x16.Processor.KwargsEntry\x1a-\n\x0bKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"\x80\x01\n\nTransition\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\x12trigger_predicates\x18\x02 \x03(\x0b\x32\x11.TriggerPredicate\x12!\n\x0binstruction\x18\x03 \x01(\x0b\x32\x0c.Instruction\x12\x12\n\nnext_state\x18\x04 \x01(\t\":\n\x0bInstruction\x12\r\n\x05\x61udio\x18\x01 \x01(\t\x12\r\n\x05image\x18\x02 \x01(\x0c\x12\r\n\x05video\x18\x03 \x01(\x0c\"W\n\x05State\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1e\n\nprocessors\x18\x02 \x03(\x0b\x32\n.Processor\x12 \n\x0btransitions\x18\x03 \x03(\x0b\x32\x0b.Transition\"\x8e\x01\n\x0cStateMachine\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x06states\x18\x02 \x03(\x0b\x32\x06.State\x12)\n\x06\x61ssets\x18\x03 \x03(\x0b\x32\x19.StateMachine.AssetsEntry\x1a-\n\x0b\x41ssetsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x1dproto/wca-state-machine.proto\"\x8c\x01\n\x10TriggerPredicate\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12-\n\x06kwargs\x18\x03 \x03(\x0b\x32\x1d.TriggerPredicate.KwargsEntry\x1a-\n\x0bKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"~\n\tProcessor\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12&\n\x06kwargs\x18\x03 \x03(\x0b\x32\x16.Processor.KwargsEntry\x1a-\n\x0bKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"\x80\x01\n\nTransition\x12\x0c\n\x04name\x18\x01 \x01(\t\x12-\n\x12trigger_predicates\x18\x02 \x03(\x0b\x32\x11.TriggerPredicate\x12!\n\x0binstruction\x18\x03 \x01(\x0b\x32\x0c.Instruction\x12\x12\n\nnext_state\x18\x04 \x01(\t\":\n\x0bInstruction\x12\r\n\x05\x61udio\x18\x01 \x01(\t\x12\r\n\x05image\x18\x02 \x01(\x0c\x12\r\n\x05video\x18\x03 \x01(\x0c\"W\n\x05State\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1e\n\nprocessors\x18\x02 \x03(\x0b\x32\n.Processor\x12 \n\x0btransitions\x18\x03 \x03(\x0b\x32\x0b.Transition\"\xa3\x01\n\x0cStateMachine\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x06states\x18\x02 \x03(\x0b\x32\x06.State\x12)\n\x06\x61ssets\x18\x03 \x03(\x0b\x32\x19.StateMachine.AssetsEntry\x12\x13\n\x0bstart_state\x18\x04 \x01(\t\x1a-\n\x0b\x41ssetsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x62\x06proto3')
 )
 
 
@@ -364,8 +364,8 @@ _STATEMACHINE_ASSETSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=682,
-  serialized_end=727,
+  serialized_start=703,
+  serialized_end=748,
 )
 
 _STATEMACHINE = _descriptor.Descriptor(
@@ -396,6 +396,13 @@ _STATEMACHINE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='start_state', full_name='StateMachine.start_state', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -409,7 +416,7 @@ _STATEMACHINE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=585,
-  serialized_end=727,
+  serialized_end=748,
 )
 
 _TRIGGERPREDICATE_KWARGSENTRY.containing_type = _TRIGGERPREDICATE

@@ -45,4 +45,5 @@ message StateMachine {
   string name = 1;
   repeated State states = 2; // all states
   map<string, bytes> assets = 3; // shared assets
+  string start_state = 4;
 }
