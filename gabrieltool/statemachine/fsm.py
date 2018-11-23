@@ -11,7 +11,7 @@ from gabrieltool.statemachine import wca_state_machine_pb2
 
 
 class FSMObjBase(object):
-    """Adapter class.
+    """Adapter class to translate protobuf's serialized class.
 
     This adapter class exposes protobuf message attributes 
     as class attributes.
@@ -24,29 +24,27 @@ class FSMObjBase(object):
                                        self.__class__.__name__)()
         self._serializer = protobuf_message
         self._fsm = None
+        self._expose_serializer_attr('name', 'rw')
 
     def __repr__(self):
         default = super().__repr__()
         return '<{} ({})>'.format(self.name, default)
 
     def _expose_serializer_attr(name, mode):
-	"""Helper method to provide easy access to serializer attribute."""
-	if mode == 'r':
-	   setattr(FSMObjBase, name, property(lambda self: getattr(self._serializer, name)))
-	elif mode == 'rw':
-	   setattr(FSMObjBase, name, property(lambda self: getattr(self._serializer, name),
-						lambda self, name, value: setattr(self._serializer, name, value)
-						))
-	else:
-	   raise ValueError('Unsupported mode {}. Valid modes are "r" or "rw"'.format(mode))
-
-    @property
-    def name(self):
-        return self._serializer.name
-
-    @name.setter
-    def name(self, value):
-        self._serializer.name = value
+        """Helper method to provide easy access to serializer attribute."""
+        if mode == 'r':
+            setattr(FSMObjBase, name, property(
+                lambda self: getattr(self._serializer, name)))
+        elif mode == 'rw':
+            setattr(FSMObjBase,
+                    name,
+                    property(lambda self: getattr(self._serializer, name),
+                             lambda self, name, value: setattr(
+                                 self._serializer, name, value)
+                             ))
+        else:
+            raise ValueError(
+                'Unsupported mode {}. Valid modes are "r" or "rw"'.format(mode))
 
     @property
     def assets(self):
@@ -64,18 +62,8 @@ class TriggerPredicate(FSMObjBase):
 
     def __init__(self, tp_desc=None):
         super(TriggerPredicate, self).__init__(tp_desc)
-
-    @property
-    def type(self):
-        return self._serializer.type
-
-    @type.setter
-    def type(self, value):
-        self._serializer.type = value
-
-    @property
-    def kwargs(self):
-        return self._serializer.kwargs
+        self._expose_serializer_attr('type', 'rw')
+        self._expose_serializer_attr('kwargs', 'r')
 
     def __call__(self, app_state):
         func = getattr(predicate_zoo, self.type)
@@ -87,30 +75,9 @@ class Instruction(FSMObjBase):
 
     def __init__(self, inst_desc=None):
         super(Instruction, self).__init__(inst_desc)
-
-    @property
-    def audio(self):
-        return self._serializer.audio
-
-    @audio.setter
-    def audio(self, value):
-        self._serializer.audio = value
-
-    @property
-    def image(self):
-        return self._serializer.image
-
-    @image.setter
-    def image(self, value):
-        self._serializer.image = value
-
-    @property
-    def video(self):
-        return self._serializer.video
-
-    @video.setter
-    def video(self, value):
-        self._serializer.video = value
+        expose_attrs = [('audio', 'rw'), ('image', 'rw'), ('video', 'rw')]
+        for (attr, mode) in expose_attrs:
+            self._expose_serializer_attr(attr, mode)
 
 
 class Transition(FSMObjBase):
@@ -118,6 +85,9 @@ class Transition(FSMObjBase):
 
     def __init__(self, tran_desc=None):
         super(Transition, self).__init__(tran_desc)
+        expose_attrs = [('instruction', 'r')]
+        for (attr, mode) in expose_attrs:
+            self._expose_serializer_attr(attr, mode)
         self.trigger_predicates = [TriggerPredicate(tp_desc) for
                                    tp_desc in self._serializer.trigger_predicates]
 
@@ -134,10 +104,6 @@ class Transition(FSMObjBase):
         return self
 
     @property
-    def instruction(self):
-        return self._serializer.instruction
-
-    @property
     def next_state(self):
         try:
             next_state = self._fsm.get_state(self._serializer.next_state)
@@ -151,22 +117,13 @@ class Processor(FSMObjBase):
 
     def __init__(self, proc_desc=None):
         super(Processor, self).__init__(proc_desc)
+        expose_attrs = [('type', 'rw'), ('kwargs', 'r')]
+        for (attr, mode) in expose_attrs:
+            self._expose_serializer_attr(attr, mode)
 
     def __call__(self, img):
         func = getattr(processor_zoo, self.type)
         return func(img, **self.kwargs)
-
-    @property
-    def type(self):
-        return self._serializer.type
-
-    @type.setter
-    def type(self, value):
-        self._serializer.type = value
-
-    @property
-    def kwargs(self):
-        return self._serializer.kwargs
 
 
 class State(FSMObjBase):
@@ -179,10 +136,10 @@ class State(FSMObjBase):
 
     def __init__(self, state_desc=None):
         super(State, self).__init__(state_desc)
-        self._obj_processors = [Processor(proc_desc) for
-                                proc_desc in self.processors]
-        self._obj_transitions = [Transition(tran_desc) for
-                                 tran_desc in self.transitions]
+        self.processors = [Processor(proc_desc) for
+                           proc_desc in self._serializer.processors]
+        self.transitions = [Transition(tran_desc) for
+                            tran_desc in self._serializer.transitions]
 
     def _run_processors(self, img):
         app_state = {'raw': img}
@@ -224,22 +181,41 @@ class StateMachine(FSMObjBase):
 
     def __init__(self, fsm_desc=None):
         super(StateMachine, self).__init__(fsm_desc)
+        expose_attrs = [('assets', 'r')]
+        for (attr, mode) in expose_attrs:
+            self._expose_serializer_attr(attr, mode)
+
         if len(self.states) == 0:
             raise ValueError(
                 "FSM {} does not have any states!".format(self.name))
-        self._obj_states_lut = {}
-        for state_desc in self.states:
-            if state_desc.name in self._obj_states_lut:
+        self._states_lut = {}
+        for state_desc in self._serializer.states:
+            if state_desc.name in self._states_lut:
                 raise ValueError(
                     "Invalid FSM. Duplicate State Names {} Found.".format(
                         state_desc.name))
             else:
-                self._obj_states_lut[state_desc.name] = State(state_desc)
-        self._current_state = self._obj_states_lut[self.start_state]
+                self._states_lut[state_desc.name] = State(state_desc)
+        self._current_state = self._states_lut[self.start_state]
 
     @property
     def current_state(self):
         return self._current_state
 
+    @property
+    def start_state(self):
+        try:
+            return self._states_lut[self._serializer.start_state]
+        except LookupError:
+            return None
+
+    @start_state.setter
+    def start_state(self, value):
+        if type(value) != State:
+            raise TypeError("{} is not a state object".format(value))
+        else:
+            self.start_state = value
+            self._serializer.start_state = self.start_state.name
+
     def get_state(self, state_name):
-        return self._obj_states_lut[state_name]
+        return self._states_lut[state_name]
