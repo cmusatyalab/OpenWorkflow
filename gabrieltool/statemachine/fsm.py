@@ -29,6 +29,17 @@ class FSMObjBase(object):
         default = super().__repr__()
         return '<{} ({})>'.format(self.name, default)
 
+    def _expose_serializer_attr(name, mode):
+	"""Helper method to provide easy access to serializer attribute."""
+	if mode == 'r':
+	   setattr(FSMObjBase, name, property(lambda self: getattr(self._serializer, name)))
+	elif mode == 'rw':
+	   setattr(FSMObjBase, name, property(lambda self: getattr(self._serializer, name),
+						lambda self, name, value: setattr(self._serializer, name, value)
+						))
+	else:
+	   raise ValueError('Unsupported mode {}. Valid modes are "r" or "rw"'.format(mode))
+
     @property
     def name(self):
         return self._serializer.name
