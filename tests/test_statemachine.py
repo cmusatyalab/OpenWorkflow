@@ -166,7 +166,17 @@ def test_state_machine_serialization_one_state(state_obj, expected_state_obj):
                                     name='test_next_state'
                                 )])
     expected_obj.start_state = 'test_state'
-    assert actual == expected_obj.SerializeToString()
+    # state may be indifferent order
+    expected_obj2 = wca_state_machine_pb2.StateMachine()
+    expected_obj2.name = 'test_fsm'
+    expected_obj2.states.extend([
+        wca_state_machine_pb2.State(
+            name='test_next_state'
+        ),
+        expected_state_obj,
+    ])
+    expected_obj2.start_state = 'test_state'
+    assert (actual == expected_obj.SerializeToString() or actual == expected_obj2.SerializeToString())
 
 
 def assert_processor_or_predicate_content_equal(actual, expected):
