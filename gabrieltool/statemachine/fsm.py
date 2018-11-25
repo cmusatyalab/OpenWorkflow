@@ -144,7 +144,8 @@ class Transition(FSMObjBase):
     def to_desc(self):
         for pred in self.predicates:
             self._pb.predicates.extend([pred.to_desc()])
-        self._pb.instruction.CopyFrom(self.instruction.to_desc())
+        if self.instruction is not None:
+            self._pb.instruction.CopyFrom(self.instruction.to_desc())
         self._pb.next_state = self.next_state.name
         return super().to_desc()
 
