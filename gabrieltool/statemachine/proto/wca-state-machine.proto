@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-message TriggerPredicate {
+message TransitionPredicate {
   // represents the trigger condition
   string name = 1;
   // use a string instead of enum here 
   // since the predicate operator is likely to be changed/added frequently
   // while the serialization protocol shouldn't change frequently
-  string type = 2; 
-  map<string, bytes> kwargs = 3; // arguments
+  string callable_name = 2; 
+  map<string, bytes> callable_kwargs = 3; // arguments
 }
 
 message Instruction {
@@ -19,7 +19,7 @@ message Instruction {
 
 message Transition {
   string name = 1;
-  repeated TriggerPredicate trigger_predicates = 2; // function name of the trigger condition
+  repeated TransitionPredicate predicates = 2; // function name of the trigger condition
   Instruction instruction = 3;
   string next_state = 4;
 }
@@ -32,8 +32,8 @@ message Processor {
   // use a string to represent a type instead of enum
   // because the processors should be easily added/changed
   // without changing the serialization protocol
-  string type = 2;
-  map<string, bytes> kwargs = 3; // arguments
+  string callable_name = 2; 
+  map<string, bytes> callable_kwargs = 3; // arguments
 }
 
 message State {
