@@ -19,9 +19,6 @@
 #   limitations under the License.
 #
 
-import matplotlib
-matplotlib.use('Agg')
-
 import cv2
 import json
 import numpy as np
@@ -40,9 +37,9 @@ from fast_rcnn.nms_wrapper import nms
 sys.path.append(os.path.join(faster_rcnn_root, "python"))
 import caffe
 
-sys.path.insert(0, "..")
-import config
-import zhuocv as zc
+config = object()
+config.LABELS = ["bread", "ham", "cucumber", "lettuce", "cheese", "half", "hamwrong", "tomato", "full"]
+config.USE_GPU=True
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
@@ -70,7 +67,7 @@ net = caffe.Net(prototxt, caffemodel, caffe.TEST)
 img = 128 * np.ones((300, 500, 3), dtype=np.uint8)
 for i in xrange(2):
     _, _= im_detect(net, img)
-print 'caffe net has been initilized'
+print('caffe net has been initilized')
 
 
 def detect_object(img, resize_ratio = 1):
@@ -117,7 +114,5 @@ def detect_object(img, resize_ratio = 1):
 
 def process(img, resize_ratio = 1, display_list = []):
     img_object, result = detect_object(img, resize_ratio)
-    zc.check_and_display('object', img_object, display_list, wait_time = config.DISPLAY_WAIT_TIME, resize_max = config.DISPLAY_MAX_PIXEL)
-
     rtn_msg = {'status' : 'success'}
     return (rtn_msg, json.dumps(result.tolist()))
