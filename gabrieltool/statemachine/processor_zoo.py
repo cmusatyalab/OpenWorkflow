@@ -3,6 +3,5 @@
 """
 
 
-def tpod_dnn(img, **kwargs):
-    print('tpod_dnn called!')
-    pass
+def dummy(img, **kwargs):
+    return {'dummy_key': 'dummy_value'}

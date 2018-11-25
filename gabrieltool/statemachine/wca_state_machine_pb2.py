@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1dproto/wca-state-machine.proto\"\xb4\x01\n\x13TransitionPredicate\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rcallable_name\x18\x02 \x01(\t\x12\x41\n\x0f\x63\x61llable_kwargs\x18\x03 \x03(\x0b\x32(.TransitionPredicate.CallableKwargsEntry\x1a\x35\n\x13\x43\x61llableKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"H\n\x0bInstruction\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05\x61udio\x18\x02 \x01(\t\x12\r\n\x05image\x18\x03 \x01(\x0c\x12\r\n\x05video\x18\x04 \x01(\x0c\"{\n\nTransition\x12\x0c\n\x04name\x18\x01 \x01(\t\x12(\n\npredicates\x18\x02 \x03(\x0b\x32\x14.TransitionPredicate\x12!\n\x0binstruction\x18\x03 \x01(\x0b\x32\x0c.Instruction\x12\x12\n\nnext_state\x18\x04 \x01(\t\"~\n\tProcessor\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12&\n\x06kwargs\x18\x03 \x03(\x0b\x32\x16.Processor.KwargsEntry\x1a-\n\x0bKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"W\n\x05State\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1e\n\nprocessors\x18\x02 \x03(\x0b\x32\n.Processor\x12 \n\x0btransitions\x18\x03 \x03(\x0b\x32\x0b.Transition\"\xa3\x01\n\x0cStateMachine\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x06states\x18\x02 \x03(\x0b\x32\x06.State\x12)\n\x06\x61ssets\x18\x03 \x03(\x0b\x32\x19.StateMachine.AssetsEntry\x12\x13\n\x0bstart_state\x18\x04 \x01(\t\x1a-\n\x0b\x41ssetsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x1dproto/wca-state-machine.proto\"\xb4\x01\n\x13TransitionPredicate\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rcallable_name\x18\x02 \x01(\t\x12\x41\n\x0f\x63\x61llable_kwargs\x18\x03 \x03(\x0b\x32(.TransitionPredicate.CallableKwargsEntry\x1a\x35\n\x13\x43\x61llableKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"H\n\x0bInstruction\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05\x61udio\x18\x02 \x01(\t\x12\r\n\x05image\x18\x03 \x01(\x0c\x12\r\n\x05video\x18\x04 \x01(\x0c\"{\n\nTransition\x12\x0c\n\x04name\x18\x01 \x01(\t\x12(\n\npredicates\x18\x02 \x03(\x0b\x32\x14.TransitionPredicate\x12!\n\x0binstruction\x18\x03 \x01(\x0b\x32\x0c.Instruction\x12\x12\n\nnext_state\x18\x04 \x01(\t\"\xa0\x01\n\tProcessor\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x15\n\rcallable_name\x18\x02 \x01(\t\x12\x37\n\x0f\x63\x61llable_kwargs\x18\x03 \x03(\x0b\x32\x1e.Processor.CallableKwargsEntry\x1a\x35\n\x13\x43\x61llableKwargsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\"W\n\x05State\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1e\n\nprocessors\x18\x02 \x03(\x0b\x32\n.Processor\x12 \n\x0btransitions\x18\x03 \x03(\x0b\x32\x0b.Transition\"\xa3\x01\n\x0cStateMachine\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x06states\x18\x02 \x03(\x0b\x32\x06.State\x12)\n\x06\x61ssets\x18\x03 \x03(\x0b\x32\x19.StateMachine.AssetsEntry\x12\x13\n\x0bstart_state\x18\x04 \x01(\t\x1a-\n\x0b\x41ssetsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x0c:\x02\x38\x01\x62\x06proto3')
 )
 
 
@@ -211,22 +211,22 @@ _TRANSITION = _descriptor.Descriptor(
 )
 
 
-_PROCESSOR_KWARGSENTRY = _descriptor.Descriptor(
-  name='KwargsEntry',
-  full_name='Processor.KwargsEntry',
+_PROCESSOR_CALLABLEKWARGSENTRY = _descriptor.Descriptor(
+  name='CallableKwargsEntry',
+  full_name='Processor.CallableKwargsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='Processor.KwargsEntry.key', index=0,
+      name='key', full_name='Processor.CallableKwargsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='value', full_name='Processor.KwargsEntry.value', index=1,
+      name='value', full_name='Processor.CallableKwargsEntry.value', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
@@ -244,8 +244,8 @@ _PROCESSOR_KWARGSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=496,
-  serialized_end=541,
+  serialized_start=161,
+  serialized_end=214,
 )
 
 _PROCESSOR = _descriptor.Descriptor(
@@ -263,14 +263,14 @@ _PROCESSOR = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='type', full_name='Processor.type', index=1,
+      name='callable_name', full_name='Processor.callable_name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='kwargs', full_name='Processor.kwargs', index=2,
+      name='callable_kwargs', full_name='Processor.callable_kwargs', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -279,7 +279,7 @@ _PROCESSOR = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_PROCESSOR_KWARGSENTRY, ],
+  nested_types=[_PROCESSOR_CALLABLEKWARGSENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -288,8 +288,8 @@ _PROCESSOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=415,
-  serialized_end=541,
+  serialized_start=416,
+  serialized_end=576,
 )
 
 
@@ -333,8 +333,8 @@ _STATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=543,
-  serialized_end=630,
+  serialized_start=578,
+  serialized_end=665,
 )
 
 
@@ -371,8 +371,8 @@ _STATEMACHINE_ASSETSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=751,
-  serialized_end=796,
+  serialized_start=786,
+  serialized_end=831,
 )
 
 _STATEMACHINE = _descriptor.Descriptor(
@@ -422,16 +422,16 @@ _STATEMACHINE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=633,
-  serialized_end=796,
+  serialized_start=668,
+  serialized_end=831,
 )
 
 _TRANSITIONPREDICATE_CALLABLEKWARGSENTRY.containing_type = _TRANSITIONPREDICATE
 _TRANSITIONPREDICATE.fields_by_name['callable_kwargs'].message_type = _TRANSITIONPREDICATE_CALLABLEKWARGSENTRY
 _TRANSITION.fields_by_name['predicates'].message_type = _TRANSITIONPREDICATE
 _TRANSITION.fields_by_name['instruction'].message_type = _INSTRUCTION
-_PROCESSOR_KWARGSENTRY.containing_type = _PROCESSOR
-_PROCESSOR.fields_by_name['kwargs'].message_type = _PROCESSOR_KWARGSENTRY
+_PROCESSOR_CALLABLEKWARGSENTRY.containing_type = _PROCESSOR
+_PROCESSOR.fields_by_name['callable_kwargs'].message_type = _PROCESSOR_CALLABLEKWARGSENTRY
 _STATE.fields_by_name['processors'].message_type = _PROCESSOR
 _STATE.fields_by_name['transitions'].message_type = _TRANSITION
 _STATEMACHINE_ASSETSENTRY.containing_type = _STATEMACHINE
@@ -476,10 +476,10 @@ _sym_db.RegisterMessage(Transition)
 
 Processor = _reflection.GeneratedProtocolMessageType('Processor', (_message.Message,), dict(
 
-  KwargsEntry = _reflection.GeneratedProtocolMessageType('KwargsEntry', (_message.Message,), dict(
-    DESCRIPTOR = _PROCESSOR_KWARGSENTRY,
+  CallableKwargsEntry = _reflection.GeneratedProtocolMessageType('CallableKwargsEntry', (_message.Message,), dict(
+    DESCRIPTOR = _PROCESSOR_CALLABLEKWARGSENTRY,
     __module__ = 'proto.wca_state_machine_pb2'
-    # @@protoc_insertion_point(class_scope:Processor.KwargsEntry)
+    # @@protoc_insertion_point(class_scope:Processor.CallableKwargsEntry)
     ))
   ,
   DESCRIPTOR = _PROCESSOR,
@@ -487,7 +487,7 @@ Processor = _reflection.GeneratedProtocolMessageType('Processor', (_message.Mess
   # @@protoc_insertion_point(class_scope:Processor)
   ))
 _sym_db.RegisterMessage(Processor)
-_sym_db.RegisterMessage(Processor.KwargsEntry)
+_sym_db.RegisterMessage(Processor.CallableKwargsEntry)
 
 State = _reflection.GeneratedProtocolMessageType('State', (_message.Message,), dict(
   DESCRIPTOR = _STATE,
@@ -513,6 +513,6 @@ _sym_db.RegisterMessage(StateMachine.AssetsEntry)
 
 
 _TRANSITIONPREDICATE_CALLABLEKWARGSENTRY._options = None
-_PROCESSOR_KWARGSENTRY._options = None
+_PROCESSOR_CALLABLEKWARGSENTRY._options = None
 _STATEMACHINE_ASSETSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

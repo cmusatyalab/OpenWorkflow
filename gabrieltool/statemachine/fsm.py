@@ -11,7 +11,6 @@ import pickle
 from gabrieltool.statemachine import processor_zoo
 from gabrieltool.statemachine import predicate_zoo
 from gabrieltool.statemachine import wca_state_machine_pb2
-from gabrieltool.statemachine.wca_state_machine_pb2 import Instruction
 
 
 class FSMObjBase(object):
@@ -37,11 +36,12 @@ class FSMObjBase(object):
         self._pb = protobuf_message
         self._expose_serializer_attr('name', 'rw')
         self.name = self._get_default_name()
-        if name is None:
+        if name is not None:
             self.name = name
 
     def _get_default_name(self):
-        return '{}_{}'.format(self.__class__.name, FSMObjBase._obj_cnt)
+        return '{}_{}'.format(self.__class__.__name__,
+                              FSMObjBase._obj_cnt)
 
     def __repr__(self):
         default = super().__repr__()
@@ -63,14 +63,13 @@ class FSMObjBase(object):
             raise ValueError(
                 'Unsupported mode {}. Valid modes are "r" or "rw"'.format(mode))
 
-    def from_bytes(self, data):
-        protobuf_message = getattr(wca_state_machine_pb2,
-                                   self.__class__.__name__)()
-        protobuf_message.ParseFromString(data)
-        self._pb = protobuf_message
+    def from_desc(self, desc):
+        """Construct an object from its serialized description."""
+        self._pb = desc
 
-    def to_bytes(self):
-        return self._pb.SerializeToString()
+    def to_desc(self):
+        """Returned serialized description as a protobuf message."""
+        return self._pb
 
 
 class TransitionPredicate(FSMObjBase):
@@ -90,30 +89,42 @@ class TransitionPredicate(FSMObjBase):
     def __call__(self, app_state):
         return self.partial_obj(app_state=app_state)
 
-    def from_bytes(self, data):
-        super().from_bytes(data)
+    def from_desc(self, data):
+        super().from_desc(data)
         func = getattr(predicate_zoo, self._pb.callable_name)
-        self.partial_obj = functools.partial(func, self._pb.callable_kwargs)
+        kwargs = {}
+        for (item, value) in self._pb.callable_kwargs.items():
+            kwargs[item] = pickle.loads(value)
+        self.partial_obj = functools.partial(func, **kwargs)
 
-    def to_bytes(self):
+    def to_desc(self):
         self._pb.callable_name = self.partial_obj.func.__name__
         for (item, value) in self.partial_obj.keywords.items():
             self._pb.callable_kwargs[item] = pickle.dumps(value)
-        return super().to_bytes()
+        return super().to_desc()
+
+
+class Instruction(FSMObjBase):
+    """Instruction to user."""
+
+    def __init__(self, name=None, audio=None, image=None, video=None):
+        super(Instruction, self).__init__(name=name)
+        expose_attrs = [('audio', 'rw'), ('image', 'rw'), ('video', 'rw')]
+        for (attr, mode) in expose_attrs:
+            self._expose_serializer_attr(attr, mode)
+        self.audio = audio
+        self.image = image
+        self.video = video
 
 
 class Transition(FSMObjBase):
     """A Transition has satisfying predicates, next_state, and instructions."""
 
-    def __init__(self, name=None, predicates=None, instruction=None, next_state_name=None):
+    def __init__(self, name=None, predicates=None, instruction=None, next_state=None):
         super(Transition, self).__init__(name)
-        expose_attrs = [('instruction', 'r')]
-        for (attr, mode) in expose_attrs:
-            self._expose_serializer_attr(attr, mode)
         self.predicates = predicates if predicates is not None else []
-        if instruction is not None:
-            self.instruction.CopyFrom(instruction)
-        self.next_state_name = next_state_name
+        self.instruction = instruction
+        self.next_state = next_state
 
     def __call__(self, app_state):
         """Given the current app_state, check if a transition should be taken.
@@ -127,6 +138,13 @@ class Transition(FSMObjBase):
                 return None
         return self
 
+    def to_desc(self):
+        for pred in self.predicates:
+            self._pb.predicates.extend([pred.to_desc()])
+        self._pb.instruction.CopyFrom(self.instruction.to_desc())
+        self._pb.next_state = self.next_state.name
+        return super().to_desc()
+
 
 class Processor(FSMObjBase):
     """A TriggerPredicate is an callable object."""
@@ -137,6 +155,20 @@ class Processor(FSMObjBase):
 
     def __call__(self, img):
         return self.partial_obj(img)
+
+    def from_desc(self, data):
+        super().from_desc(data)
+        func = getattr(processor_zoo, self._pb.callable_name)
+        kwargs = {}
+        for (item, value) in self._pb.callable_kwargs.items():
+            kwargs[item] = pickle.loads(value)
+        self.partial_obj = functools.partial(func, **kwargs)
+
+    def to_desc(self):
+        self._pb.callable_name = self.partial_obj.func.__name__
+        for (item, value) in self.partial_obj.keywords.items():
+            self._pb.callable_kwargs[item] = pickle.dumps(value)
+        return super().to_desc()
 
 
 class State(FSMObjBase):
@@ -159,9 +191,9 @@ class State(FSMObjBase):
         return app_state
 
     def _get_one_satisfied_transition(self, app_state):
-        for obj_transition in self.transitions:
-            if obj_transition(app_state) is not None:
-                return obj_transition
+        for transition in self.transitions:
+            if transition(app_state) is not None:
+                return transition
         return None
 
     # TODO (junjuew): fill this in
@@ -181,57 +213,94 @@ class State(FSMObjBase):
         app_state = self._run_processor(img, self.processors)
         transition = self._get_one_satisfied_transition(img, app_state)
         if transition is None:
-            return self, None
+            return self, Instruction()
         else:
             return transition.next_state, transition.instruction
 
+    def to_desc(self):
+        for proc in state.processors:
+            self._pb.processors.extend([proc.to_desc()])
+        for tran in state.transitions:
+            self._pb.transitions.extend([tran.to_desc()])
+        return super().to_desc()
 
-class StateMachine(FSMObjBase):
-    """State Machine contains a list of states and transitions.
+
+class StateMachine(object):
+    """State Machine helper class to serialize/deserialize a state machine.
     """
 
-    def __init__(self, name=None, states=None, start_state=None):
-        super(StateMachine, self).__init__(name)
-        expose_attrs = [('assets', 'r')]
-        for (attr, mode) in expose_attrs:
-            self._expose_serializer_attr(attr, mode)
-        self.states = states if states is not None else []
-        self.start_state = start_state
+    @classmethod
+    def _load_generic_from_desc(cls, GenericType, desc):
+        item = GenericType()
+        item.from_desc(desc)
+        return item
 
-    # TODO(junjuew): implement from_bytes and to_bytes
+    @classmethod
+    def _load_transition(cls, desc, state_lut):
+        tran = Transition(name=desc.name)
+        tran.instruction = cls._load_generic_from_desc(Instruction,
+                                                       desc.instruction)
+        preds = [cls._load_generic_from_desc(
+            TransitionPredicate, pred_desc)
+            for pred_desc in tran.predicates]
+        tran.predicates = preds
+        tran.next_state = state_lut[desc.next_state]
+        return tran
 
-    # def from_bytes(self, data):
-    #    if len(self.states) == 0:
-    #         raise ValueError(
-    #             "FSM {} does not have any states!".format(self.name))
-    #     self._states_lut = {}
-    #     for state_desc in self._pb.states:
-    #         if state_desc.name in self._states_lut:
-    #             raise ValueError(
-    #                 "Invalid FSM. Duplicate State Names {} Found.".format(
-    #                     state_desc.name))
-    #         else:
-    #             self._states_lut[state_desc.name] = State(desc=state_desc)
-    #     self._current_state = self._states_lut[self.start_state]
+    @classmethod
+    def _load_state(cls, desc, state_lut):
+        state = state_lut[desc.name]
+        state.processors = [cls._load_generic_from_desc(
+            Processor, proc_desc) for proc_desc in desc.processors]
+        state.transitions = [cls._load_transition(
+            tran_desc, state_lut) for tran_desc in desc.transitions]
+        return state
 
-    @property
-    def current_state(self):
-        return self._current_state
+    @classmethod
+    def from_bytes(cls, data):
+        """Load a State Machine from bytes.
 
-    @property
-    def start_state(self):
-        try:
-            return self._states_lut[self._pb.start_state]
-        except LookupError:
-            return None
+        Return the start state of the state machine.
+        """
+        pb_fsm = StateMachine.ParseFromString(data)
+        state_lut = {}
+        # 1st pass get all states
+        for state_desc in pb_fsm.states:
+            state = State(name=state_desc.name)
+            if state.name in state_lut:
+                raise ValueError(
+                    "Duplicate State Name: {}. Invalid State Machine Data.".format(
+                        state.name))
+            state_lut[state.name] = state
+        # 2nd pass to load all state details
+        for state_desc in pb_fsm.states:
+            cls._load_state(state_desc, state_lut)
+        return state_lut[pb_fsm.start_state]
 
-    @start_state.setter
-    def start_state(self, value):
-        if type(value) != State:
-            raise TypeError("{} is not a state object".format(value))
-        else:
-            self.start_state = value
-            self._pb.start_state = self.start_state.name
+    @classmethod
+    def to_bytes(cls, name, start_state):
+        """Dump a State Machine rooted at start_state.
 
-    def get_state(self, state_name):
-        return self._states_lut[state_name]
+        Arguments:
+            start_state {State} -- Start state of the state machine.
+        """
+        # TODO(junjuew) optimize/dedup assets/kwargs
+        # bfs starting from root to find all states
+        visited = {}
+        work_queue = [start_state]
+        while work_queue:
+            state = work_queue.pop(0)
+            if state.name in visited:
+                if visited[state.name] is not state:
+                    raise ValueError("Found duplicate state name {}. "
+                                     "Cannot serialize a FSM with duplicate state name".format(state.name))
+                break
+            visited[state.name] = state
+            for tran in state.transitions:
+                work_queue.append(tran.next_state)
+
+        # serialize
+        pb_fsm = wca_state_machine_pb2.StateMachine(
+            name=name, start_state=start_state.name)
+        for (state_name, state) in visited.items():
+            pb_fsm.states.extend(state.to_desc())
