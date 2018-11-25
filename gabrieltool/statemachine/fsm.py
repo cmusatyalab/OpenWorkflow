@@ -44,7 +44,7 @@ class FSMObjBase(object):
                               FSMObjBase._obj_cnt)
 
     def __repr__(self):
-        default = super().__repr__()
+        default = super(FSMObjBase, self).__repr__()
         return '<{} ({})>'.format(self.name, default)
 
     def _expose_serializer_attr(self, name, mode):
@@ -90,7 +90,7 @@ class TransitionPredicate(FSMObjBase):
         return self.partial_obj(app_state=app_state)
 
     def from_desc(self, data):
-        super().from_desc(data)
+        super(TransitionPredicate, self).from_desc(data)
         func = getattr(predicate_zoo, self._pb.callable_name)
         kwargs = {}
         for (item, value) in self._pb.callable_kwargs.items():
@@ -101,7 +101,7 @@ class TransitionPredicate(FSMObjBase):
         self._pb.callable_name = self.partial_obj.func.__name__
         for (item, value) in self.partial_obj.keywords.items():
             self._pb.callable_kwargs[item] = pickle.dumps(value)
-        return super().to_desc()
+        return super(TransitionPredicate, self).to_desc()
 
 
 class Instruction(FSMObjBase):
@@ -147,7 +147,7 @@ class Transition(FSMObjBase):
         if self.instruction is not None:
             self._pb.instruction.CopyFrom(self.instruction.to_desc())
         self._pb.next_state = self.next_state.name
-        return super().to_desc()
+        return super(Transition, self).to_desc()
 
     def from_desc(self):
         raise NotImplementedError("Transition itself does not know enough information "
@@ -167,7 +167,7 @@ class Processor(FSMObjBase):
         return self.partial_obj(img)
 
     def from_desc(self, data):
-        super().from_desc(data)
+        super(Processor, self).from_desc(data)
         func = getattr(processor_zoo, self._pb.callable_name)
         kwargs = {}
         for (item, value) in self._pb.callable_kwargs.items():
@@ -178,7 +178,7 @@ class Processor(FSMObjBase):
         self._pb.callable_name = self.partial_obj.func.__name__
         for (item, value) in self.partial_obj.keywords.items():
             self._pb.callable_kwargs[item] = pickle.dumps(value)
-        return super().to_desc()
+        return super(Processor, self).to_desc()
 
 
 class State(FSMObjBase):
@@ -232,7 +232,7 @@ class State(FSMObjBase):
             self._pb.processors.extend([proc.to_desc()])
         for tran in self.transitions:
             self._pb.transitions.extend([tran.to_desc()])
-        return super().to_desc()
+        return super(State, self).to_desc()
 
     def from_desc(self):
         raise NotImplementedError("State itself does not know enough information "

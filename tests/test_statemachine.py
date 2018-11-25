@@ -18,7 +18,7 @@ def test_protobuf_serialization(tmpdir):
     test_fsm = wca_state_machine_pb2.StateMachine()
     state = test_fsm.states.add()
     state.name = 'start'
-    fsm_path = os.path.join(tmpdir, 'test.fsm')
+    fsm_path = os.path.join(tmpdir.strpath, 'test.fsm')
     with open(fsm_path, 'wb') as f:
         f.write(test_fsm.SerializeToString())
     fsm_read = wca_state_machine_pb2.StateMachine()
