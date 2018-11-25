@@ -16,16 +16,7 @@ gabrieltool
 
 
 
-Lightweight Wrapper Library to Make Matplotlib Better for Paper Plots.
-
-Using ad-hoc one-time plotting scripts for paper figures lead to poor choices of
-fonts, color, and are difficult to maintain. Moreover, every time a custom
-plotting scripts are written, developers need to dig into matplotlib APIs to
-tweak the correct knobs. We need a collection of reusable helper functions,
-samples, and boilerplate code for common type of plots (e.g. CDF, histogram, bar
-graph, line graph, figure with two axes) to make paper plotting easier and
-faster. This thin lightweight wrapper library aims to solve this problem. Please
-add feature you want to see to the list below.
+Tools for making wearable cognitive assistants. 
 
 * Free software: Apache Software License 2.0
 * Documentation: https://gabrieltool.readthedocs.io.
@@ -41,24 +32,14 @@ Usage
 
    import gabrieltool
 
-Features & TODO List
+What's included?
 ----------------------
 
-* Better defaults
+* [State Machine](gabrieltool/statemachine): Tools to create and persist
+state machines to describe a wearable cognitive assistant. 
+* [Examples](examples): Examples on how to use this tool.
 
-   * [x] Time New Roman fonts
-   * [x] pgd backend for plotting
-
-* Samples
-
-   * [ ] CDF
-   * [ ] bar graph
-   * [ ] line graph
-   * [ ] two axes
-
-* Data Management
-
-   * [ ] plot data persistence
+   * [sandwich](examples/sandwich): Sandwich application made using the state machines.
 
 Credits
 -------
