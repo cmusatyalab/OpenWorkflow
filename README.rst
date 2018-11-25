@@ -35,11 +35,10 @@ Usage
 What's included?
 ----------------------
 
-* [State Machine](gabrieltool/statemachine): Tools to create and persist
-state machines to describe a wearable cognitive assistant. 
-* [Examples](examples): Examples on how to use this tool.
+* `State Machine`_: Tools to create and persist state machines to describe a wearable cognitive assistant. 
+* `Examples`_: Examples on how to use this tool.
 
-   * [sandwich](examples/sandwich): Sandwich application made using the state machines.
+   * `examples/sandwich`_: Sandwich application made using the state machines.
 
 Credits
 -------
@@ -48,3 +47,6 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+.. _`State Machine`: gabrieltool/statemachine
+.. _`Examples`: examples
+.. _`examples/sandwich`: examples/sandwich
