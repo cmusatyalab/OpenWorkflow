@@ -112,9 +112,12 @@ class Instruction(FSMObjBase):
         expose_attrs = [('audio', 'rw'), ('image', 'rw'), ('video', 'rw')]
         for (attr, mode) in expose_attrs:
             self._expose_serializer_attr(attr, mode)
-        self.audio = audio
-        self.image = image
-        self.video = video
+        if audio is not None:
+            self.audio = audio
+        if image is not None:
+            self.image = image
+        if video is not None:
+            self.video = video
 
 
 class Transition(FSMObjBase):
@@ -144,6 +147,12 @@ class Transition(FSMObjBase):
         self._pb.instruction.CopyFrom(self.instruction.to_desc())
         self._pb.next_state = self.next_state.name
         return super().to_desc()
+
+    def from_desc(self):
+        raise NotImplementedError("Transition itself does not know enough information "
+                                  "to build from its description. "
+                                  "next_state variable depends on a FSM. "
+                                  "Use StateMachine Helper Class instead.")
 
 
 class Processor(FSMObjBase):
@@ -218,11 +227,17 @@ class State(FSMObjBase):
             return transition.next_state, transition.instruction
 
     def to_desc(self):
-        for proc in state.processors:
+        for proc in self.processors:
             self._pb.processors.extend([proc.to_desc()])
-        for tran in state.transitions:
+        for tran in self.transitions:
             self._pb.transitions.extend([tran.to_desc()])
         return super().to_desc()
+
+    def from_desc(self):
+        raise NotImplementedError("State itself does not know enough information "
+                                  "to build from its description. "
+                                  "next_state variable depends on a FSM. "
+                                  "Use StateMachine Helper Class instead.")
 
 
 class StateMachine(object):
@@ -262,7 +277,8 @@ class StateMachine(object):
 
         Return the start state of the state machine.
         """
-        pb_fsm = StateMachine.ParseFromString(data)
+        pb_fsm = wca_state_machine_pb2.StateMachine()
+        pb_fsm.ParseFromString(data)
         state_lut = {}
         # 1st pass get all states
         for state_desc in pb_fsm.states:
@@ -303,4 +319,5 @@ class StateMachine(object):
         pb_fsm = wca_state_machine_pb2.StateMachine(
             name=name, start_state=start_state.name)
         for (state_name, state) in visited.items():
-            pb_fsm.states.extend(state.to_desc())
+            pb_fsm.states.extend([state.to_desc()])
+        return pb_fsm.SerializeToString()

@@ -9,4 +9,3 @@ def has_obj_cls(app_state, cls_name):
 
 def tpod_dnn(img, **kwargs):
     print('tpod_dnn called!')
-    pass
