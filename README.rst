@@ -26,7 +26,8 @@ Usage
 
 .. code-block:: bash
 
-   $ pip install gabrieltool
+   $ git clone https://github.com/junjuew/gabriel-tool.git
+   $ cd gabriel-tool && python setup.py install
 
 .. code-block:: python
 
