@@ -12,11 +12,11 @@ from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo
 
 def build_sandwich_fsm():
     # 1st state always move to second
-    common_processor = [fsm.Processor(
+    common_processor = fsm.Processor(
         partial_obj=partial(
             processor_zoo.sandwitch_tpod_dnn
         )
-    )]
+    )
     st_start = fsm.State(
         name='start',
         processors=[common_processor]
@@ -114,7 +114,7 @@ def build_sandwich_fsm():
 if __name__ == "__main__":
     sandwich_fsm = build_sandwich_fsm()
     # save to disk
-    with open('examples/sandwitch/sandwitch.pbfsm', 'wb') as f:
+    with open('examples/sandwich/sandwich.pbfsm', 'wb') as f:
         f.write(fsm.StateMachine.to_bytes(
             name='sandwich',
             start_state=sandwich_fsm
