@@ -7,3 +7,9 @@ state machine file can be downloaded from
 
 The webpage is built using [jointjs](https://github.com/clientIO/joint) and
 [protobuf js](https://github.com/protocolbuffers/protobuf/tree/master/js).
+
+## Demo
+
+Click
+[here](https://junjuew.github.io/gabriel-tool/gabrieltool/statemachine/visualization/index.html)
+for a demo.
