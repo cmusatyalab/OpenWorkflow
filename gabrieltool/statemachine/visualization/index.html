@@ -28,6 +28,7 @@
     <script src="https://cdn.rawgit.com/protocolbuffers/protobuf/master/js/map.js"></script>
     <script src="https://cdn.rawgit.com/protocolbuffers/protobuf/master/js/message.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://cdn.rawgit.com/epeli/underscore.string/master/dist/underscore.string.min.js"></script>
     <script src="wca-state-machine.js"></script>
     <script src="index.js"></script>
 </head>
@@ -37,11 +38,18 @@
         <h1>State Machine Visualizer</h1>
       </div>
       <div>
-        <h4>Select Your State Machine File:</h4>
+        <h4>Select File:</h4>
         <input type="file" id="file-input" />
+        <div id = "alert_placeholder"></div>
         <h4>Diagram:</h4>
         <div id="fsm-display"></div>
       </div>
     </div>
+
+    <footer class="footer">
+      <div class="container">
+        <span class="text-muted">Copyright Carnegie Mellon University</span>
+      </div>
+    </footer>
 </body>
 </html>
