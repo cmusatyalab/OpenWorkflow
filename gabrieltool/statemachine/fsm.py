@@ -124,10 +124,31 @@ class Transition(FSMObjBase):
     """A Transition has satisfying predicates, next_state, and instructions."""
 
     def __init__(self, name=None, predicates=None, instruction=None, next_state=None):
+        """Transition among states
+        
+        Keyword Arguments:
+            name {string} -- name of the transition. (default: {None})
+            predicates {list of TransitionPredicate} -- a list of
+            TransitionPredicates. They are daisy-chained (AND) together when
+            evaluating whether this transition should be taken.  (default: {None})
+            instruction {Instruction} -- Instruction to give when taking a transition. (default: {None})
+            next_state {State} -- State to transit to. (default: {None})
+        """
+
         super(Transition, self).__init__(name)
         self.predicates = predicates if predicates is not None else []
         self.instruction = instruction
         self.next_state = next_state
+
+    @property
+    def predicates(self):
+        return self._predicates
+    
+    @predicates.setter
+    def predicates(self, val):
+        if type(val) != list:
+            raise TypeError("Predicates needs to be type list.")
+        self._predicates = val
 
     def __call__(self, app_state):
         """Given the current app_state, check if a transition should be taken.
@@ -136,13 +157,13 @@ class Transition(FSMObjBase):
         are satisfied. When all of them are satisfied, return True, next state,
         and instruction. Otherwise, return False, None, None.
         """
-        for predicate in self.predicates:
+        for predicate in self._predicates:
             if not predicate(app_state):
                 return None
         return self
 
     def to_desc(self):
-        for pred in self.predicates:
+        for pred in self._predicates:
             self._pb.predicates.extend([pred.to_desc()])
         if self.instruction is not None:
             self._pb.instruction.CopyFrom(self.instruction.to_desc())
@@ -193,6 +214,26 @@ class State(FSMObjBase):
         super(State, self).__init__(name)
         self.processors = processors if processors is not None else []
         self.transitions = transitions if transitions is not None else []
+    
+    @property
+    def processors(self):
+        return self._processors
+
+    @processors.setter
+    def processors(self, val):
+        if type(val) != list:
+            raise TypeError("Predicates needs to be type list.")
+        self._processors = val
+
+    @property
+    def transitions(self):
+        return self._transitions
+
+    @transitions.setter
+    def transitions(self, val):
+        if type(val) != list:
+            raise TypeError("Predicates needs to be type list.")
+        self._transitions = val
 
     def _run_processors(self, img):
         app_state = {'raw': img}
@@ -258,8 +299,8 @@ class StateMachine(object):
                                                        desc.instruction)
         preds = [cls._load_generic_from_desc(
             TransitionPredicate, pred_desc)
-            for pred_desc in tran.predicates]
-        tran.predicates = preds
+            for pred_desc in tran._predicates]
+        tran._predicates = preds
         tran.next_state = state_lut[desc.next_state]
         return tran
 
