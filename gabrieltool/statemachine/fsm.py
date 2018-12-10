@@ -125,7 +125,7 @@ class Transition(FSMObjBase):
 
     def __init__(self, name=None, predicates=None, instruction=None, next_state=None):
         """Transition among states
-        
+
         Keyword Arguments:
             name {string} -- name of the transition. (default: {None})
             predicates {list of TransitionPredicate} -- a list of
@@ -143,7 +143,7 @@ class Transition(FSMObjBase):
     @property
     def predicates(self):
         return self._predicates
-    
+
     @predicates.setter
     def predicates(self, val):
         if type(val) != list:
@@ -214,7 +214,7 @@ class State(FSMObjBase):
         super(State, self).__init__(name)
         self.processors = processors if processors is not None else []
         self.transitions = transitions if transitions is not None else []
-    
+
     @property
     def processors(self):
         return self._processors
@@ -336,6 +336,20 @@ class StateMachine(object):
         return state_lut[pb_fsm.start_state]
 
     @classmethod
+    def bfs(cls, start_state):
+        """Breadth-first Search on the graph, starting from start_state node."""
+        visited = []
+        work_queue = [start_state]
+        while work_queue:
+            state = work_queue.pop(0)
+            if state in visited:
+                continue
+            for tran in state.transitions:
+                work_queue.append(tran.next_state)
+            visited.append(state)
+            yield state
+
+    @classmethod
     def to_bytes(cls, name, start_state):
         """Dump a State Machine rooted at start_state.
 
@@ -343,19 +357,12 @@ class StateMachine(object):
             start_state {State} -- Start state of the state machine.
         """
         # TODO(junjuew) optimize/dedup assets/kwargs
-        # bfs starting from root to find all states
         visited = {}
-        work_queue = [start_state]
-        while work_queue:
-            state = work_queue.pop(0)
-            if state.name in visited:
-                if visited[state.name] is not state:
-                    raise ValueError("Found duplicate state name {}. "
-                                     "Cannot serialize a FSM with duplicate state name".format(state.name))
-                break
-            visited[state.name] = state
-            for tran in state.transitions:
-                work_queue.append(tran.next_state)
+        for state in cls.bfs(cls, start_state):
+            if state.name in visited and visited[state.name] is not state:
+                raise ValueError("Found duplicate state name {}. "
+                                 "Cannot serialize a FSM with duplicate state name".format(state.name))
+            visited[state.name] = state;
 
         # serialize
         pb_fsm = wca_state_machine_pb2.StateMachine(
