@@ -358,11 +358,11 @@ class StateMachine(object):
         """
         # TODO(junjuew) optimize/dedup assets/kwargs
         visited = {}
-        for state in cls.bfs(cls, start_state):
+        for state in cls.bfs(start_state):
             if state.name in visited and visited[state.name] is not state:
                 raise ValueError("Found duplicate state name {}. "
                                  "Cannot serialize a FSM with duplicate state name".format(state.name))
-            visited[state.name] = state;
+            visited[state.name] = state
 
         # serialize
         pb_fsm = wca_state_machine_pb2.StateMachine(
