@@ -3,5 +3,4 @@
 """
 
 from gabrieltool.statemachine.processor_zoo.common import *
-from gabrieltool.statemachine.processor_zoo.custom import sandwitch_tpod_dnn
 from gabrieltool.statemachine.processor_zoo.base import FasterRCNNOpenCVProcessor
