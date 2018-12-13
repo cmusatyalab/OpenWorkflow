@@ -85,10 +85,10 @@ class TransitionPredicate(FSMObjBase):
         """
 
         super(TransitionPredicate, self).__init__(name)
-        self.callable_obj = partial_obj
+        self._partial_obj = partial_obj
 
     def __call__(self, app_state):
-        return self.callable_obj(app_state=app_state)
+        return self._partial_obj(app_state=app_state)
 
     def from_desc(self, data):
         super(TransitionPredicate, self).from_desc(data)
@@ -96,11 +96,11 @@ class TransitionPredicate(FSMObjBase):
         kwargs = {}
         for (item, value) in self._pb.callable_kwargs.items():
             kwargs[item] = pickle.loads(value)
-        self.callable_obj = functools.partial(func, **kwargs)
+        self._partial_obj = functools.partial(func, **kwargs)
 
     def to_desc(self):
-        self._pb.callable_name = self.callable_obj.func.__name__
-        for (item, value) in self.callable_obj.keywords.items():
+        self._pb.callable_name = self._partial_obj.func.__name__
+        for (item, value) in self._partial_obj.keywords.items():
             self._pb.callable_kwargs[item] = pickle.dumps(value)
         return super(TransitionPredicate, self).to_desc()
 
@@ -187,26 +187,25 @@ class Processor(FSMObjBase):
 
         Keyword Arguments:
             name {string} -- name (default: {None})
-            partial_obj {functools.partial object} -- A partial object, with the
-            func being a class constructor from processor_zoo. The kwargs of the
-            func are the constructor arguments. (default: {None})
+            callable_obj {functools.partial object} -- A instance from 
+            classes in processor_zoo. (default: {None})
         """
 
         super(Processor, self).__init__(name)
-        self.callable_obj = callable_obj
+        self._callable_obj = callable_obj
 
     def __call__(self, img):
-        return self.callable_obj(img)
+        return self._callable_obj(img)
 
     def from_desc(self, data):
         super(Processor, self).from_desc(data)
         callable_class = getattr(processor_zoo, self._pb.callable_name)
         initializer_args = self._pb.callable_kwargs[self.__class__.PB_CONSTRUCTOR_KEY]
-        self.callable_obj = callable_class.from_bytes(initializer_args)
+        self._callable_obj = callable_class.from_bytes(initializer_args)
 
     def to_desc(self):
-        self._pb.callable_name = self.callable_obj.__class__.__name__
-        self._pb.callable_kwargs[self.__class__.PB_CONSTRUCTOR_KEY] = self.callable_obj.to_bytes()
+        self._pb.callable_name = self._callable_obj.__class__.__name__
+        self._pb.callable_kwargs[self.__class__.PB_CONSTRUCTOR_KEY] = self._callable_obj.to_bytes()
         return super(Processor, self).to_desc()
 
 
