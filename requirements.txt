@@ -30,7 +30,7 @@ py==1.7.0
 pycodestyle==2.4.0
 Pygments==2.2.0
 pytest==4.0.0
-rope==0.10.7
+rope==0.11.0
 six==1.11.0
 toml==0.10.0
 traitlets==4.3.2
