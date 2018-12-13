@@ -23,7 +23,9 @@ class StatefulProcessor(object):
 class FasterRCNNOpenCVProcessor(StatefulProcessor):
     def __init__(self, proto_path, model_path, labels=None, *args, **kwargs):
         # For default parameter settings,
-        # see: https://github.com/rbgirshick/fast-rcnn/blob/b612190f279da3c11dd8b1396dd5e72779f8e463/lib/fast_rcnn/config.py
+        # see:
+        # https://github.com/rbgirshick/fast-rcnn/blob/b612190f279da3c11dd8b1396dd5e72779f8e463/lib/fast_rcnn/config.py
+        super(FasterRCNNOpenCVProcessor, self).__init__(*args, **kwargs)
         self._scale = 600
         self._max_size = 1000
         # Pixel mean values (BGR order) as a (1, 1, 3) array
@@ -33,7 +35,6 @@ class FasterRCNNOpenCVProcessor(StatefulProcessor):
         self._nms_threshold = 0.3
         self._labels = labels
         self._net = cv2.dnn.readNetFromCaffe(proto_path, model_path)
-        return super(FasterRCNNOpenCVProcessor, self).__init__(*args, **kwargs)
 
     def _getOutputsNames(self, net):
         layersNames = net.getLayerNames()
@@ -82,7 +83,7 @@ class FasterRCNNOpenCVProcessor(StatefulProcessor):
                     boxes.append([left, top, width, height])
 
         indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, self._nms_threshold)
-        results = []
+        results = {}
         for i in indices:
             i = i[0]
             box = boxes[i]
@@ -90,13 +91,9 @@ class FasterRCNNOpenCVProcessor(StatefulProcessor):
             top = box[1]
             width = box[2]
             height = box[3]
-            classId = classIds[i]
+            classId = int(classIds[i])
             confidence = confidences[i]
-            results.append([left, top, left+width, top+height, confidence, classId])
+            if self._labels[classId] not in results:
+                results[self._labels[classId]] = []
+            results[self._labels[classId]].append([left, top, left+width, top+height, confidence, classId])
         return results
-
-    def init():
-        pass
-
-    def clean():
-        pass
