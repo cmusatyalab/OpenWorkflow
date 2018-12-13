@@ -196,7 +196,7 @@ class Processor(FSMObjBase):
         self.callable_obj = callable_obj
 
     def __call__(self, img):
-        return self._callable_obj(img)
+        return self.callable_obj(img)
 
     def from_desc(self, data):
         super(Processor, self).from_desc(data)

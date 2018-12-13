@@ -18,13 +18,10 @@ def _load_image_bytes(file_path):
 
 
 def build_sandwich_fsm():
-    # 1st state always move to second
     data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data/sandwich-model')
     img_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images_feedback')
 
     labels = ["tomato", "cheese", "full", "ham", "lettuce", "cucumber", "half", "hamwrong", "bread"]
-    # TODO(junjuew) should call processor here. temporary solution to test if
-    # the code is working. serialization is failing
     proc = processor_zoo.FasterRCNNOpenCVProcessor(
         proto_path=os.path.join(data_dir, 'faster_rcnn_test.pt'),
         model_path=os.path.join(data_dir, 'model.caffemodel'),

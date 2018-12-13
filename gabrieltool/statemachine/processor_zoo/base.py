@@ -44,7 +44,7 @@ def record_kwargs(func):
 
 class SerializableProcessor(object):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(SerializableProcessor, self).__init__(*args, **kwargs)
 
     def to_bytes(self):
         return pickle.dumps(self.kwargs)
@@ -59,7 +59,7 @@ class DummyProcessor(SerializableProcessor):
 
     @record_kwargs
     def __init__(self, dummy_input='dummy_input_value'):
-        super().__init__()
+        super(DummyProcessor, self).__init__()
 
     def __call__(self, image):
         return {'dummy_key': 'dummy_value'}
