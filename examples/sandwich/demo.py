@@ -3,7 +3,9 @@
 # Cloudlet Infrastructure for Mobile Computing
 #   - Task Assistance
 #
-#   Author: Zhuo Chen <zhuoc@cs.cmu.edu>
+#   Author:
+#      Junjue Wang <junjuew@cs.cmu.edu>
+#      Zhuo Chen <zhuoc@cs.cmu.edu>
 #
 #   Copyright (C) 2011-2013 Carnegie Mellon University
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,15 +64,20 @@ class CookingProxy(gabriel.proxy.CognitiveProcessThread):
     def handle(self, header, data):
         LOG.info("received new image")
 
-        header['status'] = "nothing"
-        result = {}  # default
+        # status success is needed
+        header['status'] = "success"
+        # default
+        result = {}
 
         img = raw2cv_image(data)
         inst = self._fsm_runner.feed(img)
-        result['speech'] = inst.audio
-        result['image'] = b64encode(inst.image)
-        LOG.info(result)
-        LOG.info('state: {}'.format(self._fsm_runner.current_state))
+        # gotcha: the Gabriel client expects the absence of 'speech' and 'image'
+        # keys when there is no such feedback
+        if inst.audio:
+            result['speech'] = inst.audio
+        if inst.image:
+            result['image'] = b64encode(inst.image)
+        LOG.debug('Current State: {}'.format(self._fsm_runner.current_state))
         return json.dumps(result)
 
 
