@@ -6,6 +6,7 @@
 import functools
 import os
 import pickle
+import time
 
 import pytest
 
@@ -42,8 +43,10 @@ def test_FasterRCNNOpenCVProcessor():
             labels=labels,
         )
         im = cv2.imread(os.path.join(data_dir, 'test.jpg'))
-        preds = proc(im)
-        for (left, top, right, bottom, confidence, classId) in preds:
-            drawPred(im, labels[int(classId)], confidence, left, top, right, bottom)
+        st = time.time()
+        app_state = proc(im)
+        for (cls_name, objects) in app_state.items():
+            for (left, top, right, bottom, confidence, classId) in objects:
+                drawPred(im, cls_name, confidence, left, top, right, bottom)
         cv2.imwrite('tested.jpg', im)
-        assert(labels[preds[0][-1]] == "ham")
+        assert("ham" in app_state)

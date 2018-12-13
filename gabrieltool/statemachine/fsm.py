@@ -238,7 +238,7 @@ class State(FSMObjBase):
     def _run_processors(self, img):
         app_state = {'raw': img}
         for obj_processor in self.processors:
-            app_state.extend(obj_processor(img))
+            app_state.update(obj_processor(img))
         return app_state
 
     def _get_one_satisfied_transition(self, app_state):
@@ -261,8 +261,8 @@ class State(FSMObjBase):
         Returns:
             next state {State}
         """
-        app_state = self._run_processor(img, self.processors)
-        transition = self._get_one_satisfied_transition(img, app_state)
+        app_state = self._run_processors(img)
+        transition = self._get_one_satisfied_transition(app_state)
         if transition is None:
             return self, Instruction()
         else:
