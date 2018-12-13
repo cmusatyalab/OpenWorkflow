@@ -3,18 +3,17 @@
 """
 
 from __future__ import absolute_import, division, print_function
+
 from functools import partial
-from gabrieltool.statemachine import fsm
-from gabrieltool.statemachine import processor_zoo, predicate_zoo
+
+from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo
 
 # create a two state state machine
 st_start = fsm.State(
     name='start',
     processors=[fsm.Processor(
         name='proc_start',
-        partial_obj=partial(
-            processor_zoo.dummy
-        )
+        callable_obj=processor_zoo.DummyProcessor()
     )],
     transitions=[
         fsm.Transition(

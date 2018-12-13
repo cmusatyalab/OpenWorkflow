@@ -2,30 +2,77 @@
 # -*- coding: utf-8 -*-
 """Abstract base classes for processors
 """
+import inspect
+import pickle
+from functools import wraps
+
 import cv2
-from cv2 import dnn
 import numpy as np
+from cv2 import dnn
 from logzero import logger
 
 
-class StatefulProcessor(object):
-    """Represent a stateful processor.
-
-    A stateful processor's context needs to be initialized when running.
+def record_kwargs(func):
     """
-    def init():
-        raise NotImplementedError()
+    Automatically record constructor arguments
 
-    def clean():
-        raise NotImplementedError()
+    >>> class process:
+    ...     @record_kwargs
+    ...     def __init__(self, cmd, reachable=False, user='root'):
+    ...         pass
+    >>> p = process('halt', True)
+    >>> p.cmd, p.reachable, p.user
+    ('halt', True, 'root')
+    """
+    names, varargs, keywords, defaults = inspect.getargspec(func)
+
+    @wraps(func)
+    def wrapper(self, *args, **kargs):
+        kwargs = {}
+        for name, arg in list(zip(names[1:], args)) + list(kargs.items()):
+            kwargs[name] = arg
+
+        for name, default in zip(reversed(names), reversed(defaults)):
+            if not hasattr(self, name):
+                kwargs[name] = default
+
+        setattr(self, 'kwargs', kwargs)
+        func(self, *args, **kargs)
+
+    return wrapper
 
 
-class FasterRCNNOpenCVProcessor(StatefulProcessor):
-    def __init__(self, proto_path, model_path, labels=None, *args, **kwargs):
+class SerializableProcessor(object):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def to_bytes(self):
+        return pickle.dumps(self.kwargs)
+
+    @classmethod
+    def from_bytes(cls, byte_repr):
+        kwargs = pickle.loads(byte_repr)
+        return cls(**kwargs)
+
+
+class DummyProcessor(SerializableProcessor):
+
+    @record_kwargs
+    def __init__(self, dummy_input='dummy_input_value'):
+        super().__init__()
+
+    def __call__(self, image):
+        return {'dummy_key': 'dummy_value'}
+
+
+class FasterRCNNOpenCVProcessor(SerializableProcessor):
+
+    @record_kwargs
+    def __init__(self, proto_path, model_path, labels=None, conf_threshold=0.8):
         # For default parameter settings,
         # see:
         # https://github.com/rbgirshick/fast-rcnn/blob/b612190f279da3c11dd8b1396dd5e72779f8e463/lib/fast_rcnn/config.py
-        super(FasterRCNNOpenCVProcessor, self).__init__(*args, **kwargs)
+        super(FasterRCNNOpenCVProcessor, self).__init__()
         self._scale = 600
         self._max_size = 1000
         # Pixel mean values (BGR order) as a (1, 1, 3) array
@@ -35,12 +82,13 @@ class FasterRCNNOpenCVProcessor(StatefulProcessor):
         self._nms_threshold = 0.3
         self._labels = labels
         self._net = cv2.dnn.readNetFromCaffe(proto_path, model_path)
+        self._conf_threshold = conf_threshold
 
     def _getOutputsNames(self, net):
         layersNames = net.getLayerNames()
         return [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-    def __call__(self, image, conf_threshold=0.8):
+    def __call__(self, image):
         height, width = image.shape[:2]
 
         # resize image to correct size
@@ -71,7 +119,7 @@ class FasterRCNNOpenCVProcessor(StatefulProcessor):
         for out in outs:
             for detection in out[0, 0]:
                 confidence = detection[2]
-                if confidence > conf_threshold:
+                if confidence > self._conf_threshold:
                     left = int(detection[3])
                     top = int(detection[4])
                     right = int(detection[5])
@@ -82,7 +130,7 @@ class FasterRCNNOpenCVProcessor(StatefulProcessor):
                     confidences.append(float(confidence))
                     boxes.append([left, top, width, height])
 
-        indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, self._nms_threshold)
+        indices = cv2.dnn.NMSBoxes(boxes, confidences, self._conf_threshold, self._nms_threshold)
         results = {}
         for i in indices:
             i = i[0]

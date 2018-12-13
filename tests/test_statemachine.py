@@ -68,18 +68,19 @@ def expected_instruction_obj():
 def processor_obj():
     return fsm.Processor(
         name='test_proc',
-        partial_obj=functools.partial(
-            processor_zoo.dummy,
-            dummy_input='dummy_input_value'))
+        callable_obj=processor_zoo.DummyProcessor(
+            dummy_input='dummy_input_value'
+        ))
 
 
 @pytest.fixture
 def expected_processor_obj():
     expected_obj = wca_state_machine_pb2.Processor()
     expected_obj.name = 'test_proc'
-    expected_obj.callable_name = 'dummy'
-    expected_obj.callable_kwargs['dummy_input'] = pickle.dumps(
-        'dummy_input_value')
+    expected_obj.callable_name = processor_zoo.DummyProcessor.__name__
+    expected_obj.callable_kwargs[fsm.Processor.PB_CONSTRUCTOR_KEY] = pickle.dumps({
+        'dummy_input': 'dummy_input_value'
+    })
     return expected_obj
 
 
@@ -180,9 +181,7 @@ def test_state_machine_serialization_one_state(state_obj, expected_state_obj):
 
 def assert_processor_or_predicate_content_equal(actual, expected):
     assert actual.name == expected.name
-    assert actual.partial_obj.func == expected.partial_obj.func
-    assert actual.partial_obj.args == expected.partial_obj.args
-    assert actual.partial_obj.keywords == expected.partial_obj.keywords
+    assert actual.callable_obj.kwargs == expected.callable_obj.kwargs
 
 
 def assert_transition_content_equal(actual, expected):

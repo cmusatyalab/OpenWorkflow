@@ -6,11 +6,12 @@ The data object is named as obj_<protobuf_msg_type>.
 """
 
 from __future__ import absolute_import, division, print_function
+
 import functools
 import pickle
-from gabrieltool.statemachine import processor_zoo
-from gabrieltool.statemachine import predicate_zoo
-from gabrieltool.statemachine import wca_state_machine_pb2
+
+from gabrieltool.statemachine import (predicate_zoo, processor_zoo,
+                                      wca_state_machine_pb2)
 
 
 class FSMObjBase(object):
@@ -84,10 +85,10 @@ class TransitionPredicate(FSMObjBase):
         """
 
         super(TransitionPredicate, self).__init__(name)
-        self.partial_obj = partial_obj
+        self.callable_obj = partial_obj
 
     def __call__(self, app_state):
-        return self.partial_obj(app_state=app_state)
+        return self.callable_obj(app_state=app_state)
 
     def from_desc(self, data):
         super(TransitionPredicate, self).from_desc(data)
@@ -95,11 +96,11 @@ class TransitionPredicate(FSMObjBase):
         kwargs = {}
         for (item, value) in self._pb.callable_kwargs.items():
             kwargs[item] = pickle.loads(value)
-        self.partial_obj = functools.partial(func, **kwargs)
+        self.callable_obj = functools.partial(func, **kwargs)
 
     def to_desc(self):
-        self._pb.callable_name = self.partial_obj.func.__name__
-        for (item, value) in self.partial_obj.keywords.items():
+        self._pb.callable_name = self.callable_obj.func.__name__
+        for (item, value) in self.callable_obj.keywords.items():
             self._pb.callable_kwargs[item] = pickle.dumps(value)
         return super(TransitionPredicate, self).to_desc()
 
@@ -178,27 +179,34 @@ class Transition(FSMObjBase):
 
 
 class Processor(FSMObjBase):
-    """A TriggerPredicate is an callable object."""
+    """Processsor is a FSM element that processes image in a state."""
+    PB_CONSTRUCTOR_KEY = 'init'
 
-    def __init__(self, name=None, partial_obj=None):
+    def __init__(self, name=None, callable_obj=None):
+        """
+
+        Keyword Arguments:
+            name {string} -- name (default: {None})
+            partial_obj {functools.partial object} -- A partial object, with the
+            func being a class constructor from processor_zoo. The kwargs of the
+            func are the constructor arguments. (default: {None})
+        """
+
         super(Processor, self).__init__(name)
-        self.partial_obj = partial_obj
+        self.callable_obj = callable_obj
 
     def __call__(self, img):
-        return self.partial_obj(img)
+        return self._callable_obj(img)
 
     def from_desc(self, data):
         super(Processor, self).from_desc(data)
-        func = getattr(processor_zoo, self._pb.callable_name)
-        kwargs = {}
-        for (item, value) in self._pb.callable_kwargs.items():
-            kwargs[item] = pickle.loads(value)
-        self.partial_obj = functools.partial(func, **kwargs)
+        callable_class = getattr(processor_zoo, self._pb.callable_name)
+        initializer_args = self._pb.callable_kwargs[self.__class__.PB_CONSTRUCTOR_KEY]
+        self.callable_obj = callable_class.from_bytes(initializer_args)
 
     def to_desc(self):
-        self._pb.callable_name = self.partial_obj.func.__name__
-        for (item, value) in self.partial_obj.keywords.items():
-            self._pb.callable_kwargs[item] = pickle.dumps(value)
+        self._pb.callable_name = self.callable_obj.__class__.__name__
+        self._pb.callable_kwargs[self.__class__.PB_CONSTRUCTOR_KEY] = self.callable_obj.to_bytes()
         return super(Processor, self).to_desc()
 
 
@@ -208,7 +216,6 @@ class State(FSMObjBase):
     This class is used to represent all the actions/code that can be called for
     a state.
     """
-    # TODO(junjuew): enforce state names need to be unique at creation
 
     def __init__(self, name=None, processors=None, transitions=None):
         super(State, self).__init__(name)
@@ -247,7 +254,6 @@ class State(FSMObjBase):
                 return transition
         return None
 
-    # TODO (junjuew): fill this in
     def __call__(self, img):
         """React to the image.
 
