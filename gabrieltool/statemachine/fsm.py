@@ -194,6 +194,10 @@ class Processor(FSMObjBase):
         super(Processor, self).__init__(name)
         self._callable_obj = callable_obj
 
+    @property
+    def callable_obj(self):
+        return self._callable_obj
+
     def __call__(self, img):
         return self._callable_obj(img)
 

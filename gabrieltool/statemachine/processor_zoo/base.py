@@ -12,6 +12,22 @@ from cv2 import dnn
 from logzero import logger
 
 
+# TODO (junjuew): move this to cvutil?
+def drawPred(frame, class_name, conf, left, top, right, bottom):
+    # Draw a bounding box.
+    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0))
+
+    label = '%.2f' % conf
+
+    label = '%s: %s' % (class_name, label)
+
+    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+    top = max(top, labelSize[1])
+    cv2.rectangle(frame, (left, top - labelSize[1]), (left + labelSize[0], top + baseLine), (255, 255, 255), cv2.FILLED)
+    cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+    return frame
+
+
 def record_kwargs(func):
     """
     Automatically record constructor arguments
@@ -61,7 +77,7 @@ class DummyProcessor(SerializableProcessor):
     def __init__(self, dummy_input='dummy_input_value'):
         super(DummyProcessor, self).__init__()
 
-    def __call__(self, image):
+    def __call__(self, image, debug=False):
         return {'dummy_key': 'dummy_value'}
 
 
@@ -88,7 +104,7 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
         layersNames = net.getLayerNames()
         return [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-    def __call__(self, image):
+    def __call__(self, image, debug=False):
         height, width = image.shape[:2]
 
         # resize image to correct size
@@ -144,4 +160,14 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
             if self._labels[classId] not in results:
                 results[self._labels[classId]] = []
             results[self._labels[classId]].append([left, top, left+width, top+height, confidence, classId])
+
+        if debug:
+            debug_image = image
+            for (class_name, detections) in results.items():
+                for detection in detections:
+                    left, top, right, bottom, conf, _ = detection
+                    debug_image = drawPred(debug_image, class_name, conf, left, top, right, bottom)
+            cv2.imshow('debug', debug_image)
+            cv2.waitKey(1)
+
         return results
