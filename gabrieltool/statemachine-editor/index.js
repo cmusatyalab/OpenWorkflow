@@ -1,9 +1,9 @@
-$(window).on("load", function () {
+$(document).ready(function () {
   var graph = new joint.dia.Graph();
-  var paper_el = $("#fsm-display");
+  var $paper = $("#fsm-display");
   var paper = new joint.dia.Paper({
-    el: paper_el,
-    width: $("#fsm-display").innerWidth,
+    el: $paper,
+    width: $paper.innerWidth,
     height: window.innerHeight * 4,
     gridSize: 1,
     model: graph
@@ -12,27 +12,14 @@ $(window).on("load", function () {
 
   // paper object event call backs
   paper.on('link:pointerdblclick', function (linkView) {
-    var currentLink = linkView.model;
-    currentLink.attr('line/stroke', 'orange')
-    currentLink.label(0, {
-      attrs: {
-        body: {
-          stroke: 'orange'
-        }
-      }
-    });
+    var el = linkView.model;
+    info_box.display_transition_info(graph_el_to_pb_el[el.id]);
   });
 
-  // paper.on('cell:pointerdblclick', function (cellView) {
-  //   var isElement = cellView.model.isElement();
-  //   var message = (isElement ? 'Element' : 'Link') + ' clicked';
-  //   console.log("cell clicked");
-  // });
-
   paper.on('element:pointerdblclick', function (elementView) {
-    var currentElement = elementView.model;
-    currentElement.attr('body/stroke', 'orange');
-    info_box.display_state_info(graph_el_to_pb_el[currentElement.id]);
+    var el = elementView.model;
+    // el.attr('circle/fill', 'aqua');
+    info_box.display_state_info(graph_el_to_pb_el[el.id]);
   });
 
   function display_info(element) {
@@ -58,11 +45,13 @@ $(window).on("load", function () {
 
   // ===============================================================
 
-  var state_per_row = 3;
-  var state_shape_width = 150;
-  var state_shape_height = 150;
-  var state_spacing_x = 500;
-  var state_spacing_y = 500;
+  var state_shape_width = 50;
+  var state_shape_height = 50;
+  var state_spacing_x = 250;
+  var state_spacing_y = 150;
+  var state_per_row = Math.floor($paper.width() /
+    (state_shape_width + state_spacing_x)) + 1;
+  console.log(state_per_row);
   document
     .getElementById("file-input")
     .addEventListener("change", load_and_draw_fsm_file, false);
@@ -132,6 +121,40 @@ $(window).on("load", function () {
       ]
     });
   };
+  info_box.display_transition_info = function (transition) {
+    info_box.empty();
+    // create the info list
+    var $info_list = info_box.add_list();
+    var $info_list_name = $('<h2></h2>').addClass("list-group-item").text("Transition: " + transition.getName());
+    $info_list.append($info_list_name);
+    var $info_table = info_box.add_table();
+    // create the info table
+    info_box.table_data.splice(0, info_box.table_data.length);
+    if (info_box.table != null) {
+      info_box.table.destroy();
+    }
+    var predicates = transition.getPredicatesList();
+    for (var i = 0; i < predicates.length; i++) {
+      var predicate = predicates[i];
+      info_box.table_data.push(new Array(predicate.getName(),
+        predicate.getCallableName(),
+        predicate.getCallableKwargsMap()));
+    }
+    info_box.table = $info_table.DataTable({
+      dom: "<'row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-6'f>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      data: info_box.table_data,
+      columns: [{
+          title: "Predicate Name"
+        },
+        {
+          title: "Type"
+        },
+        {
+          title: "Parameters"
+        },
+      ]
+    });
+  };
 
   function load_and_draw_fsm_file(e) {
     graph.clear();
@@ -166,37 +189,6 @@ $(window).on("load", function () {
     var state_name_to_shape_lut = draw_states(states);
     draw_transitions(states, state_name_to_shape_lut);
   }
-
-  // function populate_fsm_table(fsm) {
-  //   // element table
-  //   $('#elementTable').show();
-  //   $('#elementTable').DataTable({
-  //     // for bootstrap 4
-  //     dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-  //       "<'row'<'col-sm-12'tr>>" +
-  //       "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-  //     data: fsm_array,
-  //     columns: [{
-  //         title: "Name"
-  //       },
-  //       {
-  //         title: "Position"
-  //       },
-  //       {
-  //         title: "Office"
-  //       },
-  //       {
-  //         title: "Extn."
-  //       },
-  //       {
-  //         title: "Start date"
-  //       },
-  //       {
-  //         title: "Salary"
-  //       }
-  //     ]
-  //   });
-  // }
 
   function draw_states(states) {
     var state_name_to_shape_lut = {};
@@ -235,37 +227,38 @@ $(window).on("load", function () {
     var repr = "";
     if (element instanceof proto.State) {
       repr += element.getName() + "\n";
-      repr += "Processors: " + "\n";
-      var processors = element.getProcessorsList();
-      for (var i = 0; i < processors.length; i++) {
-        var processor = processors[i];
-        repr += processor.getCallableName() + "\n";
-      }
+      // repr += "Processors: " + "\n";
+      // var processors = element.getProcessorsList();
+      // for (var i = 0; i < processors.length; i++) {
+      //   var processor = processors[i];
+      //   repr += processor.getCallableName() + "\n";
+      // }
     } else if (element instanceof proto.Transition) {
-      repr += "Predicates: " + "\n";
-      var predicates = element.getPredicatesList();
-      for (var i = 0; i < predicates.length; i++) {
-        repr += predicates[i].getCallableName().toString() + "(\n";
-        // try to display bytes as ASCII
-        var kwargs = predicates[i].getCallableKwargsMap();
-        var entry_list = kwargs.getEntryList();
-        for (var j = 0; j < entry_list.length; j++) {
-          var val = new TextDecoder().decode(entry_list[j][1].slice(0, 50));
-          repr += entry_list[j][0] + "=" + val;
-        }
-        repr += ")\n";
-      }
+      repr += element.getName();
+      // repr += "Predicates: " + "\n";
+      // var predicates = element.getPredicatesList();
+      // for (var i = 0; i < predicates.length; i++) {
+      //   repr += predicates[i].getCallableName().toString() + "(\n";
+      //   // try to display bytes as ASCII
+      //   var kwargs = predicates[i].getCallableKwargsMap();
+      //   var entry_list = kwargs.getEntryList();
+      //   for (var j = 0; j < entry_list.length; j++) {
+      //     var val = new TextDecoder().decode(entry_list[j][1].slice(0, 50));
+      //     repr += entry_list[j][0] + "=" + val;
+      //   }
+      //   repr += ")\n";
+      // }
 
-      var instruction = element.getInstruction();
-      if (typeof instruction != 'undefined') {
-        repr += "Audio Instruction:\n";
-        var audio_instruction = instruction.getAudio();
-        // break long instructions for better appearance.
-        for (var i = 0; i < Math.floor(audio_instruction.length / 50); i++) {
-          audio_instruction = insert(audio_instruction, 50 * i, "\n");
-        }
-        repr += audio_instruction;
-      }
+      // var instruction = element.getInstruction();
+      // if (typeof instruction != 'undefined') {
+      //   repr += "Audio Instruction:\n";
+      //   var audio_instruction = instruction.getAudio();
+      //   // break long instructions for better appearance.
+      //   for (var i = 0; i < Math.floor(audio_instruction.length / 50); i++) {
+      //     audio_instruction = insert(audio_instruction, 50 * i, "\n");
+      //   }
+      //   repr += audio_instruction;
+      // }
     }
     return repr;
   }
