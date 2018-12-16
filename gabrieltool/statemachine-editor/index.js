@@ -224,8 +224,7 @@ $(window).on("load", function () {
         var transition_shape = create_transition_shape(
           state_name_to_shape_lut[state.getName()],
           state_name_to_shape_lut[transition.getNextState()],
-          get_info_string(transition),
-          null
+          get_info_string(transition)
         );
         graph_el_to_pb_el[transition_shape.id] = transition;
       }
@@ -295,8 +294,7 @@ $(window).on("load", function () {
     source,
     target,
     predicate,
-    instruction,
-    vertices
+    instruction
   ) {
     var cell = new joint.shapes.fsa.Arrow({
       source: {
@@ -323,7 +321,6 @@ $(window).on("load", function () {
           }
         }
       ],
-      vertices: vertices || []
     });
     graph.addCell(cell);
     return cell;
