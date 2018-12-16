@@ -23,15 +23,16 @@ $(window).on("load", function () {
     });
   });
 
-  paper.on('cell:pointerdblclick', function (cellView) {
-    var isElement = cellView.model.isElement();
-    var message = (isElement ? 'Element' : 'Link') + ' clicked';
-  });
+  // paper.on('cell:pointerdblclick', function (cellView) {
+  //   var isElement = cellView.model.isElement();
+  //   var message = (isElement ? 'Element' : 'Link') + ' clicked';
+  //   console.log("cell clicked");
+  // });
 
   paper.on('element:pointerdblclick', function (elementView) {
     var currentElement = elementView.model;
     currentElement.attr('body/stroke', 'orange');
-    display_info(graph_el_to_pb_el[currentElement.id]);
+    info_box.display_state_info(graph_el_to_pb_el[currentElement.id]);
   });
 
   function display_info(element) {
@@ -53,37 +54,6 @@ $(window).on("load", function () {
         repr += ")\n";
       }
     }
-  }
-
-  // TODO(junjuew) anyway to make this not global variable?
-  var display_data = [];
-  var display_table = null;
-
-  function display_state_info(state) {
-    // clear the array
-    display_data.splice(0, display_data.length);
-    if (display_table != null) {
-      display_table.destroy();
-    }
-    var processors = state.getProcessorsList();
-    for (var i = 0; i < processors.length; i++) {
-      var processor = processors[i];
-      display_data.push(new Array(processor.getName(), processor.getCallableName()));
-    }
-    display_table = $('#infoTable').DataTable({
-      // for bootstrap 4
-      dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-        "<'row'<'col-sm-12'tr>>" +
-        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-      data: display_data,
-      columns: [{
-          title: "Name"
-        },
-        {
-          title: "Processor"
-        },
-      ]
-    });
   }
 
   // ===============================================================
@@ -110,9 +80,58 @@ $(window).on("load", function () {
       message + '</span></div>');
   };
 
-  //element table
-  $('#infoTable').hide();
-
+  // element info region
+  info_box = function () {};
+  info_box.add_list = function () {
+    var $list = $('<div></div>').addClass("list-group");
+    $("#infoBox").append($list);
+    return $list;
+  };
+  info_box.add_table = function () {
+    var $info_table = $('<table></table>').css("width", "100%").addClass("display").addClass("table").addClass("table-striped").addClass("table-bordered");
+    $("#infoBox").append($info_table);
+    return $info_table;
+  };
+  info_box.empty = function () {
+    $("#infoBox").empty();
+  };
+  info_box.table_data = [];
+  info_box.table = null;
+  info_box.display_state_info = function (state) {
+    info_box.empty();
+    // create the info list
+    var $info_list = info_box.add_list();
+    var $info_list_name = $('<h2></h2>').addClass("list-group-item").text("State: " + state.getName());
+    $info_list.append($info_list_name);
+    var $info_table = info_box.add_table();
+    // create the info table
+    info_box.table_data.splice(0, info_box.table_data.length);
+    if (info_box.table != null) {
+      info_box.table.destroy();
+    }
+    var processors = state.getProcessorsList();
+    for (var i = 0; i < processors.length; i++) {
+      var processor = processors[i];
+      info_box.table_data.push(new Array(processor.getName(),
+        processor.getCallableName(),
+        processor.getCallableKwargsMap()));
+    }
+    info_box.table = $info_table.DataTable({
+      // for bootstrap 4
+      dom: "<'row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-6'f>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      data: info_box.table_data,
+      columns: [{
+          title: "Processor Name"
+        },
+        {
+          title: "Type"
+        },
+        {
+          title: "Parameters"
+        },
+      ]
+    });
+  };
 
   function load_and_draw_fsm_file(e) {
     graph.clear();
