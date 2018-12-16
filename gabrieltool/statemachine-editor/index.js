@@ -1,6 +1,5 @@
 $(window).on("load", function () {
   var graph = new joint.dia.Graph();
-
   var paper_el = $("#fsm-display");
   var paper = new joint.dia.Paper({
     el: paper_el,
@@ -9,64 +8,10 @@ $(window).on("load", function () {
     gridSize: 1,
     model: graph
   });
+  var graph_el_to_pb_el = {};
 
   // paper object event call backs
-  var info = new joint.shapes.standard.Rectangle();
-  info.position(100, 100);
-  info.resize(100, 20);
-  info.attr({
-    body: {
-      visibility: 'visible',
-      cursor: 'default',
-      fill: 'blue',
-      stoke: 'black'
-    },
-    label: {
-      visibility: 'hidden',
-      text: 'Link clicked',
-      cursor: 'default',
-      fill: 'black',
-      fontSize: 12
-    }
-  });
-  info.addTo(graph);
-
-  function resetAll(paper) {
-    paper.drawBackground({
-      color: 'white'
-    });
-
-    var elements = paper.model.getElements();
-    for (var i = 0, ii = elements.length; i < ii; i++) {
-      var currentElement = elements[i];
-      currentElement.attr('body/stroke', 'black');
-    }
-
-    var links = paper.model.getLinks();
-    for (var j = 0, jj = links.length; j < jj; j++) {
-      var currentLink = links[j];
-      currentLink.attr('line/stroke', 'black');
-      currentLink.label(0, {
-        attrs: {
-          body: {
-            stroke: 'black'
-          }
-        }
-      });
-    }
-  }
-
-  paper.on('element:pointerdblclick', function (elementView) {
-    resetAll(this);
-
-    var currentElement = elementView.model;
-    currentElement.attr('body/stroke', 'orange');
-    currentElement.attr('body/fill', 'blue');
-  });
-
   paper.on('link:pointerdblclick', function (linkView) {
-    resetAll(this);
-
     var currentLink = linkView.model;
     currentLink.attr('line/stroke', 'orange')
     currentLink.label(0, {
@@ -81,18 +26,65 @@ $(window).on("load", function () {
   paper.on('cell:pointerdblclick', function (cellView) {
     var isElement = cellView.model.isElement();
     var message = (isElement ? 'Element' : 'Link') + ' clicked';
-    info.attr('label/text', message);
-
-    info.attr('body/visibility', 'visible');
-    info.attr('label/visibility', 'visible');
   });
 
   paper.on('element:pointerdblclick', function (elementView) {
-    resetAll(this);
-
     var currentElement = elementView.model;
-    currentElement.attr('body/stroke', 'orange')
+    currentElement.attr('body/stroke', 'orange');
+    display_info(graph_el_to_pb_el[currentElement.id]);
   });
+
+  function display_info(element) {
+    $('#infoTable').show();
+    if (element instanceof proto.State) {
+      display_state_info(element);
+    } else if (element instanceof proto.Transition) {
+      repr += "Predicates: " + "\n";
+      var predicates = element.getPredicatesList();
+      for (var i = 0; i < predicates.length; i++) {
+        repr += predicates[i].getCallableName().toString() + "(\n";
+        // try to display bytes as ASCII
+        var kwargs = predicates[i].getCallableKwargsMap();
+        var entry_list = kwargs.getEntryList();
+        for (var j = 0; j < entry_list.length; j++) {
+          var val = new TextDecoder().decode(entry_list[j][1].slice(0, 50));
+          repr += entry_list[j][0] + "=" + val;
+        }
+        repr += ")\n";
+      }
+    }
+  }
+
+  // TODO(junjuew) anyway to make this not global variable?
+  var display_data = [];
+  var display_table = null;
+
+  function display_state_info(state) {
+    // clear the array
+    display_data.splice(0, display_data.length);
+    if (display_table != null) {
+      display_table.destroy();
+    }
+    var processors = state.getProcessorsList();
+    for (var i = 0; i < processors.length; i++) {
+      var processor = processors[i];
+      display_data.push(new Array(processor.getName(), processor.getCallableName()));
+    }
+    display_table = $('#infoTable').DataTable({
+      // for bootstrap 4
+      dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+      data: display_data,
+      columns: [{
+          title: "Name"
+        },
+        {
+          title: "Processor"
+        },
+      ]
+    });
+  }
 
   // ===============================================================
 
@@ -119,7 +111,7 @@ $(window).on("load", function () {
   };
 
   //element table
-  $('#elementTable').hide();
+  $('#infoTable').hide();
 
 
   function load_and_draw_fsm_file(e) {
@@ -197,6 +189,7 @@ $(window).on("load", function () {
         Math.floor(idx / state_per_row) * state_spacing_y
       );
       state_name_to_shape_lut[state.getName()] = state_shape;
+      graph_el_to_pb_el[state_shape.id] = state;
     }
     return state_name_to_shape_lut;
   }
@@ -209,12 +202,13 @@ $(window).on("load", function () {
         var tran_idx = 0; tran_idx < transitions.length; tran_idx < tran_idx++
       ) {
         var transition = transitions[tran_idx];
-        create_transition_shape(
+        var transition_shape = create_transition_shape(
           state_name_to_shape_lut[state.getName()],
           state_name_to_shape_lut[transition.getNextState()],
           get_info_string(transition),
           null
         );
+        graph_el_to_pb_el[transition_shape.id] = transition;
       }
     }
   }
