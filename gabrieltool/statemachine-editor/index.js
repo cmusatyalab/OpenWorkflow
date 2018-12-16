@@ -4,11 +4,97 @@ $(window).on("load", function () {
   var paper_el = $("#fsm-display");
   var paper = new joint.dia.Paper({
     el: paper_el,
-    width: 1800,
-    height: 10000,
+    width: $("#fsm-display").innerWidth,
+    height: window.innerHeight * 4,
     gridSize: 1,
     model: graph
   });
+
+  // paper object event call backs
+  var info = new joint.shapes.standard.Rectangle();
+  info.position(100, 100);
+  info.resize(100, 20);
+  info.attr({
+    body: {
+      visibility: 'visible',
+      cursor: 'default',
+      fill: 'blue',
+      stoke: 'black'
+    },
+    label: {
+      visibility: 'hidden',
+      text: 'Link clicked',
+      cursor: 'default',
+      fill: 'black',
+      fontSize: 12
+    }
+  });
+  info.addTo(graph);
+
+  function resetAll(paper) {
+    paper.drawBackground({
+      color: 'white'
+    });
+
+    var elements = paper.model.getElements();
+    for (var i = 0, ii = elements.length; i < ii; i++) {
+      var currentElement = elements[i];
+      currentElement.attr('body/stroke', 'black');
+    }
+
+    var links = paper.model.getLinks();
+    for (var j = 0, jj = links.length; j < jj; j++) {
+      var currentLink = links[j];
+      currentLink.attr('line/stroke', 'black');
+      currentLink.label(0, {
+        attrs: {
+          body: {
+            stroke: 'black'
+          }
+        }
+      });
+    }
+  }
+
+  paper.on('element:pointerdblclick', function (elementView) {
+    resetAll(this);
+
+    var currentElement = elementView.model;
+    currentElement.attr('body/stroke', 'orange');
+    currentElement.attr('body/fill', 'blue');
+  });
+
+  paper.on('link:pointerdblclick', function (linkView) {
+    resetAll(this);
+
+    var currentLink = linkView.model;
+    currentLink.attr('line/stroke', 'orange')
+    currentLink.label(0, {
+      attrs: {
+        body: {
+          stroke: 'orange'
+        }
+      }
+    });
+  });
+
+  paper.on('cell:pointerdblclick', function (cellView) {
+    var isElement = cellView.model.isElement();
+    var message = (isElement ? 'Element' : 'Link') + ' clicked';
+    info.attr('label/text', message);
+
+    info.attr('body/visibility', 'visible');
+    info.attr('label/visibility', 'visible');
+  });
+
+  paper.on('element:pointerdblclick', function (elementView) {
+    resetAll(this);
+
+    var currentElement = elementView.model;
+    currentElement.attr('body/stroke', 'orange')
+  });
+
+  // ===============================================================
 
   var state_per_row = 3;
   var state_shape_width = 150;
@@ -19,17 +105,22 @@ $(window).on("load", function () {
     .getElementById("file-input")
     .addEventListener("change", load_and_draw_fsm_file, false);
 
+  // alert box
   bootstrap_alert = function () {};
   bootstrap_alert.warning = function (message) {
-    $("#alert_placeholder").html(
+    $("#alert-placeholder").html(
       '<div class="alert alert-danger alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><span>' +
       message + '</span></div>');
   };
   bootstrap_alert.info = function (message) {
-    $("#alert_placeholder").html(
+    $("#alert-placeholder").html(
       '<div class="alert alert-info alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><span>' +
       message + '</span></div>');
   };
+
+  //element table
+  $('#elementTable').hide();
+
 
   function load_and_draw_fsm_file(e) {
     graph.clear();
@@ -40,12 +131,13 @@ $(window).on("load", function () {
     var reader = new FileReader();
     reader.onload = function (e) {
       var contents = e.target.result;
-      draw_fsm(contents);
+      var fsm = load_fsm(contents)
+      draw_fsm(fsm);
     };
     reader.readAsArrayBuffer(file);
   }
 
-  function draw_fsm(fsm_data) {
+  function load_fsm(fsm_data) {
     goog.require("proto.StateMachine");
     var fsm = null;
     try {
@@ -55,10 +147,45 @@ $(window).on("load", function () {
       throw err;
     }
     bootstrap_alert.info('Succesfully loaded State Machine:' + fsm.getName());
+    return fsm;
+  }
+
+  function draw_fsm(fsm) {
     var states = fsm.getStatesList();
     var state_name_to_shape_lut = draw_states(states);
     draw_transitions(states, state_name_to_shape_lut);
   }
+
+  // function populate_fsm_table(fsm) {
+  //   // element table
+  //   $('#elementTable').show();
+  //   $('#elementTable').DataTable({
+  //     // for bootstrap 4
+  //     dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+  //       "<'row'<'col-sm-12'tr>>" +
+  //       "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+  //     data: fsm_array,
+  //     columns: [{
+  //         title: "Name"
+  //       },
+  //       {
+  //         title: "Position"
+  //       },
+  //       {
+  //         title: "Office"
+  //       },
+  //       {
+  //         title: "Extn."
+  //       },
+  //       {
+  //         title: "Start date"
+  //       },
+  //       {
+  //         title: "Salary"
+  //       }
+  //     ]
+  //   });
+  // }
 
   function draw_states(states) {
     var state_name_to_shape_lut = {};
