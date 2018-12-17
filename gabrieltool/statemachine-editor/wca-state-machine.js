@@ -69,7 +69,8 @@ proto.TransitionPredicate.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     callableName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    callableKwargsMap: (f = msg.getCallableKwargsMap()) ? f.toObject(includeInstance, undefined) : []
+    callableKwargsMap: (f = msg.getCallableKwargsMap()) ? f.toObject(includeInstance, undefined) : [],
+    callableArgs: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -120,6 +121,10 @@ proto.TransitionPredicate.deserializeBinaryFromReader = function(msg, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readBytes, null, "");
          });
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCallableArgs(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -166,6 +171,13 @@ proto.TransitionPredicate.serializeBinaryToWriter = function(message, writer) {
   f = message.getCallableKwargsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeBytes);
+  }
+  f = message.getCallableArgs();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
   }
 };
 
@@ -215,6 +227,21 @@ proto.TransitionPredicate.prototype.getCallableKwargsMap = function(opt_noLazyCr
 
 proto.TransitionPredicate.prototype.clearCallableKwargsMap = function() {
   this.getCallableKwargsMap().clear();
+};
+
+
+/**
+ * optional string callable_args = 4;
+ * @return {string}
+ */
+proto.TransitionPredicate.prototype.getCallableArgs = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/** @param {string} value */
+proto.TransitionPredicate.prototype.setCallableArgs = function(value) {
+  jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -804,7 +831,8 @@ proto.Processor.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     callableName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    callableKwargsMap: (f = msg.getCallableKwargsMap()) ? f.toObject(includeInstance, undefined) : []
+    callableKwargsMap: (f = msg.getCallableKwargsMap()) ? f.toObject(includeInstance, undefined) : [],
+    callableArgs: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -855,6 +883,10 @@ proto.Processor.deserializeBinaryFromReader = function(msg, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readBytes, null, "");
          });
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCallableArgs(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -901,6 +933,13 @@ proto.Processor.serializeBinaryToWriter = function(message, writer) {
   f = message.getCallableKwargsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeBytes);
+  }
+  f = message.getCallableArgs();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
   }
 };
 
@@ -950,6 +989,21 @@ proto.Processor.prototype.getCallableKwargsMap = function(opt_noLazyCreate) {
 
 proto.Processor.prototype.clearCallableKwargsMap = function() {
   this.getCallableKwargsMap().clear();
+};
+
+
+/**
+ * optional string callable_args = 4;
+ * @return {string}
+ */
+proto.Processor.prototype.getCallableArgs = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/** @param {string} value */
+proto.Processor.prototype.setCallableArgs = function(value) {
+  jspb.Message.setProto3StringField(this, 4, value);
 };
 
 

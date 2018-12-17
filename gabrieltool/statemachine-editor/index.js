@@ -1,4 +1,6 @@
 $(document).ready(function () {
+
+  goog.require("proto.StateMachine");
   var graph = new joint.dia.Graph();
   var $paper = $("#fsm-display");
   var paper = new joint.dia.Paper({
@@ -9,6 +11,7 @@ $(document).ready(function () {
     model: graph
   });
   var graph_el_to_pb_el = {};
+  var fsm_pb = new proto.StateMachine();
 
   // paper object event call backs
   paper.on("link:pointerdblclick", function (linkView) {
@@ -194,12 +197,12 @@ $(document).ready(function () {
       var contents = e.target.result;
       var fsm = load_fsm(contents);
       draw_fsm(fsm);
+      fsm_pb = fsm;
     };
     reader.readAsArrayBuffer(file);
   }
 
   function load_fsm(fsm_data) {
-    goog.require("proto.StateMachine");
     var fsm = null;
     try {
       fsm = new proto.StateMachine.deserializeBinary(fsm_data);
@@ -342,8 +345,9 @@ $(document).ready(function () {
   }
 
   // ===================== modals ===============
+  $modal = $('#newModal');
+
   function clear_modal() {
-    $modal = $('#newModal');
     while ($modal.find("tbody").length > 1) {
       $modal.find("tbody:last").remove();
     }
@@ -351,25 +355,70 @@ $(document).ready(function () {
   $('.open-modal').click(function () {
     clear_modal();
     var pb_type = $(this).attr('pb-type');
-    var $state_modal_add = $("#newModalAdd");
+    var $modal_add = $("#newModalAdd");
+    var $new_table = $('#newTable');
     $('#newModal').attr('pb-type', pb_type);
     if (pb_type == 'state') {
       $('#newModalTitle').text('New State');
       $('#newModalAdd').val('Add Processor');
-      $state_modal_add.off('click');
-      $state_modal_add.click(function () {
+      $modal_add.off('click');
+      $modal_add.click(function () {
         table_add_callable_tbody($("#newTable"), "Processor Name", processor_zoo);
       });
     } else if (pb_type == 'transition') {
       $('#newModalTitle').text('New Transition');
       $('#newModalAdd').val('Add Predicate');
-      $state_modal_add.off('click');
-      $state_modal_add.click(function () {
+      var states = fsm_pb.getStatesList();
+      var state_options = {};
+      $.each(states, function (key, value) {
+        state_options[value.getName()] = value;
+      });
+      table_add_transition_basic_tbody($new_table, state_options);
+      $modal_add.off('click');
+      $modal_add.click(function () {
+        // start and end state
         table_add_callable_tbody($("#newTable"), "Predicate Name", predicate_zoo);
       });
     }
     $('#newModal').modal('toggle');
   });
+
+  function table_add_transition_basic_tbody($table, state_json) {
+    var $new_text_tbody = $("<tbody></tbody>");
+    var $new_text_tr = $("<tr></tr>");
+    //from state
+    var $from_select_td = $("<td></td>");
+    var $from_select = create_new_select_div(state_json).attr('name', 'from_state').css('width', '100%');
+    $from_select_td.append($from_select);
+
+    // to state
+    var $to_select_td = $("<td></td>");
+    var $to_select = create_new_select_div(state_json).attr('name', 'to_state').css('width', '100%');
+    $to_select_td.append($to_select);
+
+    // add them to tr
+    $new_text_tr.append("<td>From</td>");
+    $new_text_tr.append($from_select_td);
+    $new_text_tr.append("<td>To</td>");
+    $new_text_tr.append($to_select_td);
+    $new_text_tbody.append($new_text_tr);
+
+    // instructions
+    var $inst_input = $("<input type=\"text\" required></input>").addClass("form-control").attr('name', 'instruction');
+    var $inst_tr = $("<tr></tr>").append("<td>Instruction</td>");
+    $inst_tr.append($inst_input);
+    var $inst_tbody = $("<tbody></tbody>").append($inst_tr);
+
+    //add trs to table
+    $table.append($new_text_tbody);
+    $from_select.select2({
+      placeholder: "Please specify state",
+    });
+    $to_select.select2({
+      placeholder: "Please specify state"
+    });
+    $table.append($inst_tbody);
+  }
 
 
   function register_callable_tbody_callback(zoo) {
@@ -413,7 +462,7 @@ $(document).ready(function () {
 
   function create_new_select_div(zoo) {
     var $select = $('<select required></select>').addClass('select-new-row');
-    $select.append('<option></option>')
+    $select.append('<option></option>');
     $.each(zoo, function (key, value) {
       $select.append(
         $('<option></option').text(key)
@@ -464,14 +513,99 @@ $(document).ready(function () {
         $('<input type="submit">').hide().appendTo($form).click().remove();
       } else {
         var form_data = $form.serializeArray();
-        add_to_pb(form_data)
+        if ($modal.attr('pb-type') == 'state') {
+          add_state_to_pb(form_data);
+        } else if ($modal.attr('pb-type') == 'transition') {
+          add_transition_to_pb(form_data);
+        }
         console.log(form_data);
         $('#newModal').modal('toggle');
       }
     }
   );
 
-  function add_to_pb(data) {
-    //TODO(junjuew)
+  function add_state_to_pb(form_data) {
+    var state_pb = new proto.State;
+    var idx = 0;
+    state_pb.setName(form_data[idx]['value']);
+    idx++;
+    while (idx < form_data.length) {
+      // parse processor callable
+      var proc = new proto.Processor;
+      // proc name
+      proc.setName(form_data[idx]['value']);
+      idx++;
+      // callable type
+      proc_type = form_data[idx]['value']
+      proc.setCallableName(proc_type);
+      idx++;
+      // callable args
+      var args_length = Object.keys(processor_zoo[proc_type]).length;
+      var args = {};
+      for (i = 0; i < args_length; i++) {
+        args[form_data[idx]['name']] = form_data[idx]['value'];
+        idx++;
+      }
+      proc.setCallableArgs(JSON.stringify(args));
+      state_pb.addProcessors(proc);
+    }
+    fsm_pb.addStates(state_pb);
+  }
+
+  function find_state_pb(state_name) {
+    var state = null;
+    var states = fsm_pb.getStatesList();
+    var state_options = {};
+    $.each(states, function (idx, value) {
+      if (value.getName() == state_name){
+        state = value;
+      }
+    });
+    return state;
+  }
+
+  function add_transition_to_pb(form_data) {
+    var transition_pb = new proto.Transition;
+    var idx = 0;
+    // name
+    transition_pb.setName(form_data[idx]['value']);
+    idx++;
+    // get from state
+    var from_state = form_data[idx]['value'];
+    idx++;
+    // to state
+    transition_pb.setNextState(form_data[idx]['value']);
+    idx++;
+    // to instruction
+    var inst_pb = new proto.Instruction;
+    inst_pb.setAudio(form_data[idx]['value']);
+    transition_pb.setInstruction(inst_pb);
+    idx++;
+    // predicates
+    while (idx < form_data.length) {
+      // parse processor callable
+      var pred = new proto.TransitionPredicate;
+      // proc name
+      pred.setName(form_data[idx]['value']);
+      idx++;
+      // callable type
+      pred_type = form_data[idx]['value']
+      pred.setCallableName(pred_type);
+      idx++;
+      // callable args
+      var args_length = Object.keys(predicate_zoo[pred_type]).length;
+      var args = {};
+      for (i = 0; i < args_length; i++) {
+        args[form_data[idx]['name']] = form_data[idx]['value'];
+        idx++;
+      }
+      pred.setCallableArgs(JSON.stringify(args));
+      transition_pb.addProcessors(pred);
+    }
+
+    // find from state
+    from_state_pb = find_state_pb(from_state);
+    from_state_pb.addTransitions(transition_pb);
+    console.log(fsm_pb);
   }
 });
