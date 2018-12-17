@@ -25,26 +25,26 @@ $(document).ready(function () {
     info_box.display_state_info(graph_el_to_pb_el[el.id]);
   });
 
-  function display_info(element) {
-    $("#infoTable").show();
-    if (element instanceof proto.State) {
-      display_state_info(element);
-    } else if (element instanceof proto.Transition) {
-      repr += "Predicates: " + "\n";
-      var predicates = element.getPredicatesList();
-      for (var i = 0; i < predicates.length; i++) {
-        repr += predicates[i].getCallableName().toString() + "(\n";
-        // try to display bytes as ASCII
-        var kwargs = predicates[i].getCallableKwargsMap();
-        var entry_list = kwargs.getEntryList();
-        for (var j = 0; j < entry_list.length; j++) {
-          var val = new TextDecoder().decode(entry_list[j][1].slice(0, 50));
-          repr += entry_list[j][0] + "=" + val;
-        }
-        repr += ")\n";
-      }
-    }
-  }
+  // function display_info(element) {
+  //   $("#infoTable").show();
+  //   if (element instanceof proto.State) {
+  //     display_state_info(element);
+  //   } else if (element instanceof proto.Transition) {
+  //     repr += "Predicates: " + "\n";
+  //     var predicates = element.getPredicatesList();
+  //     for (var i = 0; i < predicates.length; i++) {
+  //       repr += predicates[i].getCallableName().toString() + "(\n";
+  //       // try to display bytes as ASCII
+  //       var kwargs = predicates[i].getCallableKwargsMap();
+  //       var entry_list = kwargs.getEntryList();
+  //       for (var j = 0; j < entry_list.length; j++) {
+  //         var val = new TextDecoder().decode(entry_list[j][1].slice(0, 50));
+  //         repr += entry_list[j][0] + "=" + val;
+  //       }
+  //       repr += ")\n";
+  //     }
+  //   }
+  // }
 
   // ===============================================================
   var processor_zoo = {};
@@ -64,6 +64,23 @@ $(document).ready(function () {
   document
     .getElementById("file-input")
     .addEventListener("change", load_and_draw_fsm_file, false);
+
+  function save_as_file(t, f, m) {
+    try {
+      var b = new Blob([t], {
+        type: m
+      });
+      saveAs(b, f);
+    } catch (e) {
+      window.open("data:" + m + "," + encodeURIComponent(t), '_blank', '');
+    }
+  }
+
+  $('#export').click(function (e) {
+    console.log('export');
+    var fsm_pb_serialized = fsm_pb.serializeBinary();
+    save_as_file(fsm_pb_serialized, "app.pbfsm", "text/binary");
+  });
 
   // alert box
   bootstrap_alert = function () {};
@@ -104,6 +121,7 @@ $(document).ready(function () {
   };
   info_box.table_data = [];
   info_box.table = null;
+
   info_box.display_state_info = function (state) {
     info_box.empty();
     // create the info list
@@ -125,7 +143,7 @@ $(document).ready(function () {
         new Array(
           processor.getName(),
           processor.getCallableName(),
-          processor.getCallableKwargsMap()
+          processor.getCallableArgs()
         )
       );
     }
@@ -145,6 +163,7 @@ $(document).ready(function () {
       ]
     });
   };
+
   info_box.display_transition_info = function (transition) {
     info_box.empty();
     // create the info list
@@ -166,7 +185,7 @@ $(document).ready(function () {
         new Array(
           predicate.getName(),
           predicate.getCallableName(),
-          predicate.getCallableKwargsMap()
+          predicate.getCallableArgs()
         )
       );
     }
@@ -200,6 +219,11 @@ $(document).ready(function () {
       fsm_pb = fsm;
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  function redraw_fsm() {
+    graph.clear();
+    draw_fsm(fsm_pb);
   }
 
   function load_fsm(fsm_data) {
@@ -518,8 +542,8 @@ $(document).ready(function () {
         } else if ($modal.attr('pb-type') == 'transition') {
           add_transition_to_pb(form_data);
         }
-        console.log(form_data);
         $('#newModal').modal('toggle');
+        redraw_fsm();
       }
     }
   );
@@ -557,7 +581,7 @@ $(document).ready(function () {
     var states = fsm_pb.getStatesList();
     var state_options = {};
     $.each(states, function (idx, value) {
-      if (value.getName() == state_name){
+      if (value.getName() == state_name) {
         state = value;
       }
     });
@@ -600,7 +624,7 @@ $(document).ready(function () {
         idx++;
       }
       pred.setCallableArgs(JSON.stringify(args));
-      transition_pb.addProcessors(pred);
+      transition_pb.addPredicates(pred);
     }
 
     // find from state
