@@ -338,10 +338,23 @@ $(document).ready(function () {
   }
 
   // ===================== modals ===============
-  var $state_modal_add = $("#newStateModalAdd");
+  $('.open-modal').click(function () {
+    var pb_type = $(this).attr('pb-type');
+    $('#newModal').attr('pb-type', pb_type);
+    if (pb_type == 'state') {
+      $('#newModalTitle').text('New State');
+      $('#newModalAdd').val('Add Processor');
+    } else if (pb_type == 'transition') {
+      $('#newModalTitle').text('New Transition');
+      $('#newModalAdd').val('Add Predicate');
+    }
+    $('#newModal').modal('toggle');
+  });
+
+  var $state_modal_add = $("#newModalAdd");
   register_callable_tbody_callback();
   $state_modal_add.click(function () {
-    table_add_callable_tbody($("#newStateTable"), "Processor Name");
+    table_add_callable_tbody($("#newTable"), "Processor Name");
   });
 
   function register_callable_tbody_callback() {
@@ -431,12 +444,12 @@ $(document).ready(function () {
         var form_data = $form.serializeArray();
         add_to_pb(form_data)
         console.log(form_data);
-        $('#newStateModal').modal('toggle');
+        $('#newModal').modal('toggle');
       }
     }
   );
 
-  function add_to_pb(data){
-
+  function add_to_pb(data) {
+    //TODO(junjuew)
   }
 });
