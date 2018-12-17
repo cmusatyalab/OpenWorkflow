@@ -40,7 +40,7 @@ def test_FasterRCNNOpenCVProcessor():
         proc = processor_zoo.FasterRCNNOpenCVProcessor(
             proto_path=os.path.join(data_dir, 'faster_rcnn_test.pt'),
             model_path=os.path.join(data_dir, 'model.caffemodel'),
-            labels=labels,
+            labels=labels
         )
         im = cv2.imread(os.path.join(data_dir, 'test.jpg'))
         st = time.time()

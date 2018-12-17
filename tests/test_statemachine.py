@@ -3,13 +3,12 @@
 """Tests for `statemachine` subpackage."""
 
 import functools
+import json
 import os
-import pickle
 
 import pytest
-
-from gabrieltool.statemachine import fsm, wca_state_machine_pb2
-from gabrieltool.statemachine import processor_zoo, predicate_zoo
+from gabrieltool.statemachine import (fsm, predicate_zoo, processor_zoo,
+                                      wca_state_machine_pb2)
 
 
 def test_protobuf_serialization(tmpdir):
@@ -40,7 +39,9 @@ def expected_transition_predicate_obj():
     expected_pred = wca_state_machine_pb2.TransitionPredicate()
     expected_pred.name = 'test_tp'
     expected_pred.callable_name = 'has_obj_cls'
-    expected_pred.callable_kwargs['cls_name'] = pickle.dumps('test_cls')
+    expected_pred.callable_args = json.dumps({
+        'cls_name': 'test_cls'
+    })
     return expected_pred
 
 
@@ -78,7 +79,7 @@ def expected_processor_obj():
     expected_obj = wca_state_machine_pb2.Processor()
     expected_obj.name = 'test_proc'
     expected_obj.callable_name = processor_zoo.DummyProcessor.__name__
-    expected_obj.callable_kwargs[fsm.Processor.PB_CONSTRUCTOR_KEY] = pickle.dumps({
+    expected_obj.callable_args = json.dumps({
         'dummy_input': 'dummy_input_value'
     })
     return expected_obj
@@ -102,7 +103,9 @@ def expected_transition_obj():
         predicates=[wca_state_machine_pb2.TransitionPredicate(
             name='test_tp',
             callable_name='has_obj_cls',
-            callable_kwargs={'cls_name': pickle.dumps('test_cls')}
+            callable_args=json.dumps(
+                {'cls_name': 'test_cls'}
+            )
         )],
         instruction=wca_state_machine_pb2.Instruction(
             name='test_inst',
@@ -179,9 +182,15 @@ def test_state_machine_serialization_one_state(state_obj, expected_state_obj):
     assert (actual == expected_obj.SerializeToString() or actual == expected_obj2.SerializeToString())
 
 
-def assert_processor_or_predicate_content_equal(actual, expected):
+def assert_processor_content_equal(actual, expected):
     assert actual.name == expected.name
-    assert actual.callable_obj.kwargs == expected.callable_obj.kwargs
+    assert actual.callable_obj == expected.callable_obj
+
+
+def assert_predicate_content_equal(actual, expected):
+    assert actual.name == expected.name
+    assert actual.callable_obj.func == expected.callable_obj.func
+    assert actual.callable_obj.keywords == expected.callable_obj.keywords
 
 
 def assert_transition_content_equal(actual, expected):
@@ -193,7 +202,7 @@ def assert_transition_content_equal(actual, expected):
     assert_state_content_equal(actual.next_state, expected.next_state)
     for (idx, actual_pred) in enumerate(actual.predicates):
         expected_pred = expected.predicates[idx]
-        assert_processor_or_predicate_content_equal(
+        assert_predicate_content_equal(
             actual_pred, expected_pred)
 
 
@@ -202,7 +211,7 @@ def assert_state_content_equal(actual, expected):
     # compare processors
     for (idx, actual_proc) in enumerate(actual.processors):
         expected_proc = expected.processors[idx]
-        assert_processor_or_predicate_content_equal(actual_proc, expected_proc)
+        assert_processor_content_equal(actual_proc, expected_proc)
     # compare transitions
     for (idx, actual_tran) in enumerate(actual.transitions):
         expected_tran = expected.transitions[idx]

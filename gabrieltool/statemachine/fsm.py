@@ -8,7 +8,7 @@ The data object is named as obj_<protobuf_msg_type>.
 from __future__ import absolute_import, division, print_function
 
 import functools
-import pickle
+import json
 
 from gabrieltool.statemachine import (predicate_zoo, processor_zoo,
                                       wca_state_machine_pb2)
@@ -87,6 +87,19 @@ class TransitionPredicate(FSMObjBase):
         super(TransitionPredicate, self).__init__(name)
         self._partial_obj = partial_obj
 
+    @property
+    def callable_obj(self):
+        return self._partial_obj
+
+    @callable_obj.setter
+    def callable_obj(self, val):
+        if type(val) is not functools.partial:
+            raise TypeError(
+                'Invalid type ({}). '
+                'TransitionPredicate\'s callable_obj requires '
+                'a functool.parital object.'.format(type(val)))
+        self._partial_obj = val
+
     def __call__(self, app_state):
         return self._partial_obj(app_state=app_state)
 
@@ -94,14 +107,12 @@ class TransitionPredicate(FSMObjBase):
         super(TransitionPredicate, self).from_desc(data)
         func = getattr(predicate_zoo, self._pb.callable_name)
         kwargs = {}
-        for (item, value) in self._pb.callable_kwargs.items():
-            kwargs[item] = pickle.loads(value)
+        kwargs = json.loads(self._pb.callable_args)
         self._partial_obj = functools.partial(func, **kwargs)
 
     def to_desc(self):
         self._pb.callable_name = self._partial_obj.func.__name__
-        for (item, value) in self._partial_obj.keywords.items():
-            self._pb.callable_kwargs[item] = pickle.dumps(value)
+        self._pb.callable_args = json.dumps(self._partial_obj.keywords)
         return super(TransitionPredicate, self).to_desc()
 
 
@@ -180,7 +191,6 @@ class Transition(FSMObjBase):
 
 class Processor(FSMObjBase):
     """Processsor is a FSM element that processes image in a state."""
-    PB_CONSTRUCTOR_KEY = 'init'
 
     def __init__(self, name=None, callable_obj=None):
         """
@@ -204,12 +214,12 @@ class Processor(FSMObjBase):
     def from_desc(self, data):
         super(Processor, self).from_desc(data)
         callable_class = getattr(processor_zoo, self._pb.callable_name)
-        initializer_args = self._pb.callable_kwargs[self.__class__.PB_CONSTRUCTOR_KEY]
-        self._callable_obj = callable_class.from_bytes(initializer_args)
+        initializer_args = json.loads(self._pb.callable_args)
+        self._callable_obj = callable_class.from_json(initializer_args)
 
     def to_desc(self):
         self._pb.callable_name = self._callable_obj.__class__.__name__
-        self._pb.callable_kwargs[self.__class__.PB_CONSTRUCTOR_KEY] = self._callable_obj.to_bytes()
+        self._pb.callable_args = json.dumps(self._callable_obj.kwargs)
         return super(Processor, self).to_desc()
 
 
@@ -308,7 +318,7 @@ class StateMachine(object):
                                                        desc.instruction)
         preds = [cls._load_generic_from_desc(
             TransitionPredicate, pred_desc)
-            for pred_desc in tran._predicates]
+            for pred_desc in desc.predicates]
         tran._predicates = preds
         tran.next_state = state_lut[desc.next_state]
         return tran

@@ -3,7 +3,8 @@
 """Abstract base classes for processors
 """
 import inspect
-import pickle
+import json
+import os
 from functools import wraps
 
 import cv2
@@ -11,8 +12,11 @@ import numpy as np
 from cv2 import dnn
 from logzero import logger
 
+GABRIEL_DEBUG = os.getenv('GABRIEL_DEBUG', False)
 
 # TODO (junjuew): move this to cvutil?
+
+
 def drawPred(frame, class_name, conf, left, top, right, bottom):
     # Draw a bounding box.
     cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0))
@@ -62,13 +66,22 @@ class SerializableProcessor(object):
     def __init__(self, *args, **kwargs):
         super(SerializableProcessor, self).__init__(*args, **kwargs)
 
-    def to_bytes(self):
-        return pickle.dumps(self.kwargs)
-
     @classmethod
-    def from_bytes(cls, byte_repr):
-        kwargs = pickle.loads(byte_repr)
-        return cls(**kwargs)
+    def from_json(cls, json_obj):
+        """Create a class instance from a json object.
+
+        Subclasses should overide this class depending on the input type of
+        their constructor.
+        """
+        return cls(**json_obj)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.kwargs == other.kwargs
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class DummyProcessor(SerializableProcessor):
@@ -99,12 +112,29 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
         self._labels = labels
         self._net = cv2.dnn.readNetFromCaffe(proto_path, model_path)
         self._conf_threshold = conf_threshold
+        logger.debug(
+            'Created a FasterRCNNOpenCVProcessor:\nDNN proto definition is at {}\n'
+            'model weight is at {}\nlabels are {}\nconf_threshold is {}'.format(
+                proto_path, model_path, self._labels, self._conf_threshold))
+
+    @classmethod
+    def from_json(cls, json_obj):
+        try:
+            kwargs = copy.copy(json_obj)
+            kwargs['labels'] = json.loads(json_obj['labels'])
+            kwargs['_conf_threshold'] = float(json_obj['_conf_threshold'])
+        except ValueError as e:
+            raise ValueError(
+                'Failed to convert json object to {} instance. '
+                'The input json object is {}'.format(cls.__name__,
+                                                     json_obj))
+        return cls(**json_obj)
 
     def _getOutputsNames(self, net):
         layersNames = net.getLayerNames()
         return [layersNames[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-    def __call__(self, image, debug=False):
+    def __call__(self, image):
         height, width = image.shape[:2]
 
         # resize image to correct size
@@ -161,7 +191,7 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
                 results[self._labels[classId]] = []
             results[self._labels[classId]].append([left, top, left+width, top+height, confidence, classId])
 
-        if debug:
+        if GABRIEL_DEBUG:
             debug_image = image
             for (class_name, detections) in results.items():
                 for detection in detections:
@@ -169,5 +199,5 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
                     debug_image = drawPred(debug_image, class_name, conf, left, top, right, bottom)
             cv2.imshow('debug', debug_image)
             cv2.waitKey(1)
-
+        logger.debug('results: {}'.format(results))
         return results
