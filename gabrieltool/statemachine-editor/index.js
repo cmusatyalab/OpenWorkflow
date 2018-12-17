@@ -78,6 +78,9 @@ $(document).ready(function () {
 
   $('#export').click(function (e) {
     console.log('export');
+    if (fsm_pb.getStartState() == "") {
+      fsm_pb.setStartState(fsm_pb.getStatesList()[0].getName());
+    }
     var fsm_pb_serialized = fsm_pb.serializeBinary();
     save_as_file(fsm_pb_serialized, "app.pbfsm", "text/binary");
   });
