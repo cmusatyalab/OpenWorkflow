@@ -45,8 +45,12 @@ $(document).ready(function () {
 
   // ===============================================================
   var processor_zoo = {};
+  var predicate_zoo = {};
   $.getJSON("processor-zoo.json", function (data) {
     processor_zoo = data;
+  });
+  $.getJSON("predicate-zoo.json", function (data) {
+    predicate_zoo = data;
   });
   var state_shape_width = 50;
   var state_shape_height = 50;
@@ -338,34 +342,45 @@ $(document).ready(function () {
   }
 
   // ===================== modals ===============
+  function clear_modal() {
+    $modal = $('#newModal');
+    while ($modal.find("tbody").length > 1) {
+      $modal.find("tbody:last").remove();
+    }
+  }
   $('.open-modal').click(function () {
+    clear_modal();
     var pb_type = $(this).attr('pb-type');
+    var $state_modal_add = $("#newModalAdd");
     $('#newModal').attr('pb-type', pb_type);
     if (pb_type == 'state') {
       $('#newModalTitle').text('New State');
       $('#newModalAdd').val('Add Processor');
+      $state_modal_add.off('click');
+      $state_modal_add.click(function () {
+        table_add_callable_tbody($("#newTable"), "Processor Name", processor_zoo);
+      });
     } else if (pb_type == 'transition') {
       $('#newModalTitle').text('New Transition');
       $('#newModalAdd').val('Add Predicate');
+      $state_modal_add.off('click');
+      $state_modal_add.click(function () {
+        table_add_callable_tbody($("#newTable"), "Predicate Name", predicate_zoo);
+      });
     }
     $('#newModal').modal('toggle');
   });
 
-  var $state_modal_add = $("#newModalAdd");
-  register_callable_tbody_callback();
-  $state_modal_add.click(function () {
-    table_add_callable_tbody($("#newTable"), "Processor Name");
-  });
 
-  function register_callable_tbody_callback() {
+  function register_callable_tbody_callback(zoo) {
     $(".select-new-row").on("select2:select", function (e) {
-      var proc_type = e.params.data.text;
-      proc_args = processor_zoo[proc_type];
-      table_set_row_args($(e.target).parents("tbody"), proc_args);
+      var callable_type = e.params.data.text;
+      args = zoo[callable_type];
+      table_set_row_args($(e.target).parents("tbody"), args);
     });
   }
 
-  function table_add_callable_tbody($table, name_label) {
+  function table_add_callable_tbody($table, name_label, zoo) {
     var $new_callable = $("<tbody></tbody>");
     var $new_callable_top_row = $("<tr></tr>");
     var $state_modal_proc_td_name = $("<td></td>").text(name_label);
@@ -376,7 +391,7 @@ $(document).ready(function () {
     $new_callable_top_row.append($state_modal_proc_td_name);
     $new_callable_top_row.append($state_modal_proc_td_input);
     $new_callable_top_row.append($("<td>Type</td>"));
-    var $new_select_div = $(create_new_select_div()).attr('name', 'callable_type');
+    var $new_select_div = create_new_select_div(zoo).attr('name', 'callable_type');
     var $new_type_td = $("<td></td>").append($new_select_div);
     $new_callable_top_row.append($new_type_td);
     var $delete_btn = $("<input type=\"button\" class=\"select-new-row-btn-del btn btn-md btn-danger\" value=\"Delete\" \">").on(
@@ -393,11 +408,18 @@ $(document).ready(function () {
     $new_select_div.select2({
       placeholder: "Please specify type"
     });
-    register_callable_tbody_callback();
+    register_callable_tbody_callback(zoo);
   }
 
-  function create_new_select_div() {
-    return '<select class="select-new-row" required><option ></option><option>FasterRCNNOpenCVProcessor</option><option>DummyProcessor</option></select>';
+  function create_new_select_div(zoo) {
+    var $select = $('<select required></select>').addClass('select-new-row');
+    $select.append('<option></option>')
+    $.each(zoo, function (key, value) {
+      $select.append(
+        $('<option></option').text(key)
+      );
+    });
+    return $select;
   }
 
   function table_set_row_args($tbody, args) {
