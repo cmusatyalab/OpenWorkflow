@@ -11,19 +11,19 @@ $(document).ready(function () {
   var graph_el_to_pb_el = {};
 
   // paper object event call backs
-  paper.on('link:pointerdblclick', function (linkView) {
+  paper.on("link:pointerdblclick", function (linkView) {
     var el = linkView.model;
     info_box.display_transition_info(graph_el_to_pb_el[el.id]);
   });
 
-  paper.on('element:pointerdblclick', function (elementView) {
+  paper.on("element:pointerdblclick", function (elementView) {
     var el = elementView.model;
     // el.attr('circle/fill', 'aqua');
     info_box.display_state_info(graph_el_to_pb_el[el.id]);
   });
 
   function display_info(element) {
-    $('#infoTable').show();
+    $("#infoTable").show();
     if (element instanceof proto.State) {
       display_state_info(element);
     } else if (element instanceof proto.Transition) {
@@ -49,8 +49,8 @@ $(document).ready(function () {
   var state_shape_height = 50;
   var state_spacing_x = 250;
   var state_spacing_y = 150;
-  var state_per_row = Math.floor($paper.width() /
-    (state_shape_width + state_spacing_x)) + 1;
+  var state_per_row =
+    Math.floor($paper.width() / (state_shape_width + state_spacing_x)) + 1;
   document
     .getElementById("file-input")
     .addEventListener("change", load_and_draw_fsm_file, false);
@@ -60,23 +60,32 @@ $(document).ready(function () {
   bootstrap_alert.warning = function (message) {
     $("#alert-placeholder").html(
       '<div class="alert alert-danger alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><span>' +
-      message + '</span></div>');
+      message +
+      "</span></div>"
+    );
   };
   bootstrap_alert.info = function (message) {
     $("#alert-placeholder").html(
       '<div class="alert alert-info alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><span>' +
-      message + '</span></div>');
+      message +
+      "</span></div>"
+    );
   };
 
   // element info region
   info_box = function () {};
   info_box.add_list = function () {
-    var $list = $('<div></div>').addClass("list-group");
+    var $list = $("<div></div>").addClass("list-group");
     $("#infoBox").append($list);
     return $list;
   };
   info_box.add_table = function () {
-    var $info_table = $('<table></table>').css("width", "100%").addClass("display").addClass("table").addClass("table-striped").addClass("table-bordered");
+    var $info_table = $("<table></table>")
+      .css("width", "100%")
+      .addClass("display")
+      .addClass("table")
+      .addClass("table-striped")
+      .addClass("table-bordered");
     $("#infoBox").append($info_table);
     return $info_table;
   };
@@ -89,7 +98,9 @@ $(document).ready(function () {
     info_box.empty();
     // create the info list
     var $info_list = info_box.add_list();
-    var $info_list_name = $('<h2></h2>').addClass("list-group-item").text("State: " + state.getName());
+    var $info_list_name = $("<h2></h2>")
+      .addClass("list-group-item")
+      .text("State: " + state.getName());
     $info_list.append($info_list_name);
     var $info_table = info_box.add_table();
     // create the info table
@@ -100,9 +111,13 @@ $(document).ready(function () {
     var processors = state.getProcessorsList();
     for (var i = 0; i < processors.length; i++) {
       var processor = processors[i];
-      info_box.table_data.push(new Array(processor.getName(),
-        processor.getCallableName(),
-        processor.getCallableKwargsMap()));
+      info_box.table_data.push(
+        new Array(
+          processor.getName(),
+          processor.getCallableName(),
+          processor.getCallableKwargsMap()
+        )
+      );
     }
     info_box.table = $info_table.DataTable({
       // for bootstrap 4
@@ -116,7 +131,7 @@ $(document).ready(function () {
         },
         {
           title: "Parameters"
-        },
+        }
       ]
     });
   };
@@ -124,7 +139,9 @@ $(document).ready(function () {
     info_box.empty();
     // create the info list
     var $info_list = info_box.add_list();
-    var $info_list_name = $('<h2></h2>').addClass("list-group-item").text("Transition: " + transition.getName());
+    var $info_list_name = $("<h2></h2>")
+      .addClass("list-group-item")
+      .text("Transition: " + transition.getName());
     $info_list.append($info_list_name);
     var $info_table = info_box.add_table();
     // create the info table
@@ -135,9 +152,13 @@ $(document).ready(function () {
     var predicates = transition.getPredicatesList();
     for (var i = 0; i < predicates.length; i++) {
       var predicate = predicates[i];
-      info_box.table_data.push(new Array(predicate.getName(),
-        predicate.getCallableName(),
-        predicate.getCallableKwargsMap()));
+      info_box.table_data.push(
+        new Array(
+          predicate.getName(),
+          predicate.getCallableName(),
+          predicate.getCallableKwargsMap()
+        )
+      );
     }
     info_box.table = $info_table.DataTable({
       dom: "<'row'<'col-sm-12'tr>><'row'<'col-sm-12 col-md-6'f>><'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
@@ -150,7 +171,7 @@ $(document).ready(function () {
         },
         {
           title: "Parameters"
-        },
+        }
       ]
     });
   };
@@ -164,7 +185,7 @@ $(document).ready(function () {
     var reader = new FileReader();
     reader.onload = function (e) {
       var contents = e.target.result;
-      var fsm = load_fsm(contents)
+      var fsm = load_fsm(contents);
       draw_fsm(fsm);
     };
     reader.readAsArrayBuffer(file);
@@ -176,10 +197,10 @@ $(document).ready(function () {
     try {
       fsm = new proto.StateMachine.deserializeBinary(fsm_data);
     } catch (err) {
-      bootstrap_alert.warning('Failed to Load the File. Invalid File Format.');
+      bootstrap_alert.warning("Failed to Load the File. Invalid File Format.");
       throw err;
     }
-    bootstrap_alert.info('Succesfully loaded State Machine:' + fsm.getName());
+    bootstrap_alert.info("Succesfully loaded State Machine:" + fsm.getName());
     return fsm;
   }
 
@@ -282,12 +303,7 @@ $(document).ready(function () {
     return cell;
   }
 
-  function create_transition_shape(
-    source,
-    target,
-    predicate,
-    instruction
-  ) {
+  function create_transition_shape(source, target, predicate, instruction) {
     var cell = new joint.shapes.fsa.Arrow({
       source: {
         id: source.id
@@ -312,77 +328,81 @@ $(document).ready(function () {
             }
           }
         }
-      ],
+      ]
     });
     graph.addCell(cell);
     return cell;
   }
 
-
   // ===================== modals ===============
-  var $state_modal_add = $('#newStateModalAdd');
-  set_select_new_row_callable();
+  var $state_modal_add = $("#newStateModalAdd");
+  register_callable_tbody_callback();
   $state_modal_add.click(function () {
-    table_add_new_callable_tbody($('#newStateTable'), 'Processor Name');
+    table_add_new_callable_tbody($("#newStateTable"), "Processor Name");
   });
 
-  function set_select_new_row_callable() {
-    $('.select-new-row').on('select2:select', function (e) {
+  function register_callable_tbody_callback() {
+    $(".select-new-row").on("select2:select", function (e) {
       var proc_type = e.params.data.text;
       proc_args = procs[proc_type];
-      table_set_row_args($(e.target).parents('tbody'), proc_args);
+      table_set_row_args($(e.target).parents("tbody"), proc_args);
+    });
+    $(".select-new-row-btn-delete").click(function (event) {
+      $(this)
+        .closest("tbody")
+        .remove();
     });
   }
 
   function table_add_new_callable_tbody($table, name_label) {
-    var $new_callable = $('<tbody></tbody>');
-    var $new_callable_top_row = $('<tr></tr>');
-    var $state_modal_proc_td_name = $('<td></td>').text(name_label);
-    var $state_modal_proc_td_input = $('<td></td>');
-    var $state_modal_proc_input = $('<input></input>').addClass('form-control');
+    var $new_callable = $("<tbody></tbody>");
+    var $new_callable_top_row = $("<tr></tr>");
+    var $state_modal_proc_td_name = $("<td></td>").text(name_label);
+    var $state_modal_proc_td_input = $("<td></td>");
+    var $state_modal_proc_input = $("<input type=\"text\"></input>").addClass("form-control");
     $state_modal_proc_td_input.append($state_modal_proc_input);
 
     $new_callable_top_row.append($state_modal_proc_td_name);
     $new_callable_top_row.append($state_modal_proc_td_input);
-    $new_callable_top_row.append(
-      $('<td>Type</td>')
-    );
+    $new_callable_top_row.append($("<td>Type</td>"));
     var $new_select_div = $(create_new_select_div());
-    $new_callable_top_row.append($new_select_div);
+    var $new_type_td = $("<td></td>").append($new_select_div);
+    $new_callable_top_row.append($new_type_td);
+    $new_callable_top_row.append($("<td><input type=\"button\" class=\"select-new-row-btn-del btn btn-md btn-danger\" value=\"Delete\"></td>"));
+    $new_callable.append($new_callable_top_row);
+    $table.children("tbody:last").after($new_callable);
     $new_select_div.select2({
       placeholder: "Please specify type"
     });
-    $new_callable.append($new_callable_top_row);
-    $table.children('tbody:last').after($new_callable);
-    set_select_new_row_callable();
+    register_callable_tbody_callback();
   }
 
   function create_new_select_div() {
-    return "<select class=\"select-new-row\"><option ></option><option>FasterRCNNOpenCVProcessor</option><option>DummyProcessor</option></select>";
+    return '<select class="select-new-row"><option ></option><option>FasterRCNNOpenCVProcessor</option><option>DummyProcessor</option></select>';
   }
 
   function table_set_row_args($tbody, args) {
     var args_per_row = 2;
     var args_idx = 0;
     // remove arg tr if there is one
-    while ($tbody.children('tr').length > 1) {
-      $tbody.children('tr:last').remove();
+    while ($tbody.children("tr").length > 1) {
+      $tbody.children("tr:last").remove();
     }
 
     // add arg td
     var add_arg_td = function (key, value) {
-      $tbody.find('tr:last').append(
-        $('<td></td>').text(key)
-      );
-      $tbody.find('tr:last').append(
-        $('<td></td>').append(
-          $('<input type="text" class="form-control" ></input>').val(value)
-        )
-      );
+      $tbody.find("tr:last").append($("<td></td>").text(key));
+      $tbody
+        .find("tr:last")
+        .append(
+          $("<td></td>").append(
+            $('<input type="text" class="form-control" ></input>').val(value)
+          )
+        );
     };
     for (var key in args) {
       if (args_idx % args_per_row == 0) {
-        $tbody.append('<tr></tr>');
+        $tbody.append("<tr></tr>");
       }
       if (args.hasOwnProperty(key)) {
         add_arg_td(key, args[key]);
@@ -391,10 +411,7 @@ $(document).ready(function () {
     }
   }
 
-  $("#newStateTable").on("click", ".ibtnDel", function (event) {
-    $(this).closest("tr").remove();
-  });
-  $('#procTypeSelect').select2({
+  $("#procTypeSelect").select2({
     placeholder: "Please specify type"
   });
   var procs = {};
