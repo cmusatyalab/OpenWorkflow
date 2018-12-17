@@ -4,7 +4,7 @@
 
 
 def has_obj_cls(app_state, cls_name):
-    return cls_name in app_state
+    return (cls_name in app_state)
 
 
 def always(app_state):
