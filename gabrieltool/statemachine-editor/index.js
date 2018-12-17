@@ -44,7 +44,10 @@ $(document).ready(function () {
   }
 
   // ===============================================================
-
+  var processor_zoo = {};
+  $.getJSON("processor-zoo.json", function (data) {
+    processor_zoo = data;
+  });
   var state_shape_width = 50;
   var state_shape_height = 50;
   var state_spacing_x = 250;
@@ -344,7 +347,7 @@ $(document).ready(function () {
   function register_callable_tbody_callback() {
     $(".select-new-row").on("select2:select", function (e) {
       var proc_type = e.params.data.text;
-      proc_args = procs[proc_type];
+      proc_args = processor_zoo[proc_type];
       table_set_row_args($(e.target).parents("tbody"), proc_args);
     });
     $(".select-new-row-btn-delete").click(function (event) {
@@ -414,8 +417,9 @@ $(document).ready(function () {
   $("#procTypeSelect").select2({
     placeholder: "Please specify type"
   });
-  var procs = {};
-  $.getJSON("processor-zoo.json", function (data) {
-    procs = data;
-  });
+
+  function save_modal_info(e) {
+
+  }
+
 });
