@@ -357,19 +357,18 @@ $(document).ready(function () {
     var $new_callable_top_row = $("<tr></tr>");
     var $state_modal_proc_td_name = $("<td></td>").text(name_label);
     var $state_modal_proc_td_input = $("<td></td>");
-    var $state_modal_proc_input = $("<input type=\"text\"></input>").addClass("form-control");
+    var $state_modal_proc_input = $("<input type=\"text\" required></input>").addClass("form-control").attr('name', 'callable_name');
     $state_modal_proc_td_input.append($state_modal_proc_input);
 
     $new_callable_top_row.append($state_modal_proc_td_name);
     $new_callable_top_row.append($state_modal_proc_td_input);
     $new_callable_top_row.append($("<td>Type</td>"));
-    var $new_select_div = $(create_new_select_div());
+    var $new_select_div = $(create_new_select_div()).attr('name', 'callable_type');
     var $new_type_td = $("<td></td>").append($new_select_div);
     $new_callable_top_row.append($new_type_td);
     var $delete_btn = $("<input type=\"button\" class=\"select-new-row-btn-del btn btn-md btn-danger\" value=\"Delete\" \">").on(
       'click',
       function () {
-        console.log('called');
         $(this)
           .closest("tbody")
           .remove();
@@ -385,7 +384,7 @@ $(document).ready(function () {
   }
 
   function create_new_select_div() {
-    return '<select class="select-new-row"><option ></option><option>FasterRCNNOpenCVProcessor</option><option>DummyProcessor</option></select>';
+    return '<select class="select-new-row" required><option ></option><option>FasterRCNNOpenCVProcessor</option><option>DummyProcessor</option></select>';
   }
 
   function table_set_row_args($tbody, args) {
@@ -403,7 +402,7 @@ $(document).ready(function () {
         .find("tr:last")
         .append(
           $("<td></td>").append(
-            $('<input type="text" class="form-control" ></input>').val(value)
+            $('<input type="text" class="form-control" required></input>').val(value).attr('name', key)
           )
         );
     };
@@ -422,8 +421,22 @@ $(document).ready(function () {
     placeholder: "Please specify type"
   });
 
-  function save_modal_info(e) {
+  $('#modalSaveBtn').click(
+    function () {
+      $form = $('#modalForm');
+      if (!$form[0].checkValidity()) {
+        // cause the browser to display the native HTML5 error messages.
+        $('<input type="submit">').hide().appendTo($form).click().remove();
+      } else {
+        var form_data = $form.serializeArray();
+        add_to_pb(form_data)
+        console.log(form_data);
+        $('#newStateModal').modal('toggle');
+      }
+    }
+  );
+
+  function add_to_pb(data){
 
   }
-
 });
