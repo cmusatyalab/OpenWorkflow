@@ -341,7 +341,7 @@ $(document).ready(function () {
   var $state_modal_add = $("#newStateModalAdd");
   register_callable_tbody_callback();
   $state_modal_add.click(function () {
-    table_add_new_callable_tbody($("#newStateTable"), "Processor Name");
+    table_add_callable_tbody($("#newStateTable"), "Processor Name");
   });
 
   function register_callable_tbody_callback() {
@@ -350,14 +350,9 @@ $(document).ready(function () {
       proc_args = processor_zoo[proc_type];
       table_set_row_args($(e.target).parents("tbody"), proc_args);
     });
-    $(".select-new-row-btn-delete").click(function (event) {
-      $(this)
-        .closest("tbody")
-        .remove();
-    });
   }
 
-  function table_add_new_callable_tbody($table, name_label) {
+  function table_add_callable_tbody($table, name_label) {
     var $new_callable = $("<tbody></tbody>");
     var $new_callable_top_row = $("<tr></tr>");
     var $state_modal_proc_td_name = $("<td></td>").text(name_label);
@@ -371,7 +366,16 @@ $(document).ready(function () {
     var $new_select_div = $(create_new_select_div());
     var $new_type_td = $("<td></td>").append($new_select_div);
     $new_callable_top_row.append($new_type_td);
-    $new_callable_top_row.append($("<td><input type=\"button\" class=\"select-new-row-btn-del btn btn-md btn-danger\" value=\"Delete\"></td>"));
+    var $delete_btn = $("<input type=\"button\" class=\"select-new-row-btn-del btn btn-md btn-danger\" value=\"Delete\" \">").on(
+      'click',
+      function () {
+        console.log('called');
+        $(this)
+          .closest("tbody")
+          .remove();
+      }
+    );
+    $new_callable_top_row.append($("<td></td>").append($delete_btn));
     $new_callable.append($new_callable_top_row);
     $table.children("tbody:last").after($new_callable);
     $new_select_div.select2({
