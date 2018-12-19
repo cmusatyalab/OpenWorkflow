@@ -38,6 +38,11 @@ class App extends Component {
             </ButtonToolbar>
           </Col>
         </Row>
+      <footer>
+        <Container>
+          <span className="text-muted">Copyright Carnegie Mellon University</span>
+        </Container>
+      </footer>
       </Container>
     );
   }
