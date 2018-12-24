@@ -1,4 +1,12 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project was bootstrapped with [Create React
+App](https://github.com/facebook/create-react-app).
+
+## Generate JS Protobuf library from .proto file
+
+Run (gen-jspb.sh)[gen-jspb.sh].
+To generate the proper protobuf js, "/* eslint-disable */" needs to be added to
+the top of the file. The gen-jspb.sh script does this.
+See (here)[https://github.com/improbable-eng/grpc-web/issues/96#issuecomment-347871452].
 
 ## Available Scripts
 
