@@ -10,8 +10,7 @@ import ToolBar from "./toolbar.js";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
-  console.log("load_fsm called");
-  var fsm = null;
+  let fsm = null;
   try {
     fsm = new fsmPb.StateMachine.deserializeBinary(fsmData);
   } catch (err) {
@@ -71,25 +70,28 @@ class App extends Component {
   onImport(e, fileArray) {
     fileArray.forEach(result => {
       const e = result[0];
+      console.log(typeof(e.target.result));
       let fileContent = e.target.result;
+      console.log(typeof(fileContent));
       let fsm = null;
       try {
         fsm = loadFsm(fileContent);
+        this.setState({ fsm: fsm });
+        console.log(this.state.fsm);
+        this.setState({
+          alertMsg: {
+            type: "info",
+            msg: "Success! State machine imported."
+          }
+        });
       } catch (err) {
         this.setState({
           alertMsg: {
             type: "danger",
-            msg: "Incorrect File Format. Failed to import the file."
+            msg: "Incorrect File Format. Failed to import the file. \n" + err,
           }
         });
       }
-      this.setState({ fsm: fsm });
-      this.setState({
-        alertMsg: {
-          type: "info",
-          msg: "Success! State machine imported."
-        }
-      });
     });
   }
 }

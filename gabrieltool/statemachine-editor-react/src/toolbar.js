@@ -18,7 +18,7 @@ const ToolBar = ({
     <Row>
       <ButtonGroup>
         <Col sm={4}>
-          <FileReaderInput as="binary" onChange={onImport}>
+          <FileReaderInput as="buffer" onChange={onImport}>
             <Button variant="primary">Import</Button>
           </FileReaderInput>
         </Col>
