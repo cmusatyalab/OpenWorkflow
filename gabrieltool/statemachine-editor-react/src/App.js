@@ -23,6 +23,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.onImport = this.onImport.bind(this);
+    this.alert = this.alert.bind(this);
     this.state = {
       fsm: null,
       alertMsg: {
@@ -45,7 +46,7 @@ class App extends Component {
         <Row>
           <Col sm={6} style={{ backgroundColor: "lavender" }}>
             <h4>Diagram</h4>
-            <Diagram />
+            <Diagram fsm={this.fsm}/>
           </Col>
           <Col sm={6}>
             <Row>
@@ -67,30 +68,29 @@ class App extends Component {
     );
   }
 
+  alert(type, msg) {
+    this.setState({
+      alertMsg: {
+        type: type,
+        msg: msg
+      }
+    });
+  }
+
   onImport(e, fileArray) {
     fileArray.forEach(result => {
       const e = result[0];
-      console.log(typeof(e.target.result));
+      console.log(typeof e.target.result);
       let fileContent = e.target.result;
-      console.log(typeof(fileContent));
+      console.log(typeof fileContent);
       let fsm = null;
       try {
         fsm = loadFsm(fileContent);
         this.setState({ fsm: fsm });
         console.log(this.state.fsm);
-        this.setState({
-          alertMsg: {
-            type: "info",
-            msg: "Success! State machine imported."
-          }
-        });
+        this.alert("info", "Success! State machine imported.");
       } catch (err) {
-        this.setState({
-          alertMsg: {
-            type: "danger",
-            msg: "Incorrect File Format. Failed to import the file. \n" + err,
-          }
-        });
+        this.alert("danger", "Incorrect File Format. Failed to import the file. \n" + err)
       }
     });
   }
