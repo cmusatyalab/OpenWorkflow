@@ -9,7 +9,6 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
 import joint from 'jointjs';
-import React from 'react';
 
 joint.shapes.basic.Circle.define('fsa.State', {
     attrs: {
@@ -75,41 +74,3 @@ joint.dia.Link.define('fsa.Arrow', {
     },
     smooth: true
 });
-
-export default joint;
-
-// export class State extends React.Component {
-//     componentDidMount() {
-//         const state = this.props.state;
-
-//         const rect = new joint.shapes.fsa.State({
-//             position: {
-//                 x: state.x,
-//                 y: state.y
-//             },
-//             size: {
-//                 width: 100,
-//                 height: 30
-//             },
-//             attrs: {
-//                 rect: {
-//                     fill: 'blue'
-//                 },
-//                 text: {
-//                     text: state.name,
-//                     fill: 'white'
-//                 }
-//             }
-//         });
-//         rect.set('id', state.id);
-
-//         rect.on('change:position', (event) => {
-//             this.props.onChangedPosition(state.id, event.attributes.position.x, event.attributes.position.y);
-//         });
-//         this.props.container.push(rect);
-//     }
-
-//     render() {
-//         return null;
-//     }
-// }

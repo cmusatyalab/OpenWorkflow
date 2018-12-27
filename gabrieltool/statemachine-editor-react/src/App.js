@@ -46,7 +46,7 @@ class App extends Component {
         <Row>
           <Col sm={6} style={{ backgroundColor: "lavender" }}>
             <h4>Diagram</h4>
-            <Diagram fsm={this.fsm}/>
+            <Diagram fsm={this.state.fsm}/>
           </Col>
           <Col sm={6}>
             <Row>
