@@ -59,18 +59,3 @@ joint.dia.Element.define('fsa.EndState', {
 }, {
     markup: '<g class="rotatable"><g class="scalable"><circle class="outer"/><circle class="inner"/></g></g>',
 });
-
-joint.dia.Link.define('fsa.Arrow', {
-    attrs: {
-        '.marker-target': {
-            d: 'M 10 0 L 0 5 L 10 10 z'
-        },
-        '.link-tools': {
-            display: 'none'
-        },
-        '.tool-remove': {
-            display: 'none'
-        }
-    },
-    smooth: true
-});

@@ -35,3 +35,11 @@
     transform: rotate(360deg);
   }
 }
+
+/* Force react-tables to show the complete field by breaking lines  */
+.rt-th {
+  white-space: normal !important;
+}
+.rt-td {
+  white-space: normal !important;
+}

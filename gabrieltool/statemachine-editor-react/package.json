@@ -7,11 +7,13 @@
     "google-protobuf": "^3.6.1",
     "jointjs": "^2.2.1",
     "jquery": "^3.1.1",
+    "match-sorter": "^2.3.0",
     "react": "^16.7.0",
     "react-bootstrap": "^1.0.0-beta.3",
     "react-dom": "^16.6.3",
     "react-file-reader-input": "^2.0.0",
-    "react-scripts": "2.1.1"
+    "react-scripts": "2.1.1",
+    "react-table": "^6.8.6"
   },
   "scripts": {
     "start": "react-scripts start",

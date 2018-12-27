@@ -74,17 +74,20 @@ export class Diagram extends Component {
   constructor(props) {
     super(props);
     this.graph = new joint.dia.Graph();
-    this.cells = [];
     this.state_shape_width = 50;
     this.state_shape_height = 50;
     this.state_spacing_x = 250;
     this.state_spacing_y = 150;
     this.state_per_row = 3;
+    this.cellId2FSMElement = {};
     this.renderAllStates = this.renderAllStates.bind(this);
     this.renderAllTransitions = this.renderAllTransitions.bind(this);
+    this.getStateName2CellMap = this.getStateName2CellMap.bind(this);
+    this.clearGraph = this.clearGraph.bind(this);
   }
 
   componentDidMount() {
+    const { fsm, onClickCell } = this.props;
     this.$el = $(this.el);
     const paper = new joint.dia.Paper({
       el: this.$el,
@@ -93,23 +96,21 @@ export class Diagram extends Component {
       gridSize: 1,
       model: this.graph
     });
+    paper.on("cell:pointerdblclick", onClickCell);
     this.state_per_row =
       Math.floor(
         parseInt(paper.options.width, 10) /
           (this.state_shape_width + this.state_spacing_x)
       ) + 1;
-
-    this.graph.addCells(this.cells);
   }
 
   componentWillUnmount() {
     this.graph.clear();
+    this.cellId2FSMElement = {};
   }
 
   componentDidUpdate() {
     console.log("called compnenet did update");
-    // this.graph.clear();
-    // this.graph.addCells(this.cells);
   }
 
   handleStateCallback(cell) {
@@ -120,51 +121,65 @@ export class Diagram extends Component {
   renderAllStates(fsm) {
     console.log("called render all states");
     const stateCells = fsm.getStatesList().map((state, idx) => {
-      return create_state_cell(
+      const cell = create_state_cell(
         Math.floor(idx % this.state_per_row) * this.state_spacing_x,
         Math.floor(idx / this.state_per_row) * this.state_spacing_y,
         state.getName()
       );
-    });
-    this.graph.addCells(stateCells);
+      this.addGraphCellWithRef(cell, state);
+    }, this);
     return stateCells;
   }
 
   renderAllTransitions(fsm) {
     const states = fsm.getStatesList();
-    const stateJointCells = this.graph.getElements();
-    console.log(
-      "after getting all stateJOintElements. this.stateCells better have 5 elements."
-    );
-    const state_name_to_joint_id = {};
-    stateJointCells.map(jointElement => {
-      const stateCellName = jointElement.attr("text/text");
-      if (stateCellName in state_name_to_joint_id) {
-        throw new Error(
-          "Duplicate state name found. Quit adding transitions..."
-        );
-      } else {
-        state_name_to_joint_id[stateCellName] = jointElement;
-      }
-    });
+    const stateName2Cell = this.getStateName2CellMap();
     const transitionCells = states.map(state => {
       return state.getTransitionsList().map(transition => {
-        return create_transition_cell(
-          state_name_to_joint_id[state.getName()],
-          state_name_to_joint_id[transition.getNextState()],
+        const cell = create_transition_cell(
+          stateName2Cell[state.getName()],
+          stateName2Cell[transition.getNextState()],
           transition.getName()
         );
-      });
-    });
-    this.graph.addCells(transitionCells);
+        this.addGraphCellWithRef(cell, transition);
+      }, this);
+    }, this);
     return transitionCells;
   }
 
+  getStateName2CellMap() {
+    const stateCells = this.graph.getElements();
+    const stateName2Cell = {};
+    stateCells.map(jointElement => {
+      const stateName = jointElement.attr("text/text");
+      if (stateName in stateName2Cell) {
+        // throw new Error("Invalid FSM! Duplicate state name found.");
+        console.error("Duplicate State Name: " + stateName);
+      } else {
+        stateName2Cell[stateName] = jointElement;
+      }
+    });
+    return stateName2Cell;
+  }
+
+  addGraphCellWithRef(cell, ref) {
+    // addGraphCell add a cell to the graph and record the reference object
+    // this cell represents.
+    this.graph.addCell(cell);
+    this.cellId2FSMElement[cell.id] = ref;
+  }
+
+  clearGraph() {
+    this.graph.clear();
+    this.cellId2FSMElement = {};
+  }
+
   render() {
+    console.log("Called render diagram");
     console.log(this.props.fsm);
-    const { fsm } = this.props;
-    if (fsm) {
-      this.graph.clear();
+    const { fsm, onClickCell } = this.props;
+    if (fsm != null) {
+      this.clearGraph();
       this.renderAllStates(fsm);
       this.renderAllTransitions(fsm);
     }

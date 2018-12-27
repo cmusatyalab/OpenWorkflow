@@ -22,10 +22,13 @@ function loadFsm(fsmData) {
 class App extends Component {
   constructor(props) {
     super(props);
-    this.onImport = this.onImport.bind(this);
+    this.diagramRef = React.createRef();
     this.alert = this.alert.bind(this);
+    this.onImport = this.onImport.bind(this);
+    this.onClickCell = this.onClickCell.bind(this);
     this.state = {
       fsm: null,
+      curFSMElement: null,
       alertMsg: {
         show: false,
         type: "info",
@@ -46,15 +49,24 @@ class App extends Component {
         <Row>
           <Col sm={6} style={{ backgroundColor: "lavender" }}>
             <h4>Diagram</h4>
-            <Diagram fsm={this.state.fsm}/>
+            <Diagram
+              fsm={this.state.fsm}
+              onClickCell={this.onClickCell}
+              ref={this.diagramRef}
+            />
           </Col>
           <Col sm={6}>
             <Row>
               <ToolBar onImport={this.onImport} />
             </Row>
-            <Row>
-              <InfoBox />
-            </Row>
+            {this.state.curFSMElement && (
+              <Row>
+                <InfoBox
+                  element={this.state.curFSMElement}
+                  style={{ width: "100%" }}
+                />
+              </Row>
+            )}
           </Col>
         </Row>
         <footer>
@@ -77,21 +89,32 @@ class App extends Component {
     });
   }
 
+  // toolbar callbacks
   onImport(e, fileArray) {
     fileArray.forEach(result => {
       const e = result[0];
-      console.log(typeof e.target.result);
       let fileContent = e.target.result;
-      console.log(typeof fileContent);
       let fsm = null;
       try {
         fsm = loadFsm(fileContent);
-        this.setState({ fsm: fsm });
-        console.log(this.state.fsm);
+        this.setState({ fsm: fsm, curFSMElement: null });
         this.alert("info", "Success! State machine imported.");
       } catch (err) {
-        this.alert("danger", "Incorrect File Format. Failed to import the file. \n" + err)
+        this.alert(
+          "danger",
+          "Incorrect File Format. Failed to import the file. \n" + err
+        );
       }
+    });
+  }
+
+  // diagram callbacks
+  onClickCell(elementView) {
+    const fsmElement = this.diagramRef.current.cellId2FSMElement[
+      elementView.model.id
+    ];
+    this.setState({
+      curFSMElement: fsmElement
     });
   }
 }
