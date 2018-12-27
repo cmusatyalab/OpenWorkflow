@@ -3,10 +3,13 @@ import Container from "react-bootstrap/lib/Container";
 import Row from "react-bootstrap/lib/Row";
 import Col from "react-bootstrap/lib/Col";
 import Alert from "react-bootstrap/lib/Alert";
+import Modal from "react-bootstrap/lib/Modal";
+import Button from "react-bootstrap/lib/Button";
 import { Diagram } from "./diagram.js";
 import "./App.css";
 import InfoBox from "./infoBox.js";
 import ToolBar from "./toolbar.js";
+import NewElementModal from "./newElementModal.js";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -25,6 +28,7 @@ class App extends Component {
     this.diagramRef = React.createRef();
     this.alert = this.alert.bind(this);
     this.onImport = this.onImport.bind(this);
+    this.onAdd = this.onAdd.bind(this);
     this.onClickCell = this.onClickCell.bind(this);
     this.state = {
       fsm: null,
@@ -33,7 +37,8 @@ class App extends Component {
         show: false,
         type: "info",
         msg: ""
-      }
+      },
+      showNewElementModal: false,
     };
   }
 
@@ -57,7 +62,7 @@ class App extends Component {
           </Col>
           <Col sm={6}>
             <Row>
-              <ToolBar onImport={this.onImport} />
+              <ToolBar onImport={this.onImport} onAddState={this.onAdd}/>
             </Row>
             {this.state.curFSMElement && (
               <Row>
@@ -76,6 +81,7 @@ class App extends Component {
             </span>
           </Container>
         </footer>
+        <NewElementModal show={this.state.showNewElementModal}/>
       </Container>
     );
   }
@@ -106,6 +112,14 @@ class App extends Component {
         );
       }
     });
+  }
+
+  onAdd(e) {
+    this.setState(
+      {
+        showNewElementModal: true,
+      }
+    )
   }
 
   // diagram callbacks
