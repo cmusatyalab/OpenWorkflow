@@ -30,6 +30,8 @@ const createCallableMultiFields = (processor, index, arrayHelpers) => (
   </div>
 )
 
+// TODO(junjuew): need to break these down into multiple fields
+// since a single field has a single name and value
 const CallableField = ({
   field, // { name, value, onChange, onBlur }
   form, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
