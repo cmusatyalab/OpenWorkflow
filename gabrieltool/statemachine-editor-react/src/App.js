@@ -3,8 +3,6 @@ import Container from "react-bootstrap/lib/Container";
 import Row from "react-bootstrap/lib/Row";
 import Col from "react-bootstrap/lib/Col";
 import Alert from "react-bootstrap/lib/Alert";
-import Modal from "react-bootstrap/lib/Modal";
-import Button from "react-bootstrap/lib/Button";
 import { Diagram } from "./diagram.js";
 import "./App.css";
 import InfoBox from "./infoBox.js";

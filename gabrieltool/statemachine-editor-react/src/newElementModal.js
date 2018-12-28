@@ -10,6 +10,84 @@ import { Formik, Form as FormikForm, Field, FieldArray } from "formik";
 import * as Yup from "yup";
 import "./App.css";
 
+const NewElementForm = (
+  values,
+  touched,
+  errors,
+  dirty,
+  isSubmitting,
+  handleChange,
+  handleBlur,
+  handleSubmit,
+  handleReset
+) => {
+  return (
+    <FormikForm>
+      <FieldArray
+        name="friends"
+        render={arrayHelpers => (
+          <div>
+            {values.friends && values.friends.length > 0 ? (
+              values.friends.map((friend, index) => (
+                <div key={index}>
+                  <Field name={`friends.${index}`} />
+                  <button
+                    type="button"
+                    onClick={() => arrayHelpers.remove(index)} // remove a friend from the list
+                  >
+                    -
+                      </button>
+                  <button
+                    type="button"
+                    onClick={() => arrayHelpers.insert(index, '')} // insert an empty string at a position
+                  >
+                    +
+                      </button>
+                </div>
+              ))
+            ) : (
+                <button type="button" onClick={() => arrayHelpers.push('')}>
+                  {/* show this when user has removed all friends from the list */}
+                  Add a friend
+                  </button>
+              )}
+            <div>
+              <button type="submit">Submit</button>
+            </div>
+          </div>
+        )}
+      />
+    </FormikForm>
+  )
+
+  {/* {
+      <Form.Group as={Row} controlId="validationName">
+        <Form.Label column sm="2">
+          Name
+          </Form.Label>
+        <Col sm="10">
+          <Form.Control
+            type="text"
+            name="name"
+            placeholder="Enter a Name"
+            value={values.name}
+            onBlur={handleBlur}
+            onChange={handleChange}
+            isValid={touched.name && !errors.name}
+          />
+          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+        </Col>
+      </Form.Group>
+    </Form>
+    <FieldArray
+      name="friends"
+      component={dynamicCallableForm}
+      values={values}
+    />
+  );
+          } */}
+};
+
 class NewElementModal extends Component {
   render() {
     const { show, type } = this.props;
@@ -22,62 +100,53 @@ class NewElementModal extends Component {
           <Formik
             initialValues={{
               name: "",
-              processors: [{ name: "p1" }, { name: "p2" }]
+              processors: [{ name: 'jared' }, { name: 'ian' }, { name: 'brent' }]
             }}
-            onSubmit={(values, { setSubmitting }) => {
+            onSubmit={values =>
               setTimeout(() => {
                 alert(JSON.stringify(values, null, 2));
-                setSubmitting(false);
-              }, 500);
-            }}
-            validationSchema={Yup.object({
-              name: Yup.string().required()
-            })}
-          >
-            {props => {
-              const {
-                values,
-                touched,
-                errors,
-                dirty,
-                isSubmitting,
-                handleChange,
-                handleBlur,
-                handleSubmit,
-                handleReset
-              } = props;
-              return (
-                <div>
-                  <Form noValidate onSubmit={handleSubmit}>
-                    <Form.Group as={Row} controlId="validationName">
-                      <Form.Label column sm="2">
-                        Name
-                      </Form.Label>
-                      <Col sm="10">
-                        <Form.Control
-                          type="text"
-                          name="name"
-                          placeholder="Enter a Name"
-                          value={values.name}
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          isValid={touched.name && !errors.name}
-                        />
-                        <Form.Control.Feedback>
-                          Looks good!
-                        </Form.Control.Feedback>
-                      </Col>
-                    </Form.Group>
-                  </Form>
-                  <FieldArray
-                    name="friends"
-                    component={dynamicCallableForm}
-                    values={values}
-                  />
-                </div>
-              );
-            }}
-          </Formik>
+              }, 500)
+            }
+            render={({ values, handleSubmit }) => (
+              <FormikForm>
+                <FieldArray
+                  name="processors"
+                  render={(arrayHelpers) => {
+                    return (
+                      <>
+                        <Form.Group as={Row}>
+                          <Form.Label column sm={2}>Name</Form.Label>
+                          <Col sm={10}>
+                            <Form.Control
+                              required
+                              type="text"
+                              placeholder="Please Enter a Name"
+                            />
+                            <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+                          </Col>
+                        </Form.Group>
+                        {
+                          values.processors &&
+                          values.processors.map((processor, index) => (
+                            <div key={index}>
+                              <Field name={`processor.${index}`} component={CallableField} arrayHelpers={arrayHelpers} index={index} />
+                            </div>
+                          ))
+                        }
+                        <Form.Row>
+                          <Button variant="light" className="btn-block" onClick={() => arrayHelpers.push('')}>
+                            Add Processor
+                          </Button>
+                        </Form.Row>
+                        <button type="submit">Submit</button>
+                      </>
+                    );
+                  }}
+                />
+              </FormikForm>
+            )
+            }
+          />
           <Table striped bordered hover>
             <tbody>
               <tr>
@@ -100,61 +169,42 @@ class NewElementModal extends Component {
   }
 }
 
-const dynamicCallableForm = ({
-  move,
-  swap,
-  push,
-  insert,
-  unshift,
-  pop,
-  form
-}) => {
-  const {
-    values,
-    touched,
-    errors,
-    dirty,
-    isSubmitting,
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    handleReset
-  } = form;
-  return (
-    <FormikForm>
-      {values.processors.map((processor, index) => (
-        <Form.Group
-          as={Row}
-          controlId={"processor" + index}
-          key={"processor" + index}
-        >
-          <Form.Label column sm="2">
-            Processor Name
-          </Form.Label>
-          <Col sm="10">
-            <Form.Control
-              type="text"
-              name={"processor" + index + ".name"}
-              placeholder="Processor Name"
-              value={processor.name}
-              onBlur={handleBlur}
-              onChange={handleChange}
-              isValid={touched.name && !errors.name}
-            />
-            <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-          </Col>
+const CallableField = ({
+  field, // { name, value, onChange, onBlur }
+  form: { touched, errors }, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
+  arrayHelpers,
+  index,
+  ...props
+}) => (
+    <>
+      <Form.Row>
+        <Form.Group as={Col}>
+          <Form.Label>Name</Form.Label>
+          <Form.Control
+            required
+            type="text"
+            placeholder="Please Enter Processor Name"
+            {...field}
+          />
+          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
         </Form.Group>
-      ))}
-      {
-        <Button
-          type="button"
-          onClick={() => push({ name: "add1" })}
-        >
-          Add
-        </Button>
-      }
-    </FormikForm>
+        <Form.Group as={Col}>
+          <Form.Label>Type</Form.Label>
+          <Form.Control
+            required
+            type="text"
+            placeholder="Please Enter Processor Type"
+            {...field}
+          />
+          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+        </Form.Group>
+      </Form.Row>
+      <Button
+        variant="danger"
+        onClick={() => arrayHelpers.remove(index)}>
+        Delete
+    </Button>
+    </>
   );
-};
 
 export default NewElementModal;
