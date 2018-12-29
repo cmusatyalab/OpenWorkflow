@@ -192,6 +192,7 @@ const createTransitionBasicFields = (fsm) => {
  * The core of the modal is a Formik form that captures
  * the user-inputted properties for the element
  */
+//TODO(junjuew): add form validation
 class NewElementModal extends Component {
   constructor(props) {
     super(props);

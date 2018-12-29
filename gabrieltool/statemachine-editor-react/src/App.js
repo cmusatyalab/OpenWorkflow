@@ -10,6 +10,7 @@ import { FSMElementType, ToolBar } from "./toolbar.js";
 import NewElementModal from "./newElementModal.js";
 import procZoo from './processor-zoo.json';
 import predZoo from './predicate-zoo.json';
+import saveAs from 'file-saver';
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -28,6 +29,7 @@ class App extends Component {
     this.diagramRef = React.createRef();
     this.alert = this.alert.bind(this);
     this.onImport = this.onImport.bind(this);
+    this.onExport = this.onExport.bind(this);
     this.onAdd = this.onAdd.bind(this);
     this.onClickCell = this.onClickCell.bind(this);
     this.onModalCancel = this.onModalCancel.bind(this);
@@ -64,7 +66,7 @@ class App extends Component {
             />
           </Col>
           <Col sm={6}>
-            <ToolBar onImport={this.onImport} onAdd={this.onAdd} />
+            <ToolBar onImport={this.onImport} onAdd={this.onAdd} onExport={this.onExport} />
             {this.state.curFSMElement && (
               <Row>
                 <InfoBox
@@ -106,6 +108,7 @@ class App extends Component {
   }
 
   // toolbar callbacks
+  // TODO(junjuew): add delete functionality
   onImport(e, fileArray) {
     fileArray.forEach(result => {
       const e = result[0];
@@ -122,6 +125,25 @@ class App extends Component {
         );
       }
     });
+  }
+
+  onExport() {
+    const fsmPb = this.state.fsm;
+    if (fsmPb.getStatesList().length === 0) {
+      this.alert(
+        "danger",
+        "Empty state machine! There is nothing to save. \n"
+      );
+    } else {
+      // TODO(junjuew): fix start state. It should be marked by users
+      // instead of being the first state added
+      if (fsmPb.getStartState() == "") {
+        fsmPb.setStartState(fsmPb.getStatesList()[0].getName());
+      }
+      let fsmPbSerialized = fsmPb.serializeBinary();
+      let blob = new Blob([fsmPbSerialized], { type: "application/octet-stream" });
+      saveAs(blob, "app.pbfsm");
+    }
   }
 
   onAdd(type) {
@@ -142,12 +164,12 @@ class App extends Component {
     for (let idx = 0; idx < callbleFormValue.length; idx++) {
       let callableValue = callbleFormValue[idx];
       let callablePb = new callablePbType();
-      // proc name
       callablePb.setName(callableValue.name)
-      // proc type
       callablePb.setCallableName(callableValue.type);
       // callable args
       // need to filter out relevant arguments only
+      // since the form may contain irrelevant arguments for other callable type
+      // this is caused by user switching callable types
       let args = {}
       Object.keys(zoo[callableValue.type]).map((key) => {
         args[key] = callableValue.args[key]
@@ -168,22 +190,6 @@ class App extends Component {
       procZoo
     )
     return statePb;
-    // for (let idx = 0; idx < formValue.callable.length; idx++){
-    //   let procValue = formValue.callable[idx];
-    //   let procPb = new fsmPb.Processor();
-    //   // proc name
-    //   procPb.setName(procValue.name)
-    //   // proc type
-    //   procPb.setCallableName(procValue.type);
-    //   // callable args
-    //   // need to filter out relevant arguments only
-    //   let args = {}
-    //   Object.keys(procZoo[procValue.type]).map((key)=>{
-    //     args[key] = procValue.args[key]
-    //   });
-    //   procPb.setCallableArgs(JSON.stringify(args));
-    //   statePb.addProcessors(procPb);
-    // }
   }
 
   findStatePb(stateName) {
@@ -209,11 +215,11 @@ class App extends Component {
     instPb.setVideo(formValue.instruction.video);
     transitionPb.setInstruction(instPb);
     // add predicates
-    this.addCallableFormDataToPb(formValue.callable, 
-      transitionPb.addPredicates.bind(transitionPb), 
+    this.addCallableFormDataToPb(formValue.callable,
+      transitionPb.addPredicates.bind(transitionPb),
       fsmPb.TransitionPredicate,
       predZoo
-      )
+    )
     return transitionPb;
   }
 

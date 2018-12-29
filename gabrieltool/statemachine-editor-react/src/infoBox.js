@@ -97,7 +97,7 @@ const InfoBox = ({ element }) => {
           <ListGroupItem>
             <h4>Instruction</h4>
             <h5>Audio:</h5><p>{element.getInstruction().getAudio()}</p>
-            <h5>Image:</h5><p>{element.getInstruction().getImage()}</p>
+            <h5>Image:</h5><p>{element.getInstruction().getImage()}</p> {/*TODO(junjuew): add proper display of images and videos*/}
             <h5>Video:</h5><p>{element.getInstruction().getVideo()}</p>
           </ListGroupItem>
         }
