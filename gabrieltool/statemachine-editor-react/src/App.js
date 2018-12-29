@@ -6,7 +6,7 @@ import Alert from "react-bootstrap/lib/Alert";
 import { Diagram } from "./diagram.js";
 import "./App.css";
 import InfoBox from "./infoBox.js";
-import ToolBar from "./toolbar.js";
+import {ToolBar} from "./toolbar.js";
 import NewElementModal from "./newElementModal.js";
 var fsmPb = require("./wca-state-machine_pb");
 
@@ -28,6 +28,8 @@ class App extends Component {
     this.onImport = this.onImport.bind(this);
     this.onAdd = this.onAdd.bind(this);
     this.onClickCell = this.onClickCell.bind(this);
+    this.onModalCancel = this.onModalCancel.bind(this);
+    this.onModalSave = this.onModalSave.bind(this);
     this.state = {
       fsm: null,
       curFSMElement: null,
@@ -37,6 +39,7 @@ class App extends Component {
         msg: ""
       },
       showNewElementModal: false,
+      newElementModalType: null
     };
   }
 
@@ -60,7 +63,7 @@ class App extends Component {
           </Col>
           <Col sm={6}>
             <Row>
-              <ToolBar onImport={this.onImport} onAddState={this.onAdd}/>
+              <ToolBar onImport={this.onImport} onAdd={this.onAdd} />
             </Row>
             {this.state.curFSMElement && (
               <Row>
@@ -79,7 +82,15 @@ class App extends Component {
             </span>
           </Container>
         </footer>
-        <NewElementModal show={this.state.showNewElementModal}/>
+        {
+          this.state.showNewElementModal &&
+          <NewElementModal
+            show={this.state.showNewElementModal}
+            type={this.state.newElementModalType}
+            onModalSave={this.onModalSave}
+            onModalCancel={this.onModalCancel}
+          />
+        }
       </Container>
     );
   }
@@ -112,12 +123,8 @@ class App extends Component {
     });
   }
 
-  onAdd(e) {
-    this.setState(
-      {
-        showNewElementModal: true,
-      }
-    )
+  onAdd(type) {
+    this.setState({ showNewElementModal: true, newElementModalType: type })
   }
 
   // diagram callbacks
@@ -128,6 +135,16 @@ class App extends Component {
     this.setState({
       curFSMElement: fsmElement
     });
+  }
+
+  onModalSave(formValue) {
+    console.log("received modal data")
+    console.log(JSON.stringify(formValue));
+    this.setState({ showNewElementModal: false })
+  }
+
+  onModalCancel() {
+    this.setState({ showNewElementModal: false })
   }
 }
 

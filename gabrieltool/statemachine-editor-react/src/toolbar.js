@@ -7,10 +7,16 @@ import Row from "react-bootstrap/lib/Row";
 import Col from "react-bootstrap/lib/Col";
 import FileReaderInput from "react-file-reader-input";
 
-const ToolBar = ({
+export const FSMElementType = {
+  STATE: Symbol("state"),
+  TRANSITION: Symbol("transition"),
+};
+Object.freeze(FSMElementType);
+
+
+export const ToolBar = ({
   onImport,
-  onAddState,
-  onAddTransition,
+  onAdd,
   onExport,
   onDelete
 }) => {
@@ -29,8 +35,8 @@ const ToolBar = ({
         </Col>
         <Col sm={4}>
           <DropdownButton id="dropdown-basic-button" title="Add">
-            <Dropdown.Item onClick={onAddState}>State</Dropdown.Item>
-            <Dropdown.Item onClick={onAddTransition}>Transition</Dropdown.Item>
+            <Dropdown.Item onClick={() => onAdd(FSMElementType.STATE)}>State</Dropdown.Item>
+            <Dropdown.Item onClick={() => onAdd(FSMElementType.TRANSITION)}>Transition</Dropdown.Item>
           </DropdownButton>
         </Col>
         <Col sm={4}>
@@ -42,5 +48,3 @@ const ToolBar = ({
     </Row>
   );
 };
-
-export default ToolBar;
