@@ -6,7 +6,7 @@ import Alert from "react-bootstrap/lib/Alert";
 import { Diagram } from "./diagram.js";
 import "./App.css";
 import InfoBox from "./infoBox.js";
-import {ToolBar} from "./toolbar.js";
+import { ToolBar } from "./toolbar.js";
 import NewElementModal from "./newElementModal.js";
 var fsmPb = require("./wca-state-machine_pb");
 
@@ -31,12 +31,12 @@ class App extends Component {
     this.onModalCancel = this.onModalCancel.bind(this);
     this.onModalSave = this.onModalSave.bind(this);
     this.state = {
-      fsm: null,
+      fsm: new fsmPb.StateMachine(),
       curFSMElement: null,
       alertMsg: {
-        show: false,
+        show: true,
         type: "info",
-        msg: ""
+        msg: "Welcome to State Machine Editor!"
       },
       showNewElementModal: false,
       newElementModalType: null
@@ -45,7 +45,7 @@ class App extends Component {
 
   render() {
     return (
-      <Container>
+      <Container fluid>
         <h1>State Machine Visualizer with React</h1>
         {this.state.alertMsg.msg !== "" && (
           <Alert dismissible variant={this.state.alertMsg.type}>
@@ -62,9 +62,7 @@ class App extends Component {
             />
           </Col>
           <Col sm={6}>
-            <Row>
-              <ToolBar onImport={this.onImport} onAdd={this.onAdd} />
-            </Row>
+            <ToolBar onImport={this.onImport} onAdd={this.onAdd} />
             {this.state.curFSMElement && (
               <Row>
                 <InfoBox
@@ -85,6 +83,7 @@ class App extends Component {
         {
           this.state.showNewElementModal &&
           <NewElementModal
+            fsm={this.state.fsm} // new elements may depend on existing elements (e.g. adding a transition between two states)
             show={this.state.showNewElementModal}
             type={this.state.newElementModalType}
             onModalSave={this.onModalSave}

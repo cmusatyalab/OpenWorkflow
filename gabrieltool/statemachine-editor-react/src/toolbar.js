@@ -21,30 +21,35 @@ export const ToolBar = ({
   onDelete
 }) => {
   return (
-    <Row>
-      <ButtonGroup>
-        <Col sm={4}>
-          <FileReaderInput as="buffer" onChange={onImport}>
-            <Button variant="primary">Import</Button>
-          </FileReaderInput>
-        </Col>
-        <Col sm={4}>
-          <Button variant="primary" onClick={onExport}>
-            Export
+    <>
+      <Row>
+        <h2>Actions</h2>
+      </Row>
+      <Row>
+        <ButtonGroup>
+          <Col sm={4}>
+            <FileReaderInput as="buffer" onChange={onImport}>
+              <Button variant="primary">Import</Button>
+            </FileReaderInput>
+          </Col>
+          <Col sm={4}>
+            <Button variant="primary" onClick={onExport}>
+              Export
           </Button>
-        </Col>
-        <Col sm={4}>
-          <DropdownButton id="dropdown-basic-button" title="Add">
-            <Dropdown.Item onClick={() => onAdd(FSMElementType.STATE)}>State</Dropdown.Item>
-            <Dropdown.Item onClick={() => onAdd(FSMElementType.TRANSITION)}>Transition</Dropdown.Item>
-          </DropdownButton>
-        </Col>
-        <Col sm={4}>
-          <Button variant="primary" onClick={onDelete}>
-            Delete
+          </Col>
+          <Col sm={4}>
+            <DropdownButton id="dropdown-basic-button" title="Add">
+              <Dropdown.Item onClick={() => onAdd(FSMElementType.STATE)}>State</Dropdown.Item>
+              <Dropdown.Item onClick={() => onAdd(FSMElementType.TRANSITION)}>Transition</Dropdown.Item>
+            </DropdownButton>
+          </Col>
+          <Col sm={4}>
+            <Button variant="primary" onClick={onDelete}>
+              Delete
           </Button>
-        </Col>
-      </ButtonGroup>
-    </Row>
+          </Col>
+        </ButtonGroup>
+      </Row>
+    </>
   );
 };

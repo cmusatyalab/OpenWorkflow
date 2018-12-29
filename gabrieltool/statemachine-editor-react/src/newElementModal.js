@@ -12,17 +12,16 @@ import procZoo from './processor-zoo.json';
 import predZoo from './predicate-zoo.json';
 import { FSMElementType } from "./toolbar.js";
 
-/*
-Load Processor and Predicate zoo from json files.
-So that we can show relevant field names when creating them.
-*/
-const procZooOptions = Object.keys(procZoo).map((key) => {
-  return { value: key, label: key }
-})
-
-const predZooOptions = Object.keys(predZoo).map((key) => {
-  return { value: key, label: key }
-})
+/** Helper function to create options for Select elements
+ * from a pre-defined callable zoo (procZoo or predZoo)
+ * 
+ * @param {*} zoo 
+ */
+const getZooOptions = (zoo) => {
+  return Object.keys(zoo).map((key) => {
+    return { value: key, label: key }
+  })
+}
 
 /*
 Customize the look of form fields using bootstrap.
@@ -53,6 +52,33 @@ const BSFormikField = ({
     </Form.Group>
   );
 
+/** Custom the look of a Formik Select field with react-select
+ * 
+ * @param {*} param0 
+ */
+const SelectFormikField = ({
+  field,
+  form, // values, setXXXX, handleXXXX, dirty, isValid, status, etc.
+  label,
+  selectOptions,
+  ...props
+}) => (
+    <Form.Group as={Row}>
+      <Form.Label column>{label}</Form.Label>
+      <Col>
+        <Select
+          {...field}
+          {...props}
+          options={selectOptions}
+          name={field.name}
+          value={selectOptions ? selectOptions.find(option => option.value === field.value) : ''}
+          onChange={(option) => form.setFieldValue(field.name, option.value)}
+          onBlur={field.onBlur}
+        />
+      </Col>
+    </Form.Group>
+  )
+
 const CallableNameField = ({
   field,  // name, value, onChange, onBlur
   ...props
@@ -65,25 +91,27 @@ const CallableNameField = ({
       {...props} />
   )
 
-const CallableTypeField = ({
-  field,
-  form, // values, setXXXX, handleXXXX, dirty, isValid, status, etc.
-  selectOptions,
-  ...props
-}) => (
-    <Form.Group as={Row}>
-      <Form.Label column>Type</Form.Label>
-      <Col>
-        <Select
-          options={selectOptions}
-          name={field.name}
-          value={selectOptions ? selectOptions.find(option => option.value === field.value) : ''}
-          onChange={(option) => form.setFieldValue(field.name, option.value)}
-          onBlur={field.onBlur}
-        />
-      </Col>
-    </Form.Group>
-  )
+// const CallableTypeField = ({
+//   field,
+//   form, // values, setXXXX, handleXXXX, dirty, isValid, status, etc.
+//   selectOptions,
+//   ...props
+// }) => (
+//     <Form.Group as={Row}>
+//       <Form.Label column>Type</Form.Label>
+//       <Col>
+//         <Select
+//           {...field}
+//           {...props}
+//           options={selectOptions}
+//           name={field.name}
+//           value={selectOptions ? selectOptions.find(option => option.value === field.value) : ''}
+//           onChange={(option) => form.setFieldValue(field.name, option.value)}
+//           onBlur={field.onBlur}
+//         />
+//       </Col>
+//     </Form.Group>
+//   )
 
 const CallableArgField = ({
   field,
@@ -107,21 +135,21 @@ The UIs to create a "callable" consist of following form fields:
 2. callable type
 3. A field for each callable argument (loaded from callable zoos)
 */
-const createCallableMultiFields = (callableTitle, zooOptions, values, index, arrayHelpers) => {
+const createCallableMultiFields = (callableTitle, zoo, values, index, arrayHelpers) => {
+  const zooOptions = getZooOptions(zoo);
   return (<div key={index} className="border">
-    <h5>{callableTitle}</h5>
+    <h6>{callableTitle}</h6>
     <Field
       name={`callable.${index}.name`} // add values.callable[index].name
       component={CallableNameField} />
     <Field
       name={`callable.${index}.type`} // add values.callable[index].name
-      component={CallableTypeField}
-      selectOptions={zooOptions} />
+      component={(props) => <SelectFormikField {...props} label="Type" selectOptions={zooOptions} />} />
     {
       values.hasOwnProperty('callable') &&
       (values.callable[index] !== undefined) &&
       values['callable'][index]['type'] &&
-      createCallableArgMultiFields(zooOptions[values['callable'][index]['type']], index)
+      createCallableArgMultiFields(zoo[values['callable'][index]['type']], index)
     }
     <p>{JSON.stringify(values)}</p>
     <Form.Row>
@@ -150,6 +178,37 @@ const createCallableArgMultiFields = (args, index) => {
 }
 
 
+/** Create transition basic fields including 
+ * from and to state, and instructions.
+ * 
+ * @param {*} values 
+ */
+const createTransitionBasicFields = (fsm) => {
+  const fsmStateOptions = fsm.getStatesList().map((state) => {
+    return {value: state.getName(), label: state.getName()};
+  });
+  return (
+    <>
+      <Field
+        name={"from"}
+        component={(props) => <SelectFormikField {...props} label="From State" selectOptions={fsmStateOptions} />} />
+      <Field
+        name={"to"}
+        component={(props) => <SelectFormikField {...props} label="To State" selectOptions={fsmStateOptions} />} />
+      <Field
+        name={"instruction.audio"}
+        component={(props) => <BSFormikField {...props} type="text" label="Audio Instruction" />} />
+      <Field
+        name={"instruction.image"}
+        component={(props) => <BSFormikField {...props} type="text" label="Image Instruction" />} />
+      <Field
+        name={"instruction.video"}
+        component={(props) => <BSFormikField {...props} type="text" label="Video Instruction" />} />
+    </>
+  )
+}
+
+
 /**
  * A Modal used to create a new FSM element.
  * The core of the modal is a Formik form that captures
@@ -162,19 +221,23 @@ class NewElementModal extends Component {
   }
 
   render() {
-    const { show, type, onModalCancel, onModalSave } = this.props;
+    const { show, type, fsm, onModalCancel, onModalSave } = this.props;
+    console.log(fsm)
     let title, callableTitle = "";
-    let callableZooOptions = null;
+    let callableZoo = null;
+    let callableButtonValue = "";
     switch (type) {
       case FSMElementType.STATE:
         title = "New State";
         callableTitle = "New Processor";
-        callableZooOptions = procZooOptions;
+        callableButtonValue = "Add Processor"
+        callableZoo = procZoo;
         break;
       case FSMElementType.TRANSITION:
         title = "New Transition";
         callableTitle = "New Predicate";
-        callableZooOptions = predZooOptions;
+        callableButtonValue = "Add Predicate"
+        callableZoo = predZoo;
         break;
       default:
         throw new Error("Unsupported Element Type: " + type + ". Failed to add a new element")
@@ -197,7 +260,7 @@ class NewElementModal extends Component {
               setSubmitting(false);
             }
             }
-            render={({ values, handleSubmit }) => (
+            render={({ values }) => (
               <FormikForm>
                 <FieldArray
                   name="callable"
@@ -211,9 +274,13 @@ class NewElementModal extends Component {
                           label="Name"
                           placeholder="Enter Name" />
                         {
+                          type === FSMElementType.TRANSITION &&
+                          createTransitionBasicFields(fsm)
+                        }
+                        {
                           values.callable.map((eachCallable, index) => createCallableMultiFields(
                             callableTitle,
-                            callableZooOptions,
+                            callableZoo,
                             values,
                             index,
                             arrayHelpers
@@ -224,7 +291,7 @@ class NewElementModal extends Component {
                             variant="light"
                             className="btn-block"
                             onClick={() => arrayHelpers.push({})}>
-                            Add
+                            {callableButtonValue}
                           </Button>
                         </Form.Row>
                       </>
