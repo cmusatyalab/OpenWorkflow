@@ -19,20 +19,48 @@ const procZooOptions = Object.keys(procZoo).map((key) => {
   return { value: key, label: key }
 })
 
-const createCallableMultiFields = (processor, index, arrayHelpers) => (
-  <div key={index}>
-    <Field
-      name={`processor.${index}`}
-      component={CallableField}
-      arrayHelpers={arrayHelpers}
-      index={index}
-      selectOptions={procZooOptions} />
-  </div>
-)
+const BSFormikField = ({
+  field, // { name, value, onChange, onBlur }
+  form, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
+  type,
+  label,
+  placeholder,
+  ...props
+}) => (
+    <Form.Group as={Col}>
+      <Form.Label>{label}</Form.Label>
+      <Form.Control
+        required
+        type={type}
+        placeholder={placeholder}
+        {...field}
+        {...props}
+        value={field.value || ''} // to supress uncontrolled to controlled warning
+      />
+      <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+    </Form.Group>
+  );
 
-// TODO(junjuew): need to break these down into multiple fields
-// since a single field has a single name and value
-const CallableField = ({
+
+const CallableNameField = ({
+  field,
+  ...props
+}) => (
+    <Form.Group as={Col}>
+      <Form.Label>"Name"</Form.Label>
+      <Form.Control
+        required
+        type="text"
+        placeholder="Please Enter Name"
+        {...field}
+        {...props}
+        value={field.value || ''} // to supress uncontrolled to controlled warning
+      />
+      <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+    </Form.Group>
+  )
+
+const CallableTypeField = ({
   field, // { name, value, onChange, onBlur }
   form, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
   arrayHelpers,
@@ -40,39 +68,92 @@ const CallableField = ({
   selectOptions,
   ...props
 }) => (
-    <>
-      <Form.Row>
-        <Form.Group as={Col}>
-          <Form.Label>Name</Form.Label>
-          <Form.Control
-            required
-            type="text"
-            placeholder="Please Enter Processor Name"
-            {...field}
-          />
-          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group as={Col}>
-          <Form.Label>Type</Form.Label>
-          <Select
-            options={selectOptions}
-            name={field.name}
-            value={selectOptions ? selectOptions.find(option => option.value === field.value) : ''}
-            onChange={(option) => form.setFieldValue(field.name, option.value)}
-            onBlur={field.onBlur}
-          />
-          <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-        </Form.Group>
-      </Form.Row>
+    <Form.Group as={Col}>
+      <Form.Label>Type</Form.Label>
+      <Select
+        options={selectOptions}
+        name={field.name}
+        value={selectOptions ? selectOptions.find(option => option.value === field.value) : ''}
+        onChange={(option) => form.setFieldValue(field.name, option.value)}
+        onBlur={field.onBlur}
+      />
+      <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+    </Form.Group>
+  )
+
+const CallableArgField = ({
+  field, // { name, value, onChange, onBlur }
+  form, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
+  key, // unused. just to suppress react list warning
+  argName,
+  defaultValue,
+  ...props
+}) => (
+    <Form.Group as={Row}>
+      <Form.Label column>{argName}</Form.Label>
+      <Col>
+        <Form.Control
+          required
+          type="text"
+          placeholder={defaultValue}
+          {...field}
+          {...props}
+          value={field.value || ''} // to supress uncontrolled to controlled warning
+        />
+      </Col>
+    </Form.Group>
+  )
+
+const createCallableMultiFields = (zoo, values, index, arrayHelpers) => {
+  return (<div key={index}>
+    <Form.Row>
+      <Field
+        name={`callable.${index}.name`} // add values.callable[index].name
+        component={CallableNameField}
+        index={index} />
+      <Field
+        name={`callable.${index}.type`} // add values.callable[index].name
+        component={CallableTypeField}
+        index={index}
+        selectOptions={procZooOptions} />
+    </Form.Row>
+    {
+      values.hasOwnProperty('callable') &&
+      (values.callable[index] !== undefined) &&
+      values['callable'][index]['type'] &&
+      createCallableArgMultiFields(zoo[values['callable'][index]['type']], index)
+  }
+    <p>{JSON.stringify(values)}</p>
+    <Form.Row>
       <Button
         variant="danger"
-        onClick={() => arrayHelpers.remove(index)}>
+        onClick={() => arrayHelpers.remove({ index })}>
         Delete
     </Button>
-    </>
-  );
+    </Form.Row>
+  </div>)
+}
+
+const createCallableArgMultiFields = (args, index) => {
+  console.log(args);
+  const argFields = Object.keys(args).map((key, argIndex) => {
+    return <Field
+      name={`callable.${index}.${key}`} // add values.callable.c0.name
+      component={CallableArgField}
+      key={index + '-arg-' + argIndex}
+      argName={key}
+      defaultValue={args[key]} />
+  })
+  return argFields
+}
+
 
 class NewElementModal extends Component {
+  constructor(props) {
+    super(props);
+    this.form = React.createRef();
+  }
+
   render() {
     const { show, type } = this.props;
     return (
@@ -82,44 +163,37 @@ class NewElementModal extends Component {
         </Modal.Header>
         <Modal.Body>
           <Formik
+            ref={this.form}
             initialValues={{
               name: "",
-              processors: [{ name: 'jared' }, { name: 'ian' }, { name: 'brent' }]
+              callable: []
             }}
-            onSubmit={values =>
-              setTimeout(() => {
-                alert(JSON.stringify(values, null, 2));
-              }, 500)
+            onSubmit={(values, { props, setSubmitting }) => {
+              console.log(JSON.stringify(values));
+              setSubmitting(false)
+            }
             }
             render={({ values, handleSubmit }) => (
               <FormikForm>
                 <FieldArray
-                  name="processors"
+                  name="callable"
                   render={(arrayHelpers) => {
                     return (
                       <>
-                        <Form.Group as={Row}>
-                          <Form.Label column sm={2}>Name</Form.Label>
-                          <Col sm={10}>
-                            <Form.Control
-                              required
-                              type="text"
-                              placeholder="Please Enter a Name"
-                            />
-                            <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-                          </Col>
-                        </Form.Group>
                         {
-                          values.processors &&
-                          values.processors.map((processor, index) => createCallableMultiFields(
-                            processor,
+                          values.callable.map((eachCallable, index) => createCallableMultiFields(
+                            procZoo,
+                            values,
                             index,
                             arrayHelpers
                           ))
                         }
                         <Form.Row>
-                          <Button variant="light" className="btn-block" onClick={() => arrayHelpers.push('')}>
-                            Add Processor
+                          <Button
+                            variant="light"
+                            className="btn-block"
+                            onClick={() => arrayHelpers.push('')}>
+                            Add
                           </Button>
                         </Form.Row>
                         <button type="submit">Submit</button>
@@ -141,10 +215,14 @@ class NewElementModal extends Component {
           </Table>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={this.handleClose}>
+          <Button variant="secondary" onClick={() => this.setState({ show: false })}>
             Close
           </Button>
-          <Button variant="primary" onClick={this.handleClose}>
+          <Button variant="primary" onClick={() => {
+            this.form.current.submitForm() &&
+              this.setState({ show: false })
+          }
+          }>
             Save Changes
           </Button>
         </Modal.Footer>
