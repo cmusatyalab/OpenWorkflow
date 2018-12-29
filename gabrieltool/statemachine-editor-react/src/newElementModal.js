@@ -10,7 +10,7 @@ import "./App.css";
 import Select from 'react-select'
 import procZoo from './processor-zoo.json';
 import predZoo from './predicate-zoo.json';
-import { FSMElementType } from "./utils.js";
+import { FSMElementType, getPropertyByString } from "./utils.js";
 
 /** Helper function to create options for Select elements
  * from a pre-defined callable zoo (procZoo or predZoo)
@@ -21,6 +21,37 @@ const getZooOptions = (zoo) => {
   return Object.keys(zoo).map((key) => {
     return { value: key, label: key }
   })
+}
+
+/** Custom validate functions for Formik forms
+ * 
+ * @param {*} param0 
+ */
+const isEmpty = (value) => {
+  let errorMessage;
+  if (value === undefined || value === null || !/^.+$/i.test(value)) {
+    errorMessage = 'Required. Cannot be empty.'
+  }
+  console.log("isEmpty returns " + errorMessage);
+  return errorMessage;
+}
+
+const isDuplicate = (value, existingItemArray) => {
+  let errorMessage;
+  if (value === undefined || value === null || existingItemArray.includes(value)) {
+    errorMessage = 'Duplicate name. Names must be unique.'
+  }
+  return errorMessage;
+}
+
+const isUniqueName = (value, existingItemArray) => {
+  if (isEmpty(value)) {
+    return isEmpty(value)
+  }
+  if (isDuplicate(value, existingItemArray)) {
+    return isDuplicate(value, existingItemArray)
+  }
+  return null;
 }
 
 /*
@@ -34,6 +65,7 @@ const BSFormikField = ({
   label,
   placeholder,
   defaultValue,
+  isValid,
   ...props
 }) => (
     <Form.Group as={Row}>
@@ -41,14 +73,16 @@ const BSFormikField = ({
       <Col>
         <Form.Control
           required
-          type={type}
-          placeholder={placeholder}
           {...field}
           {...props}
+          type={type}
+          placeholder={placeholder}
           value={field.value || defaultValue || ''} // to supress uncontrolled to controlled warning
+          isValid={isValid}
         />
       </Col>
-      <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+      {/* <Form.Control.Feedback>
+        Looks good!</Form.Control.Feedback> */}
     </Form.Group>
   );
 
@@ -71,7 +105,7 @@ const SelectFormikField = ({
           {...props}
           options={selectOptions}
           name={field.name}
-          value={selectOptions ? selectOptions.find(option => option.value === field.value) : ''}
+          value={selectOptions ? selectOptions.find(option => option.value === field.value) : ""}
           onChange={(option) => form.setFieldValue(field.name, option.value)}
           onBlur={field.onBlur}
         />
@@ -106,6 +140,14 @@ const CallableArgField = ({
       {...props} />
   )
 
+const addFieldError = (errors, fieldName) => {
+  if (getPropertyByString(errors, fieldName)) {
+    return <div className="text-danger">{getPropertyByString(errors, fieldName)}</div>
+  } else {
+    return null;
+  }
+}
+
 /*
 Functions to create a group of form field to present a "callable".
 The UIs to create a "callable" consist of following form fields:
@@ -113,21 +155,29 @@ The UIs to create a "callable" consist of following form fields:
 2. callable type
 3. A field for each callable argument (loaded from callable zoos)
 */
-const createCallableMultiFields = (callableTitle, zoo, values, index, arrayHelpers) => {
+const createCallableMultiFields = (callableTitle, zoo, values, index, arrayHelpers, errors) => {
   const zooOptions = getZooOptions(zoo);
   return (<div key={index} className="border">
     <h6>{callableTitle}</h6>
     <Field
       name={`callable.${index}.name`} // add values.callable[index].name
-      component={CallableNameField} />
+      component={CallableNameField}
+      validate={isEmpty}
+      isValid={!isEmpty(getPropertyByString(errors, `callable.${index}.name`))}
+    />
+    {addFieldError(errors, `callable.${index}.name`)}
     <Field
       name={`callable.${index}.type`} // add values.callable[index].name
-      component={(props) => <SelectFormikField {...props} label="Type" selectOptions={zooOptions} />} />
+      component={(props) => <SelectFormikField {...props} label="Type" selectOptions={zooOptions} />}
+      validate={isEmpty}
+    />
+    {addFieldError(errors, `callable.${index}.type`)}
     {
-      values.hasOwnProperty('callable') &&
-      (values.callable[index] !== undefined) &&
-      values['callable'][index]['type'] &&
-      createCallableArgMultiFields(zoo[values['callable'][index]['type']], index)
+      // values.hasOwnProperty('callable') &&
+      // (values.callable[index] !== undefined) &&
+      // values['callable'][index]['type'] &&
+      getPropertyByString(values, `callable.${index}.type`) &&
+      createCallableArgMultiFields(zoo[values['callable'][index]['type']], index, errors)
     }
     <p>{JSON.stringify(values)}</p>
     <Form.Row>
@@ -143,16 +193,26 @@ const createCallableMultiFields = (callableTitle, zoo, values, index, arrayHelpe
 /*
 Create a field for each callable argument.
 */
-const createCallableArgMultiFields = (args, index) => {
+const createCallableArgMultiFields = (args, index, errors) => {
   const argFields = Object.keys(args).map((key, argIndex) => {
-    return <Field
-      name={`callable.${index}.args.${key}`} // add values.callable[0].name
-      component={CallableArgField}
-      key={index + '-arg-' + argIndex}
-      label={key}
-      placeholder={args[key]} />
-  })
-  return argFields
+    return (
+      <div key={index + '.arg.' + argIndex}>
+        <Field
+          name={`callable.${index}.args.${key}`} // add values.callable[0].name
+          component={CallableArgField}
+          label={key}
+          placeholder={args[key]}
+          validate={isEmpty}
+          isValid={!getPropertyByString(errors, `callable.${index}.args.${key}`)}
+        />
+        {
+          addFieldError(errors,
+            `callable.${index}.args.${key}`)
+        }
+      </div>
+    )
+  });
+  return argFields;
 }
 
 
@@ -161,27 +221,38 @@ const createCallableArgMultiFields = (args, index) => {
  * 
  * @param {*} values 
  */
-const createTransitionBasicFields = (fsm) => {
+const createTransitionBasicFields = (fsm, errors) => {
   const fsmStateOptions = fsm.getStatesList().map((state) => {
     return { value: state.getName(), label: state.getName() };
   });
   return (
     <>
       <Field
-        name={"from"}
-        component={(props) => <SelectFormikField {...props} label="From State" selectOptions={fsmStateOptions} />} />
+        name="from"
+        component={(props) => <SelectFormikField {...props} label="From State" selectOptions={fsmStateOptions} />}
+        validate={isEmpty}
+        isValid={!getPropertyByString(errors, "from")}
+      />
+      {addFieldError(errors, "from")}
       <Field
-        name={"to"}
-        component={(props) => <SelectFormikField {...props} label="To State" selectOptions={fsmStateOptions} />} />
+        name="to"
+        component={(props) => <SelectFormikField {...props} label="To State" selectOptions={fsmStateOptions} />}
+        validate={isEmpty}
+        isValid={!getPropertyByString(errors, "to")}
+      />
+      {addFieldError(errors, "to")}
       <Field
-        name={"instruction.audio"}
-        component={(props) => <BSFormikField {...props} type="text" label="Audio Instruction" />} />
+        name="instruction.audio"
+        component={(props) => <BSFormikField {...props} type="text" label="Audio Instruction" />}
+      />
       <Field
-        name={"instruction.image"}
-        component={(props) => <BSFormikField {...props} type="text" label="Image Instruction" />} />
+        name="instruction.image"
+        component={(props) => <BSFormikField {...props} type="text" label="Image Instruction" />}
+      />
       <Field
-        name={"instruction.video"}
-        component={(props) => <BSFormikField {...props} type="text" label="Video Instruction" />} />
+        name="instruction.video"
+        component={(props) => <BSFormikField {...props} type="text" label="Video Instruction" />}
+      />
     </>
   )
 }
@@ -231,7 +302,6 @@ class NewElementModal extends Component {
           <Formik
             ref={this.form}
             initialValues={{
-              name: "",
               callable: []
             }}
             onSubmit={(values, { props, setSubmitting }) => {
@@ -239,22 +309,42 @@ class NewElementModal extends Component {
               setSubmitting(false);
             }
             }
-            render={({ values }) => (
+            render={({ values, errors }) => (
               <FormikForm>
                 <FieldArray
                   name="callable"
                   render={(arrayHelpers) => {
                     return (
                       <>
-                        <Field
-                          name="name"
-                          component={BSFormikField}
-                          type="text"
-                          label="Name"
-                          placeholder="Enter Name" />
+                        {
+                          type === FSMElementType.STATE &&
+                          <>
+                            <Field
+                              name="name"
+                              component={BSFormikField}
+                              type="text"
+                              label="Name"
+                              validate={(value) => {
+                                const existingItemArray = fsm.getStatesList().map((state) => state.getName())
+                                return isUniqueName(value, existingItemArray);
+                              }}
+                            />
+                            {addFieldError(errors, "name")}
+                          </>
+                        }
                         {
                           type === FSMElementType.TRANSITION &&
-                          createTransitionBasicFields(fsm)
+                          <>
+                            <Field
+                              name="name"
+                              component={BSFormikField}
+                              type="text"
+                              label="Name"
+                              validate={isEmpty}
+                            />
+                            {addFieldError(errors, "name")}
+                            {createTransitionBasicFields(fsm, errors)}
+                          </>
                         }
                         {
                           values.callable.map((eachCallable, index) => createCallableMultiFields(
@@ -262,7 +352,8 @@ class NewElementModal extends Component {
                             callableZoo,
                             values,
                             index,
-                            arrayHelpers
+                            arrayHelpers,
+                            errors
                           ))
                         }
                         <Form.Row>
