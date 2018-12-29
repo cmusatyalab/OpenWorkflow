@@ -3,13 +3,12 @@ import ReactTable from "react-table";
 import matchSorter from "match-sorter";
 import ListGroup from "react-bootstrap/lib/ListGroup";
 import ListGroupItem from "react-bootstrap/lib/ListGroupItem";
-import { FSMElementType } from "./toolbar.js";
+import { FSMElementType, getFSMElementType } from "./utils.js";
 import "react-table/react-table.css";
 
 const InfoBox = ({ element }) => {
   console.log("infobox render called");
-  const elementType =
-    typeof element.getProcessorsList === "function" ? FSMElementType.STATE : FSMElementType.TRANSITION;
+  const elementType = getFSMElementType(element);
   const tableData =
     elementType === FSMElementType.STATE
       ? element.getProcessorsList().map(callableItem => {

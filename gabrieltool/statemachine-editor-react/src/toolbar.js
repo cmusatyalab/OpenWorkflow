@@ -6,13 +6,7 @@ import Dropdown from "react-bootstrap/lib/Dropdown";
 import Row from "react-bootstrap/lib/Row";
 import Col from "react-bootstrap/lib/Col";
 import FileReaderInput from "react-file-reader-input";
-
-export const FSMElementType = {
-  STATE: Symbol("state"),
-  TRANSITION: Symbol("transition"),
-};
-Object.freeze(FSMElementType);
-
+import { FSMElementType } from "./utils.js";
 
 export const ToolBar = ({
   onImport,
@@ -22,9 +16,6 @@ export const ToolBar = ({
 }) => {
   return (
     <>
-      <Row>
-        <h2>Actions</h2>
-      </Row>
       <Row>
         <ButtonGroup>
           <Col sm={4}>

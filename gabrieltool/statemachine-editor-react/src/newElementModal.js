@@ -10,7 +10,7 @@ import "./App.css";
 import Select from 'react-select'
 import procZoo from './processor-zoo.json';
 import predZoo from './predicate-zoo.json';
-import { FSMElementType } from "./toolbar.js";
+import { FSMElementType } from "./utils.js";
 
 /** Helper function to create options for Select elements
  * from a pre-defined callable zoo (procZoo or predZoo)
