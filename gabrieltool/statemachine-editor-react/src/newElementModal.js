@@ -91,28 +91,6 @@ const CallableNameField = ({
       {...props} />
   )
 
-// const CallableTypeField = ({
-//   field,
-//   form, // values, setXXXX, handleXXXX, dirty, isValid, status, etc.
-//   selectOptions,
-//   ...props
-// }) => (
-//     <Form.Group as={Row}>
-//       <Form.Label column>Type</Form.Label>
-//       <Col>
-//         <Select
-//           {...field}
-//           {...props}
-//           options={selectOptions}
-//           name={field.name}
-//           value={selectOptions ? selectOptions.find(option => option.value === field.value) : ''}
-//           onChange={(option) => form.setFieldValue(field.name, option.value)}
-//           onBlur={field.onBlur}
-//         />
-//       </Col>
-//     </Form.Group>
-//   )
-
 const CallableArgField = ({
   field,
   key, // unused. not passed to the field. just to suppress parent's react list warning
@@ -168,7 +146,7 @@ Create a field for each callable argument.
 const createCallableArgMultiFields = (args, index) => {
   const argFields = Object.keys(args).map((key, argIndex) => {
     return <Field
-      name={`callable.${index}.${key}`} // add values.callable[0].name
+      name={`callable.${index}.args.${key}`} // add values.callable[0].name
       component={CallableArgField}
       key={index + '-arg-' + argIndex}
       label={key}
@@ -185,7 +163,7 @@ const createCallableArgMultiFields = (args, index) => {
  */
 const createTransitionBasicFields = (fsm) => {
   const fsmStateOptions = fsm.getStatesList().map((state) => {
-    return {value: state.getName(), label: state.getName()};
+    return { value: state.getName(), label: state.getName() };
   });
   return (
     <>
@@ -256,7 +234,7 @@ class NewElementModal extends Component {
               callable: []
             }}
             onSubmit={(values, { props, setSubmitting }) => {
-              onModalSave(values);
+              onModalSave(type, values);
               setSubmitting(false);
             }
             }

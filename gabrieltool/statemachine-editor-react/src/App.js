@@ -6,8 +6,10 @@ import Alert from "react-bootstrap/lib/Alert";
 import { Diagram } from "./diagram.js";
 import "./App.css";
 import InfoBox from "./infoBox.js";
-import { ToolBar } from "./toolbar.js";
+import { FSMElementType, ToolBar } from "./toolbar.js";
 import NewElementModal from "./newElementModal.js";
+import procZoo from './processor-zoo.json';
+import predZoo from './predicate-zoo.json';
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -136,9 +138,102 @@ class App extends Component {
     });
   }
 
-  onModalSave(formValue) {
-    console.log("received modal data")
-    console.log(JSON.stringify(formValue));
+  addCallableFormDataToPb(callbleFormValue, addFunc, callablePbType, zoo) {
+    for (let idx = 0; idx < callbleFormValue.length; idx++) {
+      let callableValue = callbleFormValue[idx];
+      let callablePb = new callablePbType();
+      // proc name
+      callablePb.setName(callableValue.name)
+      // proc type
+      callablePb.setCallableName(callableValue.type);
+      // callable args
+      // need to filter out relevant arguments only
+      let args = {}
+      Object.keys(zoo[callableValue.type]).map((key) => {
+        args[key] = callableValue.args[key]
+      });
+      callablePb.setCallableArgs(JSON.stringify(args));
+      addFunc(callablePb);
+    }
+  }
+
+  createStatePb(formValue) {
+    let statePb = new fsmPb.State();
+    statePb.setName(formValue['name']);
+    // add processors
+    this.addCallableFormDataToPb(
+      formValue.callable,
+      statePb.addProcessors.bind(statePb), //bind is needed to pass context
+      fsmPb.Processor,
+      procZoo
+    )
+    return statePb;
+    // for (let idx = 0; idx < formValue.callable.length; idx++){
+    //   let procValue = formValue.callable[idx];
+    //   let procPb = new fsmPb.Processor();
+    //   // proc name
+    //   procPb.setName(procValue.name)
+    //   // proc type
+    //   procPb.setCallableName(procValue.type);
+    //   // callable args
+    //   // need to filter out relevant arguments only
+    //   let args = {}
+    //   Object.keys(procZoo[procValue.type]).map((key)=>{
+    //     args[key] = procValue.args[key]
+    //   });
+    //   procPb.setCallableArgs(JSON.stringify(args));
+    //   statePb.addProcessors(procPb);
+    // }
+  }
+
+  findStatePb(stateName) {
+    let result = null;
+    const fsm = this.state.fsm;
+    fsm.getStatesList().map((state) => {
+      if (state.getName() == stateName) {
+        result = state;
+      }
+    })
+    return result;
+  }
+
+  createTransitionPb(formValue) {
+    let transitionPb = new fsmPb.Transition();
+    transitionPb.setName(formValue.name)
+    // to state
+    transitionPb.setNextState(formValue.to);
+    // instruction
+    let instPb = new fsmPb.Instruction();
+    instPb.setAudio(formValue.instruction.audio);
+    instPb.setImage(formValue.instruction.image);
+    instPb.setVideo(formValue.instruction.video);
+    transitionPb.setInstruction(instPb);
+    // add predicates
+    this.addCallableFormDataToPb(formValue.callable, 
+      transitionPb.addPredicates.bind(transitionPb), 
+      fsmPb.TransitionPredicate,
+      predZoo
+      )
+    return transitionPb;
+  }
+
+  onModalSave(type, formValue) {
+    const fsm = this.state.fsm;
+    switch (type) {
+      case FSMElementType.STATE:
+        const statePb = this.createStatePb(formValue);
+        fsm.addStates(statePb);
+        break;
+      case FSMElementType.TRANSITION:
+        const transitionPb = this.createTransitionPb(formValue);
+        // find from state
+        const fromStatePb = this.findStatePb(formValue.from);
+        fromStatePb.addTransitions(transitionPb);
+        break;
+      default:
+        throw new Error("Unsupported Element Type: " + type + ". Failed to add a new element")
+    }
+    this.setState({ fsm: fsm });
     this.setState({ showNewElementModal: false })
   }
 
