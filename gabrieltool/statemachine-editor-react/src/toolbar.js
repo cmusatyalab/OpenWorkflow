@@ -13,30 +13,39 @@ export const ToolBar = ({
   onImport,
   onAdd,
   onExport,
+  onEdit,
   onDelete
 }) => {
   return (
     <>
       <Row>
         <ButtonGroup>
-          <Col sm={4}>
+          <Col sm={3}>
             <FileReaderInput as="buffer" onChange={onImport}>
-              <Button variant="primary" className="fw-btn">Import Full</Button>
+              <Button variant="primary" className="fw-btn">Import</Button>
             </FileReaderInput>
           </Col>
-          <Col sm={4}>
-            <Button variant="primary" onClick={onExport}>
+          <Col sm={3}>
+            <Button variant="primary" onClick={onExport} className="fw-btn">
               Export
           </Button>
           </Col>
-          <Col sm={4}>
-            <DropdownButton id="dropdown-basic-button" title="Add">
-              <Dropdown.Item onClick={() => onAdd(FSMElementType.STATE)}>State</Dropdown.Item>
-              <Dropdown.Item onClick={() => onAdd(FSMElementType.TRANSITION)}>Transition</Dropdown.Item>
-            </DropdownButton>
+          <Col sm={3}>
+            <Dropdown>
+              <Dropdown.Toggle id="dropdown-add" className="fw-btn">Add</Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={() => onAdd(FSMElementType.STATE)}>State</Dropdown.Item>
+                <Dropdown.Item onClick={() => onAdd(FSMElementType.TRANSITION)}>Transition</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
           </Col>
-          <Col sm={4}>
-            <Button variant="primary" onClick={onDelete}>
+          <Col sm={3}>
+            <Button variant="primary" onClick={onEdit} className="fw-btn">
+              Edit
+          </Button>
+          </Col>
+          <Col sm={3}>
+            <Button variant="primary" onClick={onDelete} className="fw-btn">
               Delete
           </Button>
           </Col>
