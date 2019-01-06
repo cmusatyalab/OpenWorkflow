@@ -10,7 +10,7 @@ import "./App.css";
 import Select from 'react-select'
 import procZoo from './processor-zoo.json';
 import predZoo from './predicate-zoo.json';
-import { FSMElementType, getPropertyByString } from "./utils.js";
+import { FSMElementType, getFSMElementType, getPropertyByString, findTransitionOriginateState } from "./utils.js";
 
 /** Helper function to create options for Select elements
  * from a pre-defined callable zoo (procZoo or predZoo)
@@ -268,23 +268,82 @@ class NewElementModal extends Component {
   constructor(props) {
     super(props);
     this.form = React.createRef();
+    this.onHide = this.onHide.bind(this);
+  }
+
+  onHide() {
+    // do nothing
+  }
+
+  getValuesFromElement(element, fsm) {
+    const values = {};
+    values.callable = [];
+    const elementType = getFSMElementType(element)
+    // name
+    const name = element.getName();
+    values.name = name;
+    if (elementType === FSMElementType.TRANSITION) {
+      values.to = element.getNextState();
+      values.from = findTransitionOriginateState(element, fsm).getName();
+      values.instruction = {};
+      values.instruction.audio = element.getInstruction().getAudio();
+      values.instruction.image = element.getInstruction().getImage();
+      values.instruction.video = element.getInstruction().getVideo();
+    }
+    // handle callables
+    let elementCallables = null;
+    switch (elementType) {
+      case FSMElementType.STATE:
+        elementCallables = element.getProcessorsList();
+        break;
+      case FSMElementType.TRANSITION:
+        elementCallables = element.getPredicatesList();
+        break;
+      default:
+        throw new Error("Unsupported Element Type: " + elementType + ". Failed to add a new element")
+    }
+    elementCallables.map(elementCallableItem => {
+      let item = {};
+      item.name = elementCallableItem.getName();
+      item.type = elementCallableItem.getCallableName();
+      let callableArgs = JSON.parse(elementCallableItem.getCallableArgs());
+      item.args = {}
+      Object.keys(callableArgs).map((key) => {
+        item.args[key] = callableArgs[key];
+      });
+      values.callable.push(item);
+    });
+    console.log(values);
+    // add predicates
+    return values;
+  }
+
+  getInitModalValuesFromElement(element, fsm) {
+    if (element === null) {
+      return {
+        callable: []
+      }
+    } else {
+      return this.getValuesFromElement(element, fsm);
+    }
   }
 
   render() {
-    const { show, type, fsm, onModalCancel, onModalSave } = this.props;
-    console.log(fsm)
+    const { show, type, fsm, onModalCancel, onModalSave, initElement } = this.props;
+
+    // custom modal titles and button names
     let title, callableTitle = "";
     let callableZoo = null;
     let callableButtonValue = "";
     switch (type) {
       case FSMElementType.STATE:
-        title = "New State";
+        title = "State";
         callableTitle = "New Processor";
         callableButtonValue = "Add Processor"
         callableZoo = procZoo;
         break;
       case FSMElementType.TRANSITION:
-        title = "New Transition";
+        title = "Transition";
         callableTitle = "New Predicate";
         callableButtonValue = "Add Predicate"
         callableZoo = predZoo;
@@ -293,17 +352,17 @@ class NewElementModal extends Component {
         throw new Error("Unsupported Element Type: " + type + ". Failed to add a new element")
     }
 
+    const initValues = this.getInitModalValuesFromElement(initElement, fsm);
+
     return (
-      <Modal show={show} onHide={this.handleClose}>
+      <Modal show={show} onHide={this.onHide}>
         <Modal.Header>
           <Modal.Title>{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Formik
             ref={this.form}
-            initialValues={{
-              callable: []
-            }}
+            initialValues={initValues}
             onSubmit={(values, { props, setSubmitting }) => {
               onModalSave(type, values);
               setSubmitting(false);

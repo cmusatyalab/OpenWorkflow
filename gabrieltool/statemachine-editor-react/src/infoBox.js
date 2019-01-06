@@ -7,7 +7,6 @@ import { FSMElementType, getFSMElementType } from "./utils.js";
 import "react-table/react-table.css";
 
 const InfoBox = ({ element }) => {
-  console.log("infobox render called");
   const elementType = getFSMElementType(element);
   const tableData =
     elementType === FSMElementType.STATE

@@ -7,7 +7,7 @@ import { Diagram } from "./diagram.js";
 import "./App.css";
 import InfoBox from "./infoBox.js";
 import { ToolBar } from "./toolbar.js";
-import { FSMElementType, getFSMElementType } from "./utils.js";
+import { FSMElementType, getFSMElementType, findStatePbByName } from "./utils.js";
 import NewElementModal from "./newElementModal.js";
 import procZoo from './processor-zoo.json';
 import predZoo from './predicate-zoo.json';
@@ -33,12 +33,14 @@ class App extends Component {
     this.onExport = this.onExport.bind(this);
     this.onAdd = this.onAdd.bind(this);
     this.onDelete = this.onDelete.bind(this);
+    this.onEdit = this.onEdit.bind(this);
     this.onClickCell = this.onClickCell.bind(this);
     this.onModalCancel = this.onModalCancel.bind(this);
     this.onModalSave = this.onModalSave.bind(this);
     this.state = {
       fsm: new fsmPb.StateMachine(),
       curFSMElement: null,
+      modalInitElement: null,
       alertMsg: {
         show: true,
         type: "info",
@@ -69,7 +71,7 @@ class App extends Component {
           </Col>
           <Col sm={6}>
             <ToolBar onImport={this.onImport} onAdd={this.onAdd} onExport={this.onExport}
-              onDelete={this.onDelete}
+              onDelete={this.onDelete} onEdit={this.onEdit}
             />
             {this.state.curFSMElement && (
               <Row>
@@ -94,6 +96,7 @@ class App extends Component {
             fsm={this.state.fsm} // new elements may depend on existing elements (e.g. adding a transition between two states)
             show={this.state.showNewElementModal}
             type={this.state.newElementModalType}
+            initElement={this.state.modalInitElement} // if element is not null, then edit the element
             onModalSave={this.onModalSave}
             onModalCancel={this.onModalCancel}
           />
@@ -140,7 +143,7 @@ class App extends Component {
     } else {
       // TODO(junjuew): fix start state. It should be marked by users
       // instead of being the first state added
-      if (fsmPb.getStartState() == "") {
+      if (fsmPb.getStartState() === "") {
         fsmPb.setStartState(fsmPb.getStatesList()[0].getName());
       }
       let fsmPbSerialized = fsmPb.serializeBinary();
@@ -212,14 +215,33 @@ class App extends Component {
     }
   }
 
-  onDelete() {
+  hasCurElement() {
     const element = this.state.curFSMElement;
     if (element === null) {
       this.alert(
         "danger",
-        "Cannot delete. There is no element selected."
+        "There is no element selected. Double-click to select an element."
       )
-    } else {
+      return false;
+    }
+    return true;
+  }
+
+  onEdit() {
+    if (this.hasCurElement()) {
+      const element = this.state.curFSMElement;
+      const elementType = getFSMElementType(element);
+      this.setState({ 
+        showNewElementModal: true, 
+        newElementModalType: elementType, 
+        modalInitElement: element 
+      });
+    }
+  }
+
+  onDelete() {
+    if (this.hasCurElement()) {
+      const element = this.state.curFSMElement;
       const elementType = getFSMElementType(element)
       switch (elementType) {
         case FSMElementType.STATE:
@@ -277,17 +299,6 @@ class App extends Component {
     return statePb;
   }
 
-  findStatePb(stateName) {
-    let result = null;
-    const fsm = this.state.fsm;
-    fsm.getStatesList().map((state) => {
-      if (state.getName() == stateName) {
-        result = state;
-      }
-    })
-    return result;
-  }
-
   createTransitionPb(formValue) {
     let transitionPb = new fsmPb.Transition();
     transitionPb.setName(formValue.name)
@@ -318,18 +329,18 @@ class App extends Component {
       case FSMElementType.TRANSITION:
         const transitionPb = this.createTransitionPb(formValue);
         // find from state
-        const fromStatePb = this.findStatePb(formValue.from);
+        const fromStatePb = findStatePbByName(formValue.from, fsm);
         fromStatePb.addTransitions(transitionPb);
         break;
       default:
         throw new Error("Unsupported Element Type: " + type + ". Failed to add a new element")
     }
     this.setState({ fsm: fsm });
-    this.setState({ showNewElementModal: false })
+    this.setState({ showNewElementModal: false, modalInitElement: null})
   }
 
   onModalCancel() {
-    this.setState({ showNewElementModal: false })
+    this.setState({ showNewElementModal: false, modalInitElement: null })
   }
 }
 

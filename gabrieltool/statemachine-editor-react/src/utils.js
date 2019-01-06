@@ -38,3 +38,26 @@ export const getPropertyByString = function (o, s) {
         return;
     }
 }
+
+
+export const findStatePbByName = function (stateName, fsm) {
+    let result = null;
+    fsm.getStatesList().map((state) => {
+        if (state.getName() === stateName) {
+            result = state;
+        }
+    })
+    return result;
+}
+
+export const findTransitionOriginateState = function (transition, fsm) {
+    let result = null;
+    fsm.getStatesList().map((state) => {
+        state.getTransitionsList().map((curTransition) => {
+            if (curTransition === transition) {
+                result = state;
+            }
+        })
+    });
+    return result;
+}

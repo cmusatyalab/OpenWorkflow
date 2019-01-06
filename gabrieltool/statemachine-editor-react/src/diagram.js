@@ -110,16 +110,13 @@ export class Diagram extends Component {
   }
 
   componentDidUpdate() {
-    console.log("called compnenet did update");
   }
 
   handleStateCallback(cell) {
     this.stateCells.push(cell);
-    console.log("hanldeStateCallback: " + this.stateCells);
   }
 
   renderAllStates(fsm) {
-    console.log("called render all states");
     const stateCells = fsm.getStatesList().map((state, idx) => {
       const cell = create_state_cell(
         Math.floor(idx % this.state_per_row) * this.state_spacing_x,
@@ -175,8 +172,6 @@ export class Diagram extends Component {
   }
 
   render() {
-    console.log("Called render diagram");
-    console.log(this.props.fsm);
     const { fsm, onClickCell } = this.props;
     if (fsm != null) {
       this.clearGraph();
