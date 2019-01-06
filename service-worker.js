@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/gabriel-tool/gabrieltool/statemachine-editor-react/precache-manifest.344d463b697acbd5e3311c020da2b570.js"
+  "/gabriel-tool/precache-manifest.4eaf63820eab32e928805891f38c445a.js"
 );
 
 workbox.clientsClaim();
@@ -28,7 +28,7 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerNavigationRoute("/gabriel-tool/gabrieltool/statemachine-editor-react/index.html", {
+workbox.routing.registerNavigationRoute("/gabriel-tool/index.html", {
   
   blacklist: [/^\/_/,/\/[^\/]+\.[^\/]+$/],
 });
