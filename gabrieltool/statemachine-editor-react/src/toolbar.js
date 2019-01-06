@@ -7,6 +7,7 @@ import Row from "react-bootstrap/lib/Row";
 import Col from "react-bootstrap/lib/Col";
 import FileReaderInput from "react-file-reader-input";
 import { FSMElementType } from "./utils.js";
+import "./App.css";
 
 export const ToolBar = ({
   onImport,
@@ -20,7 +21,7 @@ export const ToolBar = ({
         <ButtonGroup>
           <Col sm={4}>
             <FileReaderInput as="buffer" onChange={onImport}>
-              <Button variant="primary">Import</Button>
+              <Button variant="primary" className="fw-btn">Import Full</Button>
             </FileReaderInput>
           </Col>
           <Col sm={4}>

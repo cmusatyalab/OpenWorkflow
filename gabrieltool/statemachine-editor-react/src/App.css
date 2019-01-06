@@ -43,3 +43,10 @@
 .rt-td {
   white-space: normal !important;
 }
+
+/* full width btn */
+.fw-btn {
+  display: block;
+  margin: 10px;
+  padding: 10px
+}
