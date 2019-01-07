@@ -12,7 +12,7 @@ import {
   getFSMElementType,
   formValuesToElement
 } from "./utils.js";
-import NewElementModal from "./elementModal.js";
+import ElementModal from "./elementModal.js";
 import saveAs from "file-saver";
 var fsmPb = require("./wca-state-machine_pb");
 
@@ -30,6 +30,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.diagramRef = React.createRef();
+    this.diagramContainerRef = React.createRef();
     this.alert = this.alert.bind(this);
     this.onImport = this.onImport.bind(this);
     this.onExport = this.onExport.bind(this);
@@ -63,12 +64,13 @@ class App extends Component {
           </Alert>
         )}
         <Row>
-          <Col sm={6} style={{ backgroundColor: "lavender" }}>
+          <Col sm={6} ref={this.diagramContainerRef} style={{ backgroundColor: "lavender" }}>
             <h4>Diagram</h4>
             <Diagram
               fsm={this.state.fsm}
               onClickCell={this.onClickCell}
               ref={this.diagramRef}
+              paperWidth={window.innerWidth/2} // half of current window's inner width
             />
           </Col>
           <Col sm={6}>
@@ -97,7 +99,7 @@ class App extends Component {
           </Container>
         </footer>
         {this.state.showNewElementModal && (
-          <NewElementModal
+          <ElementModal
             fsm={this.state.fsm} // new elements may depend on existing elements (e.g. adding a transition between two states)
             show={this.state.showNewElementModal}
             type={this.state.newElementModalType}

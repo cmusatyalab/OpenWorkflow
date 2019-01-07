@@ -5,116 +5,106 @@ import ListGroup from "react-bootstrap/lib/ListGroup";
 import ListGroupItem from "react-bootstrap/lib/ListGroupItem";
 import { FSMElementType, getFSMElementType } from "./utils.js";
 import "react-table/react-table.css";
+import ReactJson from "react-json-view";
+
+const getColumnWidth = (rows, accessor, headerText) => {
+  const maxWidth = 400;
+  const magicSpacing = 11;
+  const cellLength = Math.max(
+    ...rows.map(row => (`${row[accessor]}` || "").length),
+    headerText.length
+  );
+  return Math.min(maxWidth, cellLength * magicSpacing);
+};
 
 const InfoBox = ({ element }) => {
   const elementType = getFSMElementType(element);
   const tableData =
     elementType === FSMElementType.STATE
       ? element.getProcessorsList().map(callableItem => {
-        return {
-          name: callableItem.getName(),
-          callable_name: callableItem.getCallableName(),
-          callable_args: callableItem.getCallableArgs()
-        };
-      })
+          return {
+            name: callableItem.getName(),
+            callable_name: callableItem.getCallableName(),
+            callable_args: JSON.parse(callableItem.getCallableArgs())
+          };
+        })
       : element.getPredicatesList().map(callableItem => {
-        return {
-          name: callableItem.getName(),
-          callable_name: callableItem.getCallableName(),
-          callable_args: callableItem.getCallableArgs()
-        };
-      });
-  const tableColumns =
-    elementType === FSMElementType.STATE
-      ? [
-        {
-          Header: "Processor Name",
-          accessor: "name",
-          filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, { keys: ["name"] }),
-          filterAll: true
-        },
-        {
-          Header: "Processing Function",
-          accessor: "callable_name",
-          filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, {
-              keys: ["callable_name"]
-            }),
-          filterAll: true
-        },
-        {
-          Header: "Arguments",
-          accessor: "callable_args",
-          filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, {
-              keys: ["callable_args"]
-            }),
-          filterAll: true
-        }
-      ]
-      : [
-        {
-          Header: "Predicate Name",
-          accessor: "name",
-          filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, { keys: ["name"] }),
-          filterAll: true
-        },
-        {
-          Header: "Predicate Function",
-          accessor: "callable_name",
-          filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, {
-              keys: ["callable_name"]
-            }),
-          filterAll: true
-        },
-        {
-          Header: "Arguments",
-          accessor: "callable_args",
-          filterMethod: (filter, rows) =>
-            matchSorter(rows, filter.value, {
-              keys: ["callable_args"]
-            }),
-          filterAll: true
-        }
-      ];
+          return {
+            name: callableItem.getName(),
+            callable_name: callableItem.getCallableName(),
+            callable_args: JSON.parse(callableItem.getCallableArgs())
+          };
+        });
+  const tableColumns = [
+    {
+      Header: "Name",
+      accessor: "name",
+      filterMethod: (filter, rows) =>
+        matchSorter(rows, filter.value, { keys: ["name"] }),
+      filterAll: true,
+      width: getColumnWidth(tableData, "name", "Name")
+    },
+    {
+      Header: "Type",
+      accessor: "callable_name",
+      filterMethod: (filter, rows) =>
+        matchSorter(rows, filter.value, {
+          keys: ["callable_name"]
+        }),
+      filterAll: true,
+      width: getColumnWidth(tableData, "callable_name", "Type")
+    },
+    {
+      Header: "Arguments",
+      accessor: "callable_args",
+      filterMethod: (filter, rows) =>
+        matchSorter(rows, filter.value, {
+          keys: ["callable_args"]
+        }),
+      Cell: row => <ReactJson src={row.value} />,
+      filterAll: true
+    }
+  ];
   return (
-    <div>
-      <h3>Information</h3>
-      <ListGroup>
-        <ListGroupItem>
-          <h4>Name: {element.getName()}</h4>
+    <ListGroup style={{ width: "100%", margin: "20px" }}>
+      <ListGroupItem variant="secondary">
+        Name: {element.getName()}
+      </ListGroupItem>
+      <ListGroupItem variant="secondary">
+        Type: {elementType === FSMElementType.STATE ? "State" : "Transition"}
+      </ListGroupItem>
+      {elementType === FSMElementType.TRANSITION && (
+        <ListGroupItem variant="secondary">
+          Instruction
+          <br />
+          Audio: {element.getInstruction().getAudio()}
+          <br />
+          Image: {element.getInstruction().getImage()}
+          <br />
+          {/*TODO(junjuew): add proper display of images and videos*/}
+          Video: {element.getInstruction().getVideo()}
+          <br />
         </ListGroupItem>
-        <ListGroupItem>
-          <h4>Type: {elementType}</h4>
-        </ListGroupItem>
-        {
-          elementType === FSMElementType.TRANSITION &&
-          <ListGroupItem>
-            <h4>Instruction</h4>
-            <h5>Audio:</h5><p>{element.getInstruction().getAudio()}</p>
-            <h5>Image:</h5><p>{element.getInstruction().getImage()}</p> {/*TODO(junjuew): add proper display of images and videos*/}
-            <h5>Video:</h5><p>{element.getInstruction().getVideo()}</p>
-          </ListGroupItem>
+      )}
+      <ListGroupItem variant="secondary">
+        {elementType === FSMElementType.STATE
+          ? "Processors"
+          : "Transition Predicates"}
+      </ListGroupItem>
+      <ReactTable
+        data={tableData}
+        filterable
+        defaultFilterMethod={(filter, row) =>
+          String(row[filter.id]) === filter.value
         }
-        <ListGroupItem>
-          {(
-            <ReactTable
-              data={tableData}
-              filterable
-              defaultFilterMethod={(filter, row) =>
-                String(row[filter.id]) === filter.value
-              }
-              columns={tableColumns}
-              defaultPageSize={5}
-              className="-striped -highlight"
-            />
-          )}
-        </ListGroupItem>
-      </ListGroup>
-    </div>
+        columns={tableColumns}
+        defaultPageSize={3}
+      >
+        {(state, makeTable, instance) => {
+          return <div>{makeTable()}</div>;
+        }}
+      </ReactTable>
+    </ListGroup>
   );
 };
 

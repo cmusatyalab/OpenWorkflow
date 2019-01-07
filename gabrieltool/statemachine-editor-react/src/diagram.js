@@ -6,7 +6,7 @@ import joint from "jointjs";
 joint.shapes.basic.Circle.define("fsa.State", {
   attrs: {
     circle: {
-      "stroke-width": 3
+      "stroke-width": 2
     },
     text: {
       "font-weight": "800"
@@ -14,23 +14,21 @@ joint.shapes.basic.Circle.define("fsa.State", {
   }
 });
 
-joint.dia.Link.define("fsa.Arrow", {
+joint.shapes.standard.Link.define("fsa.CustomArrow", {
   attrs: {
-    ".marker-target": {
-      d: "M 10 0 L 0 5 L 10 10 z"
-    },
-    ".link-tools": {
-      display: "none"
-    },
-    ".tool-remove": {
-      display: "none"
+    line: {
+      sourceMarker: {
+        type: "circle",
+        width: 5,
+        stroke: "none"
+      }
     }
   },
   smooth: true
 });
 
 const create_transition_cell = (source, target, label) => {
-  var cell = new joint.shapes.fsa.Arrow({
+  var cell = new joint.shapes.fsa.CustomArrow({
     source: {
       id: source.id
     },
@@ -87,16 +85,19 @@ export class Diagram extends Component {
   }
 
   componentDidMount() {
-    const { fsm, onClickCell } = this.props;
+    const { fsm, onClickCell, paperWidth } = this.props;
     this.$el = $(this.el);
+    console.log("paper width is: " + paperWidth);
     const paper = new joint.dia.Paper({
       el: this.$el,
-      width: 800,
-      height: 800,
+      width: paperWidth,
+      height: 5 * paperWidth,
       gridSize: 1,
-      model: this.graph
+      model: this.graph,
+      restrictTranslate: true
     });
     paper.on("cell:pointerdblclick", onClickCell);
+    paper.on("cell:pointerclick", onClickCell);
     this.state_per_row =
       Math.floor(
         parseInt(paper.options.width, 10) /
@@ -109,8 +110,7 @@ export class Diagram extends Component {
     this.cellId2FSMElement = {};
   }
 
-  componentDidUpdate() {
-  }
+  componentDidUpdate() {}
 
   handleStateCallback(cell) {
     this.stateCells.push(cell);
@@ -178,10 +178,6 @@ export class Diagram extends Component {
       this.renderAllStates(fsm);
       this.renderAllTransitions(fsm);
     }
-    return (
-      <div ref={el => (this.el = el)}>
-        <h4>Diagram</h4>
-      </div>
-    );
+    return <div ref={el => (this.el = el)} />;
   }
 }
