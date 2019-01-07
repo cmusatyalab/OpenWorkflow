@@ -7,11 +7,16 @@ import { Diagram } from "./diagram.js";
 import "./App.css";
 import InfoBox from "./infoBox.js";
 import { ToolBar } from "./toolbar.js";
-import { FSMElementType, getFSMElementType, findStatePbByName } from "./utils.js";
+import {
+  FSMElementType,
+  getFSMElementType,
+  findStatePbByName,
+  formValuesToElement
+} from "./utils.js";
 import NewElementModal from "./newElementModal.js";
-import procZoo from './processor-zoo.json';
-import predZoo from './predicate-zoo.json';
-import saveAs from 'file-saver';
+import procZoo from "./processor-zoo.json";
+import predZoo from "./predicate-zoo.json";
+import saveAs from "file-saver";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -70,8 +75,12 @@ class App extends Component {
             />
           </Col>
           <Col sm={6}>
-            <ToolBar onImport={this.onImport} onAdd={this.onAdd} onExport={this.onExport}
-              onDelete={this.onDelete} onEdit={this.onEdit}
+            <ToolBar
+              onImport={this.onImport}
+              onAdd={this.onAdd}
+              onExport={this.onExport}
+              onDelete={this.onDelete}
+              onEdit={this.onEdit}
             />
             {this.state.curFSMElement && (
               <Row>
@@ -90,8 +99,7 @@ class App extends Component {
             </span>
           </Container>
         </footer>
-        {
-          this.state.showNewElementModal &&
+        {this.state.showNewElementModal && (
           <NewElementModal
             fsm={this.state.fsm} // new elements may depend on existing elements (e.g. adding a transition between two states)
             show={this.state.showNewElementModal}
@@ -100,7 +108,7 @@ class App extends Component {
             onModalSave={this.onModalSave}
             onModalCancel={this.onModalCancel}
           />
-        }
+        )}
       </Container>
     );
   }
@@ -136,10 +144,7 @@ class App extends Component {
   onExport() {
     const fsmPb = this.state.fsm;
     if (fsmPb.getStatesList().length === 0) {
-      this.alert(
-        "danger",
-        "Empty state machine! There is nothing to save. \n"
-      );
+      this.alert("danger", "Empty state machine! There is nothing to save. \n");
     } else {
       // TODO(junjuew): fix start state. It should be marked by users
       // instead of being the first state added
@@ -147,30 +152,32 @@ class App extends Component {
         fsmPb.setStartState(fsmPb.getStatesList()[0].getName());
       }
       let fsmPbSerialized = fsmPb.serializeBinary();
-      let blob = new Blob([fsmPbSerialized], { type: "application/octet-stream" });
+      let blob = new Blob([fsmPbSerialized], {
+        type: "application/octet-stream"
+      });
       saveAs(blob, "app.pbfsm");
     }
   }
 
   onAdd(type) {
-    this.setState({ showNewElementModal: true, newElementModalType: type })
+    this.setState({ showNewElementModal: true, newElementModalType: type });
   }
 
   isElementSafeToDelete(element) {
     const fsm = this.state.fsm;
-    const elementType = getFSMElementType(element)
+    const elementType = getFSMElementType(element);
     let isSafe = true;
     switch (elementType) {
       case FSMElementType.STATE:
         // check if there are transitions starting from this state
         if (element.getTransitionsList().length > 0) isSafe = false;
-        // check if there are transitions ending at this state 
-        fsm.getStatesList().map((state) => {
-          state.getTransitionsList().map((transition) => {
+        // check if there are transitions ending at this state
+        fsm.getStatesList().map(state => {
+          state.getTransitionsList().map(transition => {
             if (transition.getNextState() === element.getName()) {
               isSafe = false;
             }
-          })
+          });
         });
         return isSafe;
         break;
@@ -186,12 +193,12 @@ class App extends Component {
     if (this.isElementSafeToDelete(element)) {
       const elementIdx = fsm.getStatesList().indexOf(element);
       fsm.getStatesList().splice(elementIdx, elementIdx + 1);
-      this.setState({ fsm: fsm, curFSMElement: null })
+      this.setState({ fsm: fsm, curFSMElement: null });
     } else {
       return this.alert(
         "danger",
         "A state cannot be deleted unless all transitions to/from it have been deleted."
-      )
+      );
     }
   }
 
@@ -200,18 +207,15 @@ class App extends Component {
     if (this.isElementSafeToDelete(element)) {
       // find the state this transition belons to and removes it from
       // the transitions list
-      fsm.getStatesList().map((state) => {
+      fsm.getStatesList().map(state => {
         const elementIdx = state.getTransitionsList().indexOf(element);
         if (elementIdx >= 0) {
           state.getTransitionsList().splice(elementIdx, elementIdx + 1);
         }
       });
-      this.setState({ fsm: fsm, curFSMElement: null })
+      this.setState({ fsm: fsm, curFSMElement: null });
     } else {
-      return this.alert(
-        "danger",
-        "The transition cannot be safely deleted"
-      )
+      return this.alert("danger", "The transition cannot be safely deleted");
     }
   }
 
@@ -221,7 +225,7 @@ class App extends Component {
       this.alert(
         "danger",
         "There is no element selected. Double-click to select an element."
-      )
+      );
       return false;
     }
     return true;
@@ -231,10 +235,10 @@ class App extends Component {
     if (this.hasCurElement()) {
       const element = this.state.curFSMElement;
       const elementType = getFSMElementType(element);
-      this.setState({ 
-        showNewElementModal: true, 
-        newElementModalType: elementType, 
-        modalInitElement: element 
+      this.setState({
+        showNewElementModal: true,
+        newElementModalType: elementType,
+        modalInitElement: element
       });
     }
   }
@@ -242,7 +246,7 @@ class App extends Component {
   onDelete() {
     if (this.hasCurElement()) {
       const element = this.state.curFSMElement;
-      const elementType = getFSMElementType(element)
+      const elementType = getFSMElementType(element);
       switch (elementType) {
         case FSMElementType.STATE:
           this.deleteStatePb(element);
@@ -256,7 +260,6 @@ class App extends Component {
     }
   }
 
-
   // diagram callbacks
   onClickCell(elementView) {
     const fsmElement = this.diagramRef.current.cellId2FSMElement[
@@ -267,80 +270,15 @@ class App extends Component {
     });
   }
 
-  addCallableFormDataToPb(callbleFormValue, addFunc, callablePbType, zoo) {
-    for (let idx = 0; idx < callbleFormValue.length; idx++) {
-      let callableValue = callbleFormValue[idx];
-      let callablePb = new callablePbType();
-      callablePb.setName(callableValue.name)
-      callablePb.setCallableName(callableValue.type);
-      // callable args
-      // need to filter out relevant arguments only
-      // since the form may contain irrelevant arguments for other callable type
-      // this is caused by user switching callable types
-      let args = {}
-      Object.keys(zoo[callableValue.type]).map((key) => {
-        args[key] = callableValue.args[key]
-      });
-      callablePb.setCallableArgs(JSON.stringify(args));
-      addFunc(callablePb);
-    }
-  }
-
-  createStatePb(formValue) {
-    let statePb = new fsmPb.State();
-    statePb.setName(formValue['name']);
-    // add processors
-    this.addCallableFormDataToPb(
-      formValue.callable,
-      statePb.addProcessors.bind(statePb), //bind is needed to pass context
-      fsmPb.Processor,
-      procZoo
-    )
-    return statePb;
-  }
-
-  createTransitionPb(formValue) {
-    let transitionPb = new fsmPb.Transition();
-    transitionPb.setName(formValue.name)
-    // to state
-    transitionPb.setNextState(formValue.to);
-    // instruction
-    let instPb = new fsmPb.Instruction();
-    instPb.setAudio(formValue.instruction.audio);
-    instPb.setImage(formValue.instruction.image);
-    instPb.setVideo(formValue.instruction.video);
-    transitionPb.setInstruction(instPb);
-    // add predicates
-    this.addCallableFormDataToPb(formValue.callable,
-      transitionPb.addPredicates.bind(transitionPb),
-      fsmPb.TransitionPredicate,
-      predZoo
-    )
-    return transitionPb;
-  }
-
-  onModalSave(type, formValue) {
+  onModalSave(type, formValue, initElement) {
     const fsm = this.state.fsm;
-    switch (type) {
-      case FSMElementType.STATE:
-        const statePb = this.createStatePb(formValue);
-        fsm.addStates(statePb);
-        break;
-      case FSMElementType.TRANSITION:
-        const transitionPb = this.createTransitionPb(formValue);
-        // find from state
-        const fromStatePb = findStatePbByName(formValue.from, fsm);
-        fromStatePb.addTransitions(transitionPb);
-        break;
-      default:
-        throw new Error("Unsupported Element Type: " + type + ". Failed to add a new element")
-    }
+    formValuesToElement(formValue, fsm, type, initElement);
     this.setState({ fsm: fsm });
-    this.setState({ showNewElementModal: false, modalInitElement: null})
+    this.setState({ showNewElementModal: false, modalInitElement: null });
   }
 
   onModalCancel() {
-    this.setState({ showNewElementModal: false, modalInitElement: null })
+    this.setState({ showNewElementModal: false, modalInitElement: null });
   }
 }
 

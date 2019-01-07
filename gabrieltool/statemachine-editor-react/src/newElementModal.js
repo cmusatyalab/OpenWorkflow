@@ -10,7 +10,7 @@ import "./App.css";
 import Select from 'react-select'
 import procZoo from './processor-zoo.json';
 import predZoo from './predicate-zoo.json';
-import { FSMElementType, getFSMElementType, getPropertyByString, findTransitionOriginateState } from "./utils.js";
+import { FSMElementType, getFSMElementType, getPropertyByString, findTransitionOriginateState, elementToFormValues } from "./utils.js";
 
 /** Helper function to create options for Select elements
  * from a pre-defined callable zoo (procZoo or predZoo)
@@ -275,56 +275,13 @@ class NewElementModal extends Component {
     // do nothing
   }
 
-  getValuesFromElement(element, fsm) {
-    const values = {};
-    values.callable = [];
-    const elementType = getFSMElementType(element)
-    // name
-    const name = element.getName();
-    values.name = name;
-    if (elementType === FSMElementType.TRANSITION) {
-      values.to = element.getNextState();
-      values.from = findTransitionOriginateState(element, fsm).getName();
-      values.instruction = {};
-      values.instruction.audio = element.getInstruction().getAudio();
-      values.instruction.image = element.getInstruction().getImage();
-      values.instruction.video = element.getInstruction().getVideo();
-    }
-    // handle callables
-    let elementCallables = null;
-    switch (elementType) {
-      case FSMElementType.STATE:
-        elementCallables = element.getProcessorsList();
-        break;
-      case FSMElementType.TRANSITION:
-        elementCallables = element.getPredicatesList();
-        break;
-      default:
-        throw new Error("Unsupported Element Type: " + elementType + ". Failed to add a new element")
-    }
-    elementCallables.map(elementCallableItem => {
-      let item = {};
-      item.name = elementCallableItem.getName();
-      item.type = elementCallableItem.getCallableName();
-      let callableArgs = JSON.parse(elementCallableItem.getCallableArgs());
-      item.args = {}
-      Object.keys(callableArgs).map((key) => {
-        item.args[key] = callableArgs[key];
-      });
-      values.callable.push(item);
-    });
-    console.log(values);
-    // add predicates
-    return values;
-  }
-
   getInitModalValuesFromElement(element, fsm) {
     if (element === null) {
       return {
         callable: []
       }
     } else {
-      return this.getValuesFromElement(element, fsm);
+      return elementToFormValues(element, fsm);
     }
   }
 
@@ -364,7 +321,7 @@ class NewElementModal extends Component {
             ref={this.form}
             initialValues={initValues}
             onSubmit={(values, { props, setSubmitting }) => {
-              onModalSave(type, values);
+              onModalSave(type, values, initElement);
               setSubmitting(false);
             }
             }
