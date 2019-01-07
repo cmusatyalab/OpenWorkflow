@@ -264,7 +264,7 @@ const createTransitionBasicFields = (fsm, errors) => {
  * the user-inputted properties for the element
  */
 //TODO(junjuew): add form validation
-class NewElementModal extends Component {
+class ElementModal extends Component {
   constructor(props) {
     super(props);
     this.form = React.createRef();
@@ -406,4 +406,4 @@ class NewElementModal extends Component {
 }
 
 
-export default NewElementModal;
+export default ElementModal;

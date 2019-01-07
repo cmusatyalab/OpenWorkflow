@@ -10,12 +10,9 @@ import { ToolBar } from "./toolbar.js";
 import {
   FSMElementType,
   getFSMElementType,
-  findStatePbByName,
   formValuesToElement
 } from "./utils.js";
-import NewElementModal from "./newElementModal.js";
-import procZoo from "./processor-zoo.json";
-import predZoo from "./predicate-zoo.json";
+import NewElementModal from "./elementModal.js";
 import saveAs from "file-saver";
 var fsmPb = require("./wca-state-machine_pb");
 
