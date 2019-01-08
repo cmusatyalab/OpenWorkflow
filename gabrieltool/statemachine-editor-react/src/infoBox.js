@@ -17,95 +17,126 @@ const getColumnWidth = (rows, accessor, headerText) => {
   return Math.min(maxWidth, cellLength * magicSpacing);
 };
 
-const InfoBox = ({ element }) => {
-  const elementType = getFSMElementType(element);
-  const tableData =
-    elementType === FSMElementType.STATE
-      ? element.getProcessorsList().map(callableItem => {
-          return {
-            name: callableItem.getName(),
-            callable_name: callableItem.getCallableName(),
-            callable_args: JSON.parse(callableItem.getCallableArgs())
-          };
-        })
-      : element.getPredicatesList().map(callableItem => {
-          return {
-            name: callableItem.getName(),
-            callable_name: callableItem.getCallableName(),
-            callable_args: JSON.parse(callableItem.getCallableArgs())
-          };
-        });
-  const tableColumns = [
-    {
-      Header: "Name",
-      accessor: "name",
-      filterMethod: (filter, rows) =>
-        matchSorter(rows, filter.value, { keys: ["name"] }),
-      filterAll: true,
-      width: getColumnWidth(tableData, "name", "Name")
-    },
-    {
-      Header: "Type",
-      accessor: "callable_name",
-      filterMethod: (filter, rows) =>
-        matchSorter(rows, filter.value, {
-          keys: ["callable_name"]
-        }),
-      filterAll: true,
-      width: getColumnWidth(tableData, "callable_name", "Type")
-    },
-    {
-      Header: "Arguments",
-      accessor: "callable_args",
-      filterMethod: (filter, rows) =>
-        matchSorter(rows, filter.value, {
-          keys: ["callable_args"]
-        }),
-      Cell: row => <ReactJson src={row.value} />,
-      filterAll: true
+class InfoBox extends Component {
+  constructor(props) {
+    super(props);
+    this.imageInstUrl = null;
+    this.state = {};
+  }
+
+  prepareResource(element) {
+    // clear up urls to prevent leaking memories
+    if (this.imageInstUrl !== null) {
+      URL.revokeObjectURL(this.imageInstUrl);
     }
-  ];
-  return (
-    <ListGroup style={{ width: "100%", margin: "20px" }}>
-      <ListGroupItem variant="secondary">
-        Name: {element.getName()}
-      </ListGroupItem>
-      <ListGroupItem variant="secondary">
-        Type: {elementType === FSMElementType.STATE ? "State" : "Transition"}
-      </ListGroupItem>
-      {elementType === FSMElementType.TRANSITION && (
+    let blob = new Blob([element.getInstruction().getImage()], {
+      type: "image"
+    });
+    this.imageInstUrl = URL.createObjectURL(blob);
+    return {
+      imageInstUrl: this.imageInstUrl
+    };
+  }
+
+  render() {
+    const { element } = this.props;
+    const elementType = getFSMElementType(element);
+
+    // prepare resources
+    let res = {};
+    if (elementType === FSMElementType.TRANSITION) {
+      res = this.prepareResource(element);
+    }
+
+    const tableData =
+      elementType === FSMElementType.STATE
+        ? element.getProcessorsList().map(callableItem => {
+            return {
+              name: callableItem.getName(),
+              callable_name: callableItem.getCallableName(),
+              callable_args: JSON.parse(callableItem.getCallableArgs())
+            };
+          })
+        : element.getPredicatesList().map(callableItem => {
+            return {
+              name: callableItem.getName(),
+              callable_name: callableItem.getCallableName(),
+              callable_args: JSON.parse(callableItem.getCallableArgs())
+            };
+          });
+    const tableColumns = [
+      {
+        Header: "Name",
+        accessor: "name",
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, { keys: ["name"] }),
+        filterAll: true,
+        width: getColumnWidth(tableData, "name", "Name")
+      },
+      {
+        Header: "Type",
+        accessor: "callable_name",
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, {
+            keys: ["callable_name"]
+          }),
+        filterAll: true,
+        width: getColumnWidth(tableData, "callable_name", "Type")
+      },
+      {
+        Header: "Arguments",
+        accessor: "callable_args",
+        filterMethod: (filter, rows) =>
+          matchSorter(rows, filter.value, {
+            keys: ["callable_args"]
+          }),
+        Cell: row => <ReactJson src={row.value} />,
+        filterAll: true
+      }
+    ];
+    return (
+      <ListGroup style={{ width: "100%", margin: "20px" }}>
         <ListGroupItem variant="secondary">
-          Instruction
-          <br />
-          Audio: {element.getInstruction().getAudio()}
-          <br />
-          Image: {element.getInstruction().getImage()}
-          <br />
-          {/*TODO(junjuew): add proper display of images and videos*/}
-          Video: {element.getInstruction().getVideo()}
-          <br />
+          Name: {element.getName()}
         </ListGroupItem>
-      )}
-      <ListGroupItem variant="secondary">
-        {elementType === FSMElementType.STATE
-          ? "Processors"
-          : "Transition Predicates"}
-      </ListGroupItem>
-      <ReactTable
-        data={tableData}
-        filterable
-        defaultFilterMethod={(filter, row) =>
-          String(row[filter.id]) === filter.value
-        }
-        columns={tableColumns}
-        defaultPageSize={3}
-      >
-        {(state, makeTable, instance) => {
-          return <div>{makeTable()}</div>;
-        }}
-      </ReactTable>
-    </ListGroup>
-  );
-};
+        <ListGroupItem variant="secondary">
+          Type: {elementType === FSMElementType.STATE ? "State" : "Transition"}
+        </ListGroupItem>
+        {elementType === FSMElementType.TRANSITION && (
+          <>
+            <ListGroupItem variant="secondary">Instruction</ListGroupItem>
+            <ListGroupItem>
+              Audio: {element.getInstruction().getAudio()}
+            </ListGroupItem>
+            <ListGroupItem>
+              Image: <img src={res.imageInstUrl} alt="instruction"/>
+            </ListGroupItem>
+            <ListGroupItem>
+              Video: {element.getInstruction().getVideo()}
+            </ListGroupItem>
+          </>
+        )}
+        <ListGroupItem variant="secondary">
+          {elementType === FSMElementType.STATE
+            ? "Processors"
+            : "Transition Predicates"}
+        </ListGroupItem>
+        <ReactTable
+          data={tableData}
+          filterable
+          defaultFilterMethod={(filter, row) =>
+            String(row[filter.id]) === filter.value
+          }
+          columns={tableColumns}
+          defaultPageSize={3}
+        >
+          {(state, makeTable, instance) => {
+            return <div>{makeTable()}</div>;
+          }}
+        </ReactTable>
+      </ListGroup>
+    );
+  }
+}
 
 export default InfoBox;
