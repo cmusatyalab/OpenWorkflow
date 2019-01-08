@@ -1,6 +1,5 @@
 import procZoo from "./processor-zoo.json";
 import predZoo from "./predicate-zoo.json";
-import saveAs from "file-saver";
 var fsmPb = require("./wca-state-machine_pb");
 
 export const FSMElementType = {
@@ -50,6 +49,7 @@ export const findStatePbByName = function(stateName, fsm) {
     if (state.getName() === stateName) {
       result = state;
     }
+    return null;
   });
   return result;
 };
@@ -61,7 +61,9 @@ export const findTransitionOriginateState = function(transition, fsm) {
       if (curTransition === transition) {
         result = state;
       }
+      return null;
     });
+    return null;
   });
   return result;
 };
@@ -76,8 +78,10 @@ const callableToFormValues = function(elementCallables) {
     item.args = {};
     Object.keys(callableArgs).map(key => {
       item.args[key] = callableArgs[key];
+      return null;
     });
     result.push(item);
+    return null;
   });
   return result;
 };
@@ -143,6 +147,7 @@ const formCallableToElementCallable = function(
     let args = {};
     Object.keys(zoo[callableValue.type]).map(key => {
       args[key] = callableValue.args[key];
+      return null;
     });
     callablePb.setCallableArgs(JSON.stringify(args));
     callableArray.push(callablePb);
@@ -167,7 +172,9 @@ const setStateName = function(element, newName, aux) {
         if (curTransition.getNextState() === oldName) {
           curTransition.setNextState(newName);
         }
+        return null;
       });
+      return null;
     });
   }
   element.setName(newName);

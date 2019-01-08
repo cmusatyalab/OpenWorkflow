@@ -85,7 +85,7 @@ export class Diagram extends Component {
   }
 
   componentDidMount() {
-    const { fsm, onClickCell, paperWidth } = this.props;
+    const { onClickCell, paperWidth } = this.props;
     this.$el = $(this.el);
     console.log("paper width is: " + paperWidth);
     const paper = new joint.dia.Paper({
@@ -124,6 +124,7 @@ export class Diagram extends Component {
         state.getName()
       );
       this.addGraphCellWithRef(cell, state);
+      return null;
     }, this);
     return stateCells;
   }
@@ -139,6 +140,7 @@ export class Diagram extends Component {
           transition.getName()
         );
         this.addGraphCellWithRef(cell, transition);
+        return null;
       }, this);
     }, this);
     return transitionCells;
@@ -155,6 +157,7 @@ export class Diagram extends Component {
       } else {
         stateName2Cell[stateName] = jointElement;
       }
+      return null;
     });
     return stateName2Cell;
   }
@@ -172,7 +175,7 @@ export class Diagram extends Component {
   }
 
   render() {
-    const { fsm, onClickCell } = this.props;
+    const { fsm } = this.props;
     if (fsm != null) {
       this.clearGraph();
       this.renderAllStates(fsm);

@@ -24,17 +24,19 @@ class InfoBox extends Component {
   }
 
   prepareResource(element) {
+    let res = {};
     // clear up urls to prevent leaking memories
     if (this.imageInstUrl !== null) {
       URL.revokeObjectURL(this.imageInstUrl);
     }
-    let blob = new Blob([element.getInstruction().getImage()], {
-      type: "image"
-    });
-    this.imageInstUrl = URL.createObjectURL(blob);
-    return {
-      imageInstUrl: this.imageInstUrl
-    };
+    if (element.getInstruction()) {
+      let blob = new Blob([element.getInstruction().getImage()], {
+        type: "image"
+      });
+      this.imageInstUrl = URL.createObjectURL(blob);
+      res.imageInstUrl = this.imageInstUrl;
+    }
+    return res;
   }
 
   render() {
@@ -107,11 +109,13 @@ class InfoBox extends Component {
             <ListGroupItem>
               Audio: {element.getInstruction().getAudio()}
             </ListGroupItem>
-            {res.imageInstUrl? (
+            {res.imageInstUrl ? (
               <ListGroupItem>
                 Image: <img src={res.imageInstUrl} alt="instruction" />
               </ListGroupItem>
-            ): <ListGroupItem>Image: undefined</ListGroupItem>}
+            ) : (
+              <ListGroupItem>Image: undefined</ListGroupItem>
+            )}
             <ListGroupItem>
               Video: {element.getInstruction().getVideo()}
             </ListGroupItem>

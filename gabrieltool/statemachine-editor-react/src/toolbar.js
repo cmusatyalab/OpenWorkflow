@@ -1,7 +1,6 @@
-import React, { Component } from "react";
+import React from "react";
 import Button from "react-bootstrap/lib/Button";
 import ButtonGroup from "react-bootstrap/lib/ButtonGroup";
-import DropdownButton from "react-bootstrap/lib/DropdownButton";
 import Dropdown from "react-bootstrap/lib/Dropdown";
 import Row from "react-bootstrap/lib/Row";
 import Col from "react-bootstrap/lib/Col";

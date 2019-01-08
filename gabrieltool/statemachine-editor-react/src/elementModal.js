@@ -42,6 +42,7 @@ const isEmpty = value => {
   if (value === undefined || value === null || !/^.+$/i.test(value)) {
     errorMessage = "Required. Cannot be empty.";
   }
+  return errorMessage;
 };
 
 /**
@@ -119,7 +120,7 @@ class ImageUploadField extends Component {
   }
 
   render() {
-    const { field, form, label, ...props } = this.props;
+    const { field, form, label, } = this.props;
     let res = {};
     if (field.value) {
       res = this.prepareResource(field.value);

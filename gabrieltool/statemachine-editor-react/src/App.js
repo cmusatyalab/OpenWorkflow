@@ -176,10 +176,11 @@ class App extends Component {
             if (transition.getNextState() === element.getName()) {
               isSafe = false;
             }
+            return null;
           });
+          return null;
         });
         return isSafe;
-        break;
       case FSMElementType.TRANSITION:
         return isSafe;
       default:
@@ -211,6 +212,7 @@ class App extends Component {
         if (elementIdx >= 0) {
           state.getTransitionsList().splice(elementIdx, elementIdx + 1);
         }
+        return null;
       });
       this.setState({ fsm: fsm, curFSMElement: null });
     } else {
