@@ -21,7 +21,6 @@ class InfoBox extends Component {
   constructor(props) {
     super(props);
     this.imageInstUrl = null;
-    this.state = {};
   }
 
   prepareResource(element) {
@@ -108,9 +107,11 @@ class InfoBox extends Component {
             <ListGroupItem>
               Audio: {element.getInstruction().getAudio()}
             </ListGroupItem>
-            <ListGroupItem>
-              Image: <img src={res.imageInstUrl} alt="instruction"/>
-            </ListGroupItem>
+            {res.imageInstUrl? (
+              <ListGroupItem>
+                Image: <img src={res.imageInstUrl} alt="instruction" />
+              </ListGroupItem>
+            ): <ListGroupItem>Image: undefined</ListGroupItem>}
             <ListGroupItem>
               Video: {element.getInstruction().getVideo()}
             </ListGroupItem>

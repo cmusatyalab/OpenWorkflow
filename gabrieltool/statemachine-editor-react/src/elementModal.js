@@ -5,7 +5,7 @@ import Form from "react-bootstrap/lib/Form";
 import Col from "react-bootstrap/lib/Col";
 import Row from "react-bootstrap/lib/Row";
 import { Formik, Form as FormikForm, Field, FieldArray } from "formik";
-import * as Yup from "yup";
+import FileReaderInput from "react-file-reader-input";
 import "./App.css";
 import Select from "react-select";
 import procZoo from "./processor-zoo.json";
@@ -42,8 +42,6 @@ const isEmpty = value => {
   if (value === undefined || value === null || !/^.+$/i.test(value)) {
     errorMessage = "Required. Cannot be empty.";
   }
-  console.log("isEmpty returns " + errorMessage);
-  return errorMessage;
 };
 
 /**
@@ -97,10 +95,67 @@ const BSFormikField = ({
         isValid={isValid}
       />
     </Col>
-    {/* <Form.Control.Feedback>
-        Looks good!</Form.Control.Feedback> */}
   </Form.Group>
 );
+
+class ImageUploadField extends Component {
+  constructor(props) {
+    super(props);
+    this.imageInstUrl = null;
+  }
+
+  prepareResource(imageBytes) {
+    // clear up urls to prevent leaking memories
+    if (this.imageInstUrl !== null) {
+      URL.revokeObjectURL(this.imageInstUrl);
+    }
+    let blob = new Blob([imageBytes], {
+      type: "image"
+    });
+    this.imageInstUrl = URL.createObjectURL(blob);
+    return {
+      imageInstUrl: this.imageInstUrl
+    };
+  }
+
+  render() {
+    const { field, form, label, ...props } = this.props;
+    let res = {};
+    if (field.value) {
+      res = this.prepareResource(field.value);
+    }
+    return (
+      <Form.Group as={Row}>
+        <Form.Label column>{label}</Form.Label>
+        {res.imageInstUrl && (
+          <Form.Label column sm={1}>
+            <img
+              src={res.imageInstUrl}
+              alt="instruction"
+              style={{ width: 40, height: 40 }}
+            />
+          </Form.Label>
+        )}
+        <Col>
+          <FileReaderInput
+            as="buffer"
+            onChange={(e, fileArray) => {
+              fileArray.forEach(result => {
+                const e = result[0];
+                let fileContent = e.target.result;
+                form.setFieldValue(field.name, fileContent);
+              });
+            }}
+          >
+            <Button variant="light" className="fw-btn">
+              New Image
+            </Button>
+          </FileReaderInput>
+        </Col>
+      </Form.Group>
+    );
+  }
+}
 
 /** Custom the look of a Formik Select field with react-select
  *
@@ -219,7 +274,11 @@ const createCallableMultiFields = (
         )}
       {DEBUG && <p>{JSON.stringify(values)}</p>}
       <Form.Row>
-        <Button variant="danger" className="btn-block" onClick={() => arrayHelpers.remove({ index })}>
+        <Button
+          variant="danger"
+          className="btn-block"
+          onClick={() => arrayHelpers.remove({ index })}
+        >
           Delete
         </Button>
       </Form.Row>
@@ -253,7 +312,7 @@ const createCallableArgMultiFields = (args, index, errors) => {
  *
  * @param {*} values
  */
-const createTransitionBasicFields = (fsm, errors) => {
+const createTransitionBasicFields = (fsm, form, errors) => {
   const fsmStateOptions = fsm.getStatesList().map(state => {
     return { value: state.getName(), label: state.getName() };
   });
@@ -292,7 +351,7 @@ const createTransitionBasicFields = (fsm, errors) => {
       <Field
         name="instruction.image"
         component={props => (
-          <BSFormikField {...props} type="text" label="Image Instruction" />
+          <ImageUploadField label="Image Instruction" {...props} />
         )}
       />
       <Field
@@ -379,7 +438,7 @@ class ElementModal extends Component {
               onModalSave(type, values, initElement);
               setSubmitting(false);
             }}
-            render={({ values, errors }) => (
+            render={({ form, values, errors }) => (
               <FormikForm>
                 <FieldArray
                   name="callable"
@@ -420,7 +479,7 @@ class ElementModal extends Component {
                               validate={isEmpty}
                             />
                             {addFieldError(errors, "name")}
-                            {createTransitionBasicFields(fsm, errors)}
+                            {createTransitionBasicFields(fsm, form, errors)}
                           </>
                         )}
                         {values.callable.map((eachCallable, index) =>

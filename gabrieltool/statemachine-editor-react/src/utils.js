@@ -257,5 +257,4 @@ export const formValuesToElement = function(formValue, fsm, type, initElement) {
         "Unsupported Element Type: " + type + ". Failed to add a new element"
       );
   }
-  console.log(fsm);
 };
