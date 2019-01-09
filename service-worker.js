@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/gabriel-tool/precache-manifest.4eaf63820eab32e928805891f38c445a.js"
+  "/gabriel-tool/precache-manifest.e60076aada204f3915b818097184c588.js"
 );
 
 workbox.clientsClaim();
