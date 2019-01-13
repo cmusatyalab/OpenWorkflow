@@ -123,6 +123,10 @@ export class Diagram extends Component {
         Math.floor(idx / this.state_per_row) * this.state_spacing_y,
         state.getName()
       );
+      // mark start state
+      if (fsm.getStartState() === state.getName()){
+        cell.attr('circle/stroke-width', '5');
+      }
       this.addGraphCellWithRef(cell, state);
       return null;
     }, this);
