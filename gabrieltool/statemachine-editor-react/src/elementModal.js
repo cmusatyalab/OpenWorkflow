@@ -83,21 +83,21 @@ const BSFormikField = ({
   isValid,
   ...props
 }) => (
-  <Form.Group as={Row}>
-    <Form.Label column>{label}</Form.Label>
-    <Col>
-      <Form.Control
-        required
-        {...field}
-        {...props}
-        type={type}
-        placeholder={placeholder}
-        value={field.value || defaultValue || ""} // to supress uncontrolled to controlled warning
-        isValid={isValid}
-      />
-    </Col>
-  </Form.Group>
-);
+    <Form.Group as={Row}>
+      <Form.Label column>{label}</Form.Label>
+      <Col>
+        <Form.Control
+          required
+          {...field}
+          {...props}
+          type={type}
+          placeholder={placeholder}
+          value={field.value || defaultValue || ""} // to supress uncontrolled to controlled warning
+          isValid={isValid}
+        />
+      </Col>
+    </Form.Group>
+  );
 
 class ImageUploadField extends Component {
   constructor(props) {
@@ -169,38 +169,38 @@ const SelectFormikField = ({
   selectOptions,
   ...props
 }) => (
-  <Form.Group as={Row}>
-    <Form.Label column>{label}</Form.Label>
-    <Col>
-      <Select
-        {...field}
-        {...props}
-        options={selectOptions}
-        name={field.name}
-        value={
-          selectOptions
-            ? selectOptions.find(option => option.value === field.value)
-            : ""
-        }
-        onChange={option => form.setFieldValue(field.name, option.value)}
-        onBlur={field.onBlur}
-      />
-    </Col>
-  </Form.Group>
-);
+    <Form.Group as={Row}>
+      <Form.Label column>{label}</Form.Label>
+      <Col>
+        <Select
+          {...field}
+          {...props}
+          options={selectOptions}
+          name={field.name}
+          value={
+            selectOptions
+              ? selectOptions.find(option => option.value === field.value)
+              : ""
+          }
+          onChange={option => form.setFieldValue(field.name, option.value)}
+          onBlur={field.onBlur}
+        />
+      </Col>
+    </Form.Group>
+  );
 
 const CallableNameField = ({
   field, // name, value, onChange, onBlur
   ...props
 }) => (
-  <BSFormikField
-    field={field}
-    type="text"
-    label="name"
-    placeholder="Enter Name"
-    {...props}
-  />
-);
+    <BSFormikField
+      field={field}
+      type="text"
+      label="name"
+      placeholder="Enter Name"
+      {...props}
+    />
+  );
 
 const CallableArgField = ({
   field,
@@ -209,14 +209,14 @@ const CallableArgField = ({
   placeholder,
   ...props
 }) => (
-  <BSFormikField
-    field={field}
-    type="text"
-    label={label}
-    placeholder={placeholder}
-    {...props}
-  />
-);
+    <BSFormikField
+      field={field}
+      type="text"
+      label={label}
+      placeholder={placeholder}
+      {...props}
+    />
+  );
 
 const addFieldError = (errors, fieldName) => {
   if (getPropertyByString(errors, fieldName)) {
@@ -468,6 +468,48 @@ class ElementModal extends Component {
                               }}
                             />
                             {addFieldError(errors, "name")}
+                            <Field name="isStartState">
+                              {({ field, form }) => {
+                                return (
+                                  <Form.Group as={Row}>
+                                    <Form.Label column>Start from this state?</Form.Label>
+                                    <Col>
+                                      <Form.Control
+                                        type="checkbox"
+                                        checked={values[field.name]}
+                                        onChange={
+                                          () => {
+                                            if (values[field.name]) {
+                                              form.setFieldValue(field.name, false);
+                                            } else {
+                                              form.setFieldValue(field.name, true);
+                                            }
+                                          }
+                                        }
+                                      />
+                                    </Col>
+                                  </Form.Group>
+                                )
+                              }}
+                            </Field>
+                            {/* <Field
+                              name="isStartState"
+                              component="input"
+                              type="checkbox"
+                              label="Start State?"
+                              checked={values.isStartState}
+                              onChange={() => {
+                                if (field.value.includes(props.value)) {
+                                  const nextValue = field.value.filter(
+                                    value => value !== props.value
+                                  );
+                                  form.setFieldValue(props.name, nextValue);
+                                } else {
+                                  const nextValue = field.value.concat(props.value);
+                                  form.setFieldValue(props.name, nextValue);
+                                }
+                              }}
+                            /> */}
                           </>
                         )}
                         {type === FSMElementType.TRANSITION && (
