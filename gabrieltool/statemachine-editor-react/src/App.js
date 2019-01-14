@@ -57,7 +57,7 @@ class App extends Component {
   render() {
     return (
       <Container fluid>
-        <h1>State Machine Visualizer with React</h1>
+        <h1>Gabriel State Machine Editor</h1>
         {this.state.alertMsg.msg !== "" && (
           <Alert dismissible variant={this.state.alertMsg.type}>
             {this.state.alertMsg.msg}
@@ -192,7 +192,7 @@ class App extends Component {
     const fsm = this.state.fsm;
     if (this.isElementSafeToDelete(element)) {
       const elementIdx = fsm.getStatesList().indexOf(element);
-      fsm.getStatesList().splice(elementIdx, elementIdx + 1);
+      fsm.getStatesList().splice(elementIdx, 1);
       this.setState({ fsm: fsm, curFSMElement: null });
     } else {
       return this.alert(
