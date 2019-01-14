@@ -135,7 +135,6 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
     def __call__(self, image):
         height, width = image.shape[:2]
 
-        import pdb; pdb.set_trace()
         # resize image to correct size
         im_size_min = np.min(image.shape[0:2])
         im_size_max = np.max(image.shape[0:2])
@@ -152,7 +151,6 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
         self._net.setInput(blob, 'data')
         self._net.setInput(imInfo, 'im_info')
 
-        import pdb; pdb.set_trace()
         # infer
         outs = self._net.forward(self._getOutputsNames(self._net))
         t, _ = self._net.getPerfProfile()
