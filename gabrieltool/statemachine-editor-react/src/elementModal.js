@@ -144,7 +144,7 @@ class ImageUploadField extends Component {
               fileArray.forEach(result => {
                 const e = result[0];
                 let fileContent = e.target.result;
-                form.setFieldValue(field.name, fileContent);
+                form.setFieldValue(field.name, new Uint8Array(fileContent));
               });
             }}
           >

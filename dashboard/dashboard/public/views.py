@@ -3,6 +3,9 @@
 Need to run docker pull cmusatyalab/gabriel to pull down the image first
 """
 import os
+from subprocess import Popen, PIPE
+import signal
+
 from flask import (
     Blueprint,
     flash,
@@ -29,6 +32,7 @@ blueprint = Blueprint("public", __name__, static_folder="../static")
 
 GABRILE_CONTAINER_NAME = "gabriel-deploy"
 GABRIEL_APP_CONTAINER_NAME = "gabriel-app"
+app_proc = None
 
 
 @blueprint.route("/uploads/<filename>")
@@ -87,8 +91,16 @@ def home():
         form=form,
         fileUploadForm=fileUploadForm,
         gabrielStatus=getContainerStatus(GABRILE_CONTAINER_NAME),
-        appStatus=getContainerStatus(GABRIEL_APP_CONTAINER_NAME),
+        appStatus=getAppStatus(),
     )
+
+
+def getAppStatus():
+    global app_proc
+    if app_proc != None:
+        if app_proc.poll() == None:
+            return "Running"
+    return "Not Running"
 
 
 @blueprint.route("/logout/")
@@ -181,21 +193,32 @@ def stop():
 
 @blueprint.route("/startapp/")
 def start_app():
-    logger.debug("Starting gabriel app")
-    container = findContainer(GABRIEL_APP_CONTAINER_NAME)
-    container = checkContainer(container)
-    if not container:
-        startContainer()
-    flash("Starting gabriel", "success")
+    global app_proc
+    script_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "run-gabriel-fsm.sh"
+    )
+    logger.debug("launching script: {}".format(script_path))
+    if (app_proc == None) or (app_proc != None and app_proc.poll() != None):
+        app_proc = Popen(["bash", script_path], stdout=PIPE, stderr=PIPE)
+        flash("Started App", "success")
+    else:
+        flash("App is already running. Stop it before running another one.", "success")
     return redirect(url_for("public.home"))
 
 
 @blueprint.route("/stopapp/")
 def stop_app():
-    logger.debug("Stopping gabriel")
-    container = checkContainer(findContainer(GABRIEL_APP_CONTAINER_NAME))
-    if container:
-        container.remove(force=True)
-    flash("Stopping gabriel", "success")
+    global app_proc
+    if app_proc:
+        try:
+            os.kill(app_proc.pid, signal.SIGTERM)
+            status = app_proc.poll()
+            logger.debug("child status after terminate: {}".format(status))
+            if status == None:
+                os.kill(app_proc.pid, signal.SIGKILL)
+                logger.debug("child status: {}".format(app_proc.poll()))
+        except ProcessLookupError as e:
+            pass
+        flash("App Stopped", "success")
     return redirect(url_for("public.home"))
 

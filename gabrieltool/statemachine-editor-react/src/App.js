@@ -19,7 +19,7 @@ var fsmPb = require("./wca-state-machine_pb");
 function loadFsm(fsmData) {
   let fsm = null;
   try {
-    fsm = new fsmPb.StateMachine.deserializeBinary(fsmData);
+    fsm = fsmPb.StateMachine.deserializeBinary(fsmData);
   } catch (err) {
     throw err;
   }

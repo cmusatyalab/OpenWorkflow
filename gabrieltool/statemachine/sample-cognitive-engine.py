@@ -53,11 +53,11 @@ def raw2cv_image(raw_data, gray_scale=False):
 
 
 class CookingProxy(gabriel.proxy.CognitiveProcessThread):
-    def __init__(self, image_queue, output_queue, engine_id, log_flag=True):
+    def __init__(self, fsm_path, image_queue, output_queue, engine_id, log_flag=True):
         super(CookingProxy, self).__init__(image_queue, output_queue, engine_id)
         self.log_flag = log_flag
         self._fsm = None
-        with open('examples/sandwich/app.pbfsm', 'rb') as f:
+        with open(fsm_path, 'rb') as f:
             self._fsm = fsm.StateMachine.from_bytes(f.read())
         self._fsm_runner = runner.Runner(self._fsm)
 
@@ -85,7 +85,12 @@ class CookingProxy(gabriel.proxy.CognitiveProcessThread):
 
 
 if __name__ == "__main__":
-    settings = gabriel.util.process_command_line(sys.argv[1:])
+    import argparse
+    parser = argparse.ArgumentParser(description='Gabriel FSM Cognitive Engine')
+    parser.add_argument('--fsm_path', action="store", dest="fsm_path", help='Path to the fsm', required=True)
+    args, unknown = parser.parse_known_args()
+
+    settings = gabriel.util.process_command_line(unknown)
 
     ip_addr, port = gabriel.network.get_registry_server_address(settings.address)
     service_list = gabriel.network.get_service_list(ip_addr, port)
@@ -107,7 +112,7 @@ if __name__ == "__main__":
     # app proxy
     result_queue = multiprocessing.Queue()
 
-    app_proxy = CookingProxy(image_queue, result_queue, engine_id="Sandwich")
+    app_proxy = CookingProxy(args.fsm_path, image_queue, result_queue, engine_id="Sandwich")
     app_proxy.start()
     app_proxy.isDaemon = True
 
