@@ -292,6 +292,7 @@ const createCallableArgMultiFields = (args, index, errors) => {
           component={CallableArgField}
           label={key}
           placeholder={args[key]}
+          defaultValue=""
           validate={isEmpty}
         />
         {addFieldError(errors, `callable.${index}.args.${key}`)}
@@ -333,6 +334,7 @@ const createTransitionBasicFields = (fsm, form, errors) => {
         component={BSFormikField}
         type="text"
         label="Audio Instruction"
+        defaultValue=""
       />
       <Field
         name="instruction.image"
@@ -344,6 +346,7 @@ const createTransitionBasicFields = (fsm, form, errors) => {
         component={BSFormikField}
         type="text"
         label="Video Instruction"
+        defaultValue=""
       />
     </>
   );

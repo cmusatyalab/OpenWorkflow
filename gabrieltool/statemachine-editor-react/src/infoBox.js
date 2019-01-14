@@ -30,11 +30,13 @@ class InfoBox extends Component {
       URL.revokeObjectURL(this.imageInstUrl);
     }
     if (element.getInstruction()) {
-      let blob = new Blob([element.getInstruction().getImage()], {
-        type: "image"
-      });
-      this.imageInstUrl = URL.createObjectURL(blob);
-      res.imageInstUrl = this.imageInstUrl;
+      if (element.getInstruction().getImage()) {
+        let blob = new Blob([element.getInstruction().getImage()], {
+          type: "image"
+        });
+        this.imageInstUrl = URL.createObjectURL(blob);
+        res.imageInstUrl = this.imageInstUrl;
+      }
     }
     return res;
   }
@@ -114,7 +116,7 @@ class InfoBox extends Component {
                 Image: <img src={res.imageInstUrl} alt="instruction" />
               </ListGroupItem>
             ) : (
-              <ListGroupItem>Image: undefined</ListGroupItem>
+              <ListGroupItem>Image: </ListGroupItem>
             )}
             <ListGroupItem>
               Video: {element.getInstruction().getVideo()}

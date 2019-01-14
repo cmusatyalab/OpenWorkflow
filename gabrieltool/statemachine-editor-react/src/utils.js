@@ -25,7 +25,7 @@ function isObject(o) {
 //     'a': ['property': 'test']
 // }
 // e.g. obj['a.0.property']
-export const getPropertyByString = function (o, s) {
+export const getPropertyByString = function(o, s) {
   if (s) {
     s = s.replace(/^\./, ""); // strip a leading dot
     var a = s.split(".");
@@ -43,7 +43,7 @@ export const getPropertyByString = function (o, s) {
   }
 };
 
-export const findStatePbByName = function (stateName, fsm) {
+export const findStatePbByName = function(stateName, fsm) {
   let result = null;
   fsm.getStatesList().map(state => {
     if (state.getName() === stateName) {
@@ -54,7 +54,7 @@ export const findStatePbByName = function (stateName, fsm) {
   return result;
 };
 
-export const findTransitionOriginateState = function (transition, fsm) {
+export const findTransitionOriginateState = function(transition, fsm) {
   let result = null;
   fsm.getStatesList().map(state => {
     state.getTransitionsList().map(curTransition => {
@@ -68,7 +68,7 @@ export const findTransitionOriginateState = function (transition, fsm) {
   return result;
 };
 
-const callableToFormValues = function (elementCallables) {
+const callableToFormValues = function(elementCallables) {
   let result = [];
   elementCallables.map(elementCallableItem => {
     let item = {};
@@ -86,7 +86,7 @@ const callableToFormValues = function (elementCallables) {
   return result;
 };
 
-const getElementCallables = function (element) {
+const getElementCallables = function(element) {
   const elementType = getFSMElementType(element);
   let elementCallables = null;
   switch (elementType) {
@@ -99,14 +99,14 @@ const getElementCallables = function (element) {
     default:
       throw new Error(
         "Unsupported Element Type: " +
-        elementType +
-        ". Failed to add a new element"
+          elementType +
+          ". Failed to add a new element"
       );
   }
   return elementCallables;
 };
 
-export const elementToFormValues = function (element, fsm) {
+export const elementToFormValues = function(element, fsm) {
   const values = {};
   values.callable = [];
   const elementType = getFSMElementType(element);
@@ -116,7 +116,7 @@ export const elementToFormValues = function (element, fsm) {
   // type specific attrs
   switch (elementType) {
     case FSMElementType.STATE:
-      values.isStartState = (element.getName() === fsm.getStartState());
+      values.isStartState = element.getName() === fsm.getStartState();
       break;
     case FSMElementType.TRANSITION:
       values.to = element.getNextState();
@@ -128,7 +128,9 @@ export const elementToFormValues = function (element, fsm) {
       break;
     default:
       throw new Error(
-        "Unsupported Element Type: " + elementType + ". Failed to add a new element"
+        "Unsupported Element Type: " +
+          elementType +
+          ". Failed to add a new element"
       );
       break;
   }
@@ -138,7 +140,7 @@ export const elementToFormValues = function (element, fsm) {
   return values;
 };
 
-const formCallableToElementCallable = function (
+const formCallableToElementCallable = function(
   callbleFormValue,
   setFunc,
   callablePbType,
@@ -171,7 +173,7 @@ const formCallableToElementCallable = function (
  * @param {*} newName
  * @param {*} fsm
  */
-const setStateName = function (element, newName, aux) {
+const setStateName = function(element, newName, aux) {
   const { fsm } = aux;
   let oldName = element.getName();
   if (oldName) {
@@ -190,7 +192,7 @@ const setStateName = function (element, newName, aux) {
   element.setName(newName);
 };
 
-const setTransitionFromState = function (element, newFromStateName, aux) {
+const setTransitionFromState = function(element, newFromStateName, aux) {
   const { fsm } = aux;
   let oldFromState = findTransitionOriginateState(element, fsm);
   if (newFromStateName !== oldFromState.getName()) {
@@ -210,7 +212,7 @@ const setTransitionFromState = function (element, newFromStateName, aux) {
  * @param {} formValue
  * @param {*} element: the FSM element to be set.
  */
-export const formValuesToElement = function (formValue, fsm, type, initElement) {
+export const formValuesToElement = function(formValue, fsm, type, initElement) {
   // create or use appropriate element based on type
   let element = null;
   if (initElement === null || initElement === undefined) {
@@ -237,10 +239,10 @@ export const formValuesToElement = function (formValue, fsm, type, initElement) 
   // deal with type specific fields
   switch (type) {
     case FSMElementType.STATE:
-      setStateName(element, formValue["name"], { fsm: fsm });
+      setStateName(element, formValue.name, { fsm: fsm });
       // set start state
-      if (formValue["isStartState"]) {
-        fsm.setStartState(formValue["name"]);
+      if (formValue.isStartState) {
+        fsm.setStartState(formValue.name);
       }
       // add processors
       formCallableToElementCallable(
@@ -261,9 +263,11 @@ export const formValuesToElement = function (formValue, fsm, type, initElement) 
       element.setNextState(formValue.to);
       // instruction
       let instPb = new fsmPb.Instruction();
-      instPb.setAudio(formValue.instruction.audio);
-      instPb.setImage(formValue.instruction.image);
-      instPb.setVideo(formValue.instruction.video);
+      if (formValue.instruction) {
+        instPb.setAudio(formValue.instruction.audio);
+        instPb.setImage(formValue.instruction.image);
+        instPb.setVideo(formValue.instruction.video);
+      }
       element.setInstruction(instPb);
       // add predicates
       formCallableToElementCallable(

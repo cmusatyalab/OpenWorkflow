@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import $ from "jquery";
 import joint from "jointjs";
+import _ from 'lodash';
+
 
 // define custom state machine JointJS elements
 joint.shapes.basic.Circle.define("fsa.State", {
@@ -26,6 +28,126 @@ joint.shapes.standard.Link.define("fsa.CustomArrow", {
   },
   smooth: true
 });
+
+function adjustVertices(graph, cell) {
+  // if `cell` is a view, find its model
+  cell = cell.model || cell;
+
+  if (cell instanceof joint.dia.Element) {
+    // `cell` is an element
+
+    _.chain(graph.getConnectedLinks(cell))
+      .groupBy(function(link) {
+        // the key of the group is the model id of the link's source or target
+        // cell id is omitted
+        return _.omit([link.source().id, link.target().id], cell.id)[0];
+      })
+      .each(function(group, key) {
+        // if the member of the group has both source and target model
+        // then adjust vertices
+        if (key !== "undefined") adjustVertices(graph, _.first(group));
+      })
+      .value();
+
+    return;
+  }
+
+  // `cell` is a link
+  // get its source and target model IDs
+  var sourceId = cell.get("source").id || cell.previous("source").id;
+  var targetId = cell.get("target").id || cell.previous("target").id;
+
+  // if one of the ends is not a model
+  // (if the link is pinned to paper at a point)
+  // the link is interpreted as having no siblings
+  if (!sourceId || !targetId) {
+    // no vertices needed
+    cell.unset("vertices");
+    return;
+  }
+
+  // identify link siblings
+  var siblings = graph.getLinks().filter(function(sibling) {
+    var siblingSourceId = sibling.source().id;
+    var siblingTargetId = sibling.target().id;
+
+    // if source and target are the same
+    // or if source and target are reversed
+    return (
+      (siblingSourceId === sourceId && siblingTargetId === targetId) ||
+      (siblingSourceId === targetId && siblingTargetId === sourceId)
+    );
+  });
+
+  var numSiblings = siblings.length;
+  switch (numSiblings) {
+    case 0: {
+      // the link has no siblings
+      break;
+    }
+    default: {
+      if (numSiblings === 1) {
+        // there is only one link
+        // no vertices needed
+        cell.unset("vertices");
+      }
+
+      // there are multiple siblings
+      // we need to create vertices
+
+      // find the middle point of the link
+      var sourceCenter = graph
+        .getCell(sourceId)
+        .getBBox()
+        .center();
+      var targetCenter = graph
+        .getCell(targetId)
+        .getBBox()
+        .center();
+      var midPoint = joint.g.Line(sourceCenter, targetCenter).midpoint();
+
+      // find the angle of the link
+      var theta = sourceCenter.theta(targetCenter);
+
+      // constant
+      // the maximum distance between two sibling links
+      var GAP = 20;
+
+      _.each(siblings, function(sibling, index) {
+        // we want offset values to be calculated as 0, 20, 20, 40, 40, 60, 60 ...
+        var offset = GAP * Math.ceil(index / 2);
+
+        // place the vertices at points which are `offset` pixels perpendicularly away
+        // from the first link
+        //
+        // as index goes up, alternate left and right
+        //
+        //  ^  odd indices
+        //  |
+        //  |---->  index 0 sibling - centerline (between source and target centers)
+        //  |
+        //  v  even indices
+        var sign = index % 2 ? 1 : -1;
+
+        // to assure symmetry, if there is an even number of siblings
+        // shift all vertices leftward perpendicularly away from the centerline
+        if (numSiblings % 2 === 0) {
+          offset -= (GAP / 2) * sign;
+        }
+
+        // make reverse links count the same as non-reverse
+        var reverse = theta < 180 ? 1 : -1;
+
+        // we found the vertex
+        var angle = joint.g.toRad(theta + sign * reverse * 90);
+        var vertex = joint.g.Point.fromPolar(offset, angle, midPoint);
+
+        // replace vertices array with `vertex`
+        sibling.vertices([vertex]);
+      });
+    }
+  }
+}
 
 const create_transition_cell = (source, target, label) => {
   var cell = new joint.shapes.fsa.CustomArrow({
@@ -72,6 +194,11 @@ export class Diagram extends Component {
   constructor(props) {
     super(props);
     this.graph = new joint.dia.Graph();
+    // bind `graph` to the `adjustVertices` function
+    var adjustGraphVertices = _.partial(adjustVertices, this.graph);
+    // adjust vertices when a cell is removed or its source/target was changed
+    this.graph.on('add remove change:source change:target', adjustGraphVertices);
+
     this.state_shape_width = 50;
     this.state_shape_height = 50;
     this.state_spacing_x = 250;
@@ -124,8 +251,8 @@ export class Diagram extends Component {
         state.getName()
       );
       // mark start state
-      if (fsm.getStartState() === state.getName()){
-        cell.attr('circle/stroke-width', '5');
+      if (fsm.getStartState() === state.getName()) {
+        cell.attr("circle/stroke-width", "5");
       }
       this.addGraphCellWithRef(cell, state);
       return null;
