@@ -30,6 +30,15 @@
       <input type=submit name="btn" value="Upload">
     </form>
   </div>
+  <div class="row">
+    <h2>App Status: {{ appStatus }}</h2>
+  </div>
+  <div class="row">
+    <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
+      <a role="button" href="/startapp" class="btn btn-primary" id="start">Start</a>
+      <a role="button" href="/stopapp" class="btn btn-primary" id="stop">Stop</a>
+    </div>
+  </div>
 </div>
 
 <script>

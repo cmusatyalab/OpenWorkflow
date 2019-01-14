@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 from cv2 import dnn
 from logzero import logger
+import copy
 
 GABRIEL_DEBUG = os.getenv('GABRIEL_DEBUG', False)
 
@@ -49,13 +50,10 @@ def record_kwargs(func):
     @wraps(func)
     def wrapper(self, *args, **kargs):
         kwargs = {}
+        for name, default in zip(reversed(names), reversed(defaults)):
+            kwargs[name] = default
         for name, arg in list(zip(names[1:], args)) + list(kargs.items()):
             kwargs[name] = arg
-
-        for name, default in zip(reversed(names), reversed(defaults)):
-            if not hasattr(self, name):
-                kwargs[name] = default
-
         setattr(self, 'kwargs', kwargs)
         func(self, *args, **kargs)
 
@@ -121,8 +119,8 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
     def from_json(cls, json_obj):
         try:
             kwargs = copy.copy(json_obj)
-            kwargs['labels'] = json.loads(json_obj['labels'])
-            kwargs['_conf_threshold'] = float(json_obj['_conf_threshold'])
+            kwargs['labels'] = json_obj['labels']
+            kwargs['_conf_threshold'] = float(json_obj['conf_threshold'])
         except ValueError as e:
             raise ValueError(
                 'Failed to convert json object to {} instance. '
@@ -137,6 +135,7 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
     def __call__(self, image):
         height, width = image.shape[:2]
 
+        import pdb; pdb.set_trace()
         # resize image to correct size
         im_size_min = np.min(image.shape[0:2])
         im_size_max = np.max(image.shape[0:2])
@@ -153,6 +152,7 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
         self._net.setInput(blob, 'data')
         self._net.setInput(imInfo, 'im_info')
 
+        import pdb; pdb.set_trace()
         # infer
         outs = self._net.forward(self._getOutputsNames(self._net))
         t, _ = self._net.getPerfProfile()

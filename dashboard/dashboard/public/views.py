@@ -27,6 +27,8 @@ import docker
 client = docker.from_env()
 blueprint = Blueprint("public", __name__, static_folder="../static")
 
+GABRILE_CONTAINER_NAME = "gabriel-deploy"
+GABRIEL_APP_CONTAINER_NAME = "gabriel-app"
 
 @blueprint.route("/uploads/<filename>")
 def uploaded_file(filename):
@@ -46,8 +48,8 @@ def load_user(user_id):
     return User.get_by_id(int(user_id))
 
 
-def getContainerStatus():
-    container = findContainer()
+def getContainerStatus(name):
+    container = findContainer(name)
     container = checkContainer(container)
     if container != None:
         return container.status
@@ -83,7 +85,8 @@ def home():
         "public/home.html",
         form=form,
         fileUploadForm=fileUploadForm,
-        gabrielStatus=getContainerStatus(),
+        gabrielStatus=getContainerStatus(GABRILE_CONTAINER_NAME),
+        appStatus=getContainerStatus(GABRIEL_APP_CONTAINER_NAME),
     )
 
 
@@ -96,7 +99,6 @@ def logout():
     return redirect(url_for("public.home"))
 
 
-GABRILE_CONTAINER_NAME = "gabriel-deploy"
 
 
 @blueprint.route("/register/", methods=["GET", "POST"])
@@ -124,11 +126,11 @@ def about():
     return render_template("public/about.html", form=form)
 
 
-def findContainer():
+def findContainer(name):
     containers = client.containers.list()
     running = False
     for container in containers:
-        if container.name == GABRILE_CONTAINER_NAME:
+        if container.name == name:
             return container
     return None
 
@@ -165,7 +167,7 @@ def startContainer():
 @blueprint.route("/start/")
 def start():
     logger.debug("Starting gabriel")
-    container = findContainer()
+    container = findContainer(GABRILE_CONTAINER_NAME)
     container = checkContainer(container)
     if not container:
         startContainer()
@@ -176,7 +178,28 @@ def start():
 @blueprint.route("/stop/")
 def stop():
     logger.debug("Stopping gabriel")
-    container = checkContainer(findContainer())
+    container = checkContainer(findContainer(GABRILE_CONTAINER_NAME))
+    if container:
+        container.remove(force=True)
+    flash("Stopping gabriel", "success")
+    return redirect(url_for("public.home"))
+
+
+@blueprint.route("/startapp/")
+def start_app():
+    logger.debug("Starting gabriel app")
+    container = findContainer(GABRIEL_APP_CONTAINER_NAME)
+    container = checkContainer(container)
+    if not container:
+        startContainer()
+    flash("Starting gabriel", "success")
+    return redirect(url_for("public.home"))
+
+
+@blueprint.route("/stopapp/")
+def stop_app():
+    logger.debug("Stopping gabriel")
+    container = checkContainer(findContainer(GABRIEL_APP_CONTAINER_NAME))
     if container:
         container.remove(force=True)
     flash("Stopping gabriel", "success")

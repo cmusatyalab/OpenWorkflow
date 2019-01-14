@@ -39,7 +39,6 @@ from gabrieltool.statemachine import runner, wca_state_machine_pb2, fsm
 
 import gabriel
 import gabriel.proxy
-import sandwich_fsm
 
 LOG = gabriel.logging.getLogger(__name__)
 
@@ -57,8 +56,6 @@ class CookingProxy(gabriel.proxy.CognitiveProcessThread):
     def __init__(self, image_queue, output_queue, engine_id, log_flag=True):
         super(CookingProxy, self).__init__(image_queue, output_queue, engine_id)
         self.log_flag = log_flag
-        # self._fsm = sandwich_fsm.build_sandwich_fsm()
-
         self._fsm = None
         with open('examples/sandwich/app.pbfsm', 'rb') as f:
             self._fsm = fsm.StateMachine.from_bytes(f.read())

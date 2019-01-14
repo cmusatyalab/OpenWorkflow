@@ -22,6 +22,6 @@ class Runner(object):
         """Run the state machine given an input.
 
         """
-        next_state, instruction = self.current_state(img, debug=debug)
+        next_state, instruction = self.current_state(img)
         self.current_state = next_state
         return instruction
