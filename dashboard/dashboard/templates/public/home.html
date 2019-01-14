@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container">
+    <h2 class="display-6">Welcome to Gabriel Dashboard</h2>
+  </div>
+</div><!-- /.jumbotron -->
+
+<div class="container">
+  <div class="row">
+    <h2>Gabriel Status: {{ gabrielStatus }}</h2>
+  </div>
+  <div class="row">
+    <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
+      <a role="button" href="/start" class="btn btn-primary" id="start">Start</a>
+      <a role="button" href="/stop" class="btn btn-primary" id="stop">Stop</a>
+    </div>
+  </div>
+  <div class="row">
+    <p>Status</p>
+  </div>
+  <div class="row">
+    <h2>Upload Your Finite State Machine</h2>
+  </div>
+  <div>
+    <form method="POST" action="/" enctype="multipart/form-data">
+      {{ fileUploadForm.csrf_token }}
+      {{ fileUploadForm.mFile }}
+      <input type=submit name="btn" value="Upload">
+    </form>
+  </div>
+</div>
+
+<script>
+  $(document).ready(
+    $("#start").click(function () {
+
+    })
+  )
+</script>
+{% endblock %}
