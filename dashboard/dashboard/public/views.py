@@ -30,6 +30,7 @@ blueprint = Blueprint("public", __name__, static_folder="../static")
 GABRILE_CONTAINER_NAME = "gabriel-deploy"
 GABRIEL_APP_CONTAINER_NAME = "gabriel-app"
 
+
 @blueprint.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
@@ -99,8 +100,6 @@ def logout():
     return redirect(url_for("public.home"))
 
 
-
-
 @blueprint.route("/register/", methods=["GET", "POST"])
 def register():
     """Register new user."""
@@ -144,23 +143,18 @@ def checkContainer(container):
 
 
 def startContainer():
+    expose_ports = [8021, 9090, 9098, 9111, 10101, 10102, 10103, 10104, 10120, 22222]
+    expose_port_dict = {
+        "{}/tcp".format(port): ("0.0.0.0", port) for port in expose_ports
+    }
+    logger.debug("expose ports: {}".format(expose_port_dict))
     client.containers.run(
         "cmusatyalab/gabriel",
-        '/bin/bash -c "gabriel-control -d -n eth0 & sleep 5; gabriel-ucomm -s 127.0.0.1:8021"',
+        '/bin/bash -c "gabriel-control -l -d -n eth0 & sleep 5; gabriel-ucomm -s 127.0.0.1:8021"',
         detach=True,
         auto_remove=True,
         name=GABRILE_CONTAINER_NAME,
-        ports={
-            "9098/tcp": ("0.0.0.0", 9098),
-            "9101/tcp": ("0.0.0.0", 9101),  # not sure which one is current result port
-            "9111/tcp": ("0.0.0.0", 9111),
-            "7070/tcp": ("0.0.0.0", 7070),
-            "22222/tcp": ("0.0.0.0", 22222),
-            "10120/tcp": ("0.0.0.0", 10120),
-            "8021/tcp": ("0.0.0.0", 8021),
-            "9090/tcp": ("0.0.0.0", 9090),
-            "10101/tcp": ("0.0.0.0", 10101),
-        },
+        ports=expose_port_dict,
     )
 
 
