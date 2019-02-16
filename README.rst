@@ -42,10 +42,8 @@ What's included?
 * `Examples`_: Examples on how to use this tool.
 
    * `examples/sandwich`_: Sandwich application made using the state machines.
-* `State Machine Editor`_: A browser-based state machine editor, implemented in
-React. Give it a try [here](https://junjuew.github.io/gabriel-tool).
-* `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for
-wearable cognitive assistants that are built using this tool.
+* `State Machine Editor`_: A browser-based state machine editor, implemented in React. Give it a try [here](https://junjuew.github.io/gabriel-tool).
+* `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for wearable cognitive assistants that are built using this tool.
 
 Credits
 -------
