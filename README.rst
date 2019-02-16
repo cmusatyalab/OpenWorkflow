@@ -42,6 +42,10 @@ What's included?
 * `Examples`_: Examples on how to use this tool.
 
    * `examples/sandwich`_: Sandwich application made using the state machines.
+* `State Machine Editor`_: A browser-based state machine editor, implemented in
+React. Give it a try [here](https://junjuew.github.io/gabriel-tool).
+* `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for
+wearable cognitive assistants that are built using this tool.
 
 Credits
 -------
@@ -53,3 +57,5 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 .. _`State Machine`: gabrieltool/statemachine
 .. _`Examples`: examples
 .. _`examples/sandwich`: examples/sandwich
+.. _`State Machine Editor`: gabrieltool/statemachine-editor-react
+.. _`Gabriel Deployment Dashboard`: gabrieltool/dashboard
