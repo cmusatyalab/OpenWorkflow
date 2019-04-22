@@ -32,4 +32,4 @@ six==1.11.0
 toml==0.10.0
 traitlets==4.3.2
 wcwidth==0.1.7
-wrapt==1.10.11
+wrapt==1.11.1
