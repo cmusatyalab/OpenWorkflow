@@ -1,7 +1,6 @@
 {
     "FasterRCNNContainerProcessor": {
         "container_image_url": "",
-        "labels": "None",
         "conf_threshold": "0.8"
     },
     "FasterRCNNOpenCVProcessor": {

@@ -1,6 +1,7 @@
 from .base import SerializableProcessor, record_kwargs
 import inspect
 import json
+import ast
 import os
 import io
 import time
@@ -64,7 +65,6 @@ class FasterRCNNContainerProcessor(SerializableProcessor):
         try:
             kwargs = copy.copy(json_obj)
             kwargs['container_image_url'] = json_obj['container_image_url']
-            kwargs['labels'] = json_obj['labels']
             kwargs['conf_threshold'] = float(json_obj['conf_threshold'])
         except ValueError as e:
             raise ValueError(
@@ -84,9 +84,10 @@ class FasterRCNNContainerProcessor(SerializableProcessor):
         }, files={
             'picture': fp
         })
-        detections = response.text
+        detections = ast.literal_eval(response.text)
         result = {}
         for detection in detections:
+            logger.info(detection)
             label = detection[0]
             bbox = detection[1]
             confidence = detection[2]
