@@ -25,7 +25,7 @@ import json
 import multiprocessing
 import os
 import pprint
-import Queue
+import queue
 import socket
 import struct
 import sys
@@ -103,8 +103,8 @@ if __name__ == "__main__":
     ucomm_port = service_list.get(gabriel.ServiceMeta.UCOMM_SERVER_PORT)
 
     # image receiving thread
-    image_queue = Queue.Queue(gabriel.Const.APP_LEVEL_TOKEN_SIZE)
-    print("TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel.Const.APP_LEVEL_TOKEN_SIZE)
+    image_queue = queue.Queue(gabriel.Const.APP_LEVEL_TOKEN_SIZE)
+    print(("TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel.Const.APP_LEVEL_TOKEN_SIZE))
     video_streaming = gabriel.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
     video_streaming.start()
     video_streaming.isDaemon = True
