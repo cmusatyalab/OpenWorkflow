@@ -22,7 +22,7 @@ class FasterRCNNContainerProcessor(SerializableProcessor):
     CONTAINER_MAPPED_HOST_PORT = -1
 
     @record_kwargs
-    def __init__(self, container_image_url, labels=None, conf_threshold=0.5):
+    def __init__(self, container_image_url, conf_threshold=0.5):
         # For default parameter settings,
         # see:
         # https://github.com/rbgirshick/fast-rcnn/blob/b612190f279da3c11dd8b1396dd5e72779f8e463/lib/fast_rcnn/config.py
@@ -78,26 +78,33 @@ class FasterRCNNContainerProcessor(SerializableProcessor):
         fp.write(cv2.imencode('.jpg', image)[1].tostring())
         fp.seek(0, 0)
 
-        results = requests.post(self.container_server_url, data={
+        response = requests.post(self.container_server_url, data={
             'confidence': self.conf_threshold,
             'format': 'box'
         }, files={
             'picture': fp
         })
-        return results.text
+        detections = response.text
+        result = {}
+        for detection in detections:
+            label = detection[0]
+            bbox = detection[1]
+            confidence = detection[2]
+            if label not in result:
+                result[label] = []
+            result[label].append(
+                [*bbox, confidence, label]
+            )
+        return result
 
     def clean(self):
         if self.container:
             self.container.remove(force=True)
 
-# TODO: labels not used
-
 
 if __name__ == "__main__":
     container_image_url = 'registry.cmusatyalab.org/junjuew/container-registry:tpod-image-sandwich-sandwich'
-    label = 'bread'
     processor = FasterRCNNContainerProcessor(container_image_url=container_image_url,
-                                             labels=[label],
                                              conf_threshold=0.1)
     image = cv2.imread('test.png')
     print(processor(image))
