@@ -37,12 +37,8 @@ class SandwichEngine(cognitive_engine.Engine):
         inst = self._fsm_runner.feed(img)
 
         result_wrapper = gabriel_pb2.ResultWrapper()
+        engine_fields.update_count += 1
         result_wrapper.engine_fields.Pack(engine_fields)
-        logger.info(inst.audio)
-        logger.info(type(inst.audio))
-
-        logger.info(inst.audio)
-        logger.info(type(inst.image))
 
         if inst.image:
             result = result_wrapper.results.add()
@@ -52,7 +48,7 @@ class SandwichEngine(cognitive_engine.Engine):
 
         if inst.audio:
             result = result_wrapper.results.add()
-            result.payload_type = gabriel_pb2.PayloadType.Value('AUDIO')
+            result.payload_type = gabriel_pb2.PayloadType.Value('TEXT')
             result.payload = inst.audio.encode(encoding="utf-8")
             result.engine_name = ENGINE_NAME
 
@@ -63,6 +59,34 @@ class SandwichEngine(cognitive_engine.Engine):
         result_wrapper.status = gabriel_pb2.ResultWrapper.Status.Value('SUCCESS')
 
         return result_wrapper
+
+
+def _remove_demo_containers():
+    import docker
+    docker_client = docker.from_env()
+    containers = docker_client.containers.list()
+    key_word = 'FasterRCNNContainerProcessor'
+    for container in containers:
+        if key_word in container.name:
+            container.remove(force=True)
+
+
+def run(pbfsm_path='app.pbfsm',
+        port=DEFAULT_PORT,
+        token_num=DEFAULT_NUM_TOKENS,
+        engine_name=ENGINE_NAME,
+        input_queue_max_size=INPUT_QUEUE_MAX_SIZE):
+    assert pbfsm_path is not None
+
+    logger.info('Preparing environment...')
+    _remove_demo_containers()
+
+    def engine_setup():
+        return SandwichEngine(pbfsm_path)
+
+    logger.info('Launching application...')
+    gabriel_runner.run(
+        engine_setup, engine_name, input_queue_max_size, port, token_num)
 
 
 def main():
@@ -77,11 +101,8 @@ def main():
         "-p", "--port", type=int, default=DEFAULT_PORT, help="Set port number")
     args = parser.parse_args()
 
-    def engine_setup():
-        return SandwichEngine(args.pbfsm)
-
-    gabriel_runner.run(
-        engine_setup, ENGINE_NAME, INPUT_QUEUE_MAX_SIZE, args.port, args.tokens)
+    run(pbfsm_path=args.pbfsm, port=args.port, token_num=args.token,
+        engine_name=ENGINE_NAME, input_queue_max_size=INPUT_QUEUE_MAX_SIZE)
 
 
 if __name__ == "__main__":
