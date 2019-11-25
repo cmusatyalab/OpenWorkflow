@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "ffb7530acdd5ddc12c2e",
+    "revision": "3b987af047c1a64c065c",
     "url": "/gabriel-tool/static/css/main.975543ee.chunk.css"
   },
   {
-    "revision": "ffb7530acdd5ddc12c2e",
-    "url": "/gabriel-tool/static/js/main.ffb7530a.chunk.js"
+    "revision": "3b987af047c1a64c065c",
+    "url": "/gabriel-tool/static/js/main.3b987af0.chunk.js"
   },
   {
     "revision": "e82e7685513fe194d976",
@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/gabriel-tool/static/js/runtime~main.a6093358.js"
   },
   {
-    "revision": "472a047b5de5d7b5c458e156c04feecc",
+    "revision": "9195fe7f873b90dd31b5f7197470825c",
     "url": "/gabriel-tool/index.html"
   }
 ];
