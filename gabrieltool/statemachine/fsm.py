@@ -5,7 +5,7 @@ Each message type in the protobuf definition has a corresponding data class.
 The data object is named as obj_<protobuf_msg_type>.
 """
 
-from __future__ import absolute_import, division, print_function
+
 
 import functools
 import json
@@ -386,6 +386,6 @@ class StateMachine(object):
         # serialize
         pb_fsm = wca_state_machine_pb2.StateMachine(
             name=name, start_state=start_state.name)
-        for (state_name, state) in visited.items():
+        for (state_name, state) in list(visited.items()):
             pb_fsm.states.extend([state.to_desc()])
         return pb_fsm.SerializeToString()

@@ -191,7 +191,7 @@ class FasterRCNNOpenCVProcessor(SerializableProcessor):
 
         if GABRIEL_DEBUG:
             debug_image = image
-            for (class_name, detections) in results.items():
+            for (class_name, detections) in list(results.items()):
                 for detection in detections:
                     left, top, right, bottom, conf, _ = detection
                     debug_image = drawPred(debug_image, class_name, conf, left, top, right, bottom)
