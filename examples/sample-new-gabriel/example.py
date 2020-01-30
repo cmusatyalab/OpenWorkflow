@@ -14,7 +14,7 @@ DEFAULT_NUM_TOKENS = 1
 INPUT_QUEUE_MAX_SIZE = 60
 ENGINE_NAME = 'instruction'
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 class SandwichEngine(cognitive_engine.Engine):
@@ -53,7 +53,6 @@ class SandwichEngine(cognitive_engine.Engine):
             result.engine_name = ENGINE_NAME
 
         logger.info('Current State: {}'.format(self._fsm_runner.current_state))
-        logger.info(result_wrapper.results)
 
         result_wrapper.frame_id = from_client.frame_id
         result_wrapper.status = gabriel_pb2.ResultWrapper.Status.Value('SUCCESS')

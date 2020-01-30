@@ -51,7 +51,7 @@ class FasterRCNNContainerProcessor(SerializableProcessor):
         )
         container.reload()
         time.sleep(10)
-        self.CONTAINER_MAPPED_HOST_PORT = container.ports[self.container_port][0]['HostPort']
+        FasterRCNNContainerProcessor.CONTAINER_MAPPED_HOST_PORT = container.ports[self.container_port][0]['HostPort']
         return container
 
     def _get_container(self):
@@ -96,6 +96,7 @@ class FasterRCNNContainerProcessor(SerializableProcessor):
             result[label].append(
                 [*bbox, confidence, label]
             )
+        logger.info(result)
         return result
 
     def clean(self):

@@ -6,11 +6,6 @@ expressed as state machines.
 """
 
 
-from logzero import logger
-from gabrieltool.statemachine import fsm
-from gabrieltool.statemachine import processor_zoo
-
-
 class Runner(object):
     """Finite State Machine Runner."""
 
