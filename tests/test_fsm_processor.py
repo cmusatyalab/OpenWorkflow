@@ -37,7 +37,7 @@ def test_FasterRCNNOpenCVProcessor():
     data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data/sandwich-model')
     labels = ["tomato", "cheese", "full", "ham", "lettuce", "cucumber", "half", "hamwrong", "bread"]
     if os.path.exists(data_dir) and os.path.isdir(data_dir):
-        proc = processor_zoo.FasterRCNNOpenCVProcessor(
+        proc = processor_zoo.FasterRCNNOpenCVCallable(
             proto_path=os.path.join(data_dir, 'faster_rcnn_test.pt'),
             model_path=os.path.join(data_dir, 'model.caffemodel'),
             labels=labels

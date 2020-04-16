@@ -13,7 +13,7 @@ st_start = fsm.State(
     name='start',
     processors=[fsm.Processor(
         name='proc_start',
-        callable_obj=processor_zoo.DummyProcessor()
+        callable_obj=processor_zoo.DummyCallable()
     )],
     transitions=[
         fsm.Transition(

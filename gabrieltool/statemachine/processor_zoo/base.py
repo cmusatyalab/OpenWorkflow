@@ -60,9 +60,20 @@ def record_kwargs(func):
     return wrapper
 
 
-class SerializableProcessor(object):
+class SerializableCallable(object):
+    """Base class for processor callables.
+
+    Callables needs to be able to be serialized and de-serialized.
+
+    Arguments:
+        object {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
+
     def __init__(self, *args, **kwargs):
-        super(SerializableProcessor, self).__init__(*args, **kwargs)
+        super(SerializableCallable, self).__init__(*args, **kwargs)
 
     @classmethod
     def from_json(cls, json_obj):
@@ -74,7 +85,7 @@ class SerializableProcessor(object):
         return cls(**json_obj)
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, self.SerializableCallable):
             return self.kwargs == other.kwargs
         return False
 
@@ -82,24 +93,24 @@ class SerializableProcessor(object):
         return not self.__eq__(other)
 
 
-class DummyProcessor(SerializableProcessor):
+class DummyCallable(SerializableCallable):
 
     @record_kwargs
     def __init__(self, dummy_input='dummy_input_value'):
-        super(DummyProcessor, self).__init__()
+        super(DummyCallable, self).__init__()
 
     def __call__(self, image, debug=False):
         return {'dummy_key': 'dummy_value'}
 
 
-class FasterRCNNOpenCVProcessor(SerializableProcessor):
+class FasterRCNNOpenCVCallable(SerializableCallable):
 
     @record_kwargs
     def __init__(self, proto_path, model_path, labels=None, conf_threshold=0.8):
         # For default parameter settings,
         # see:
         # https://github.com/rbgirshick/fast-rcnn/blob/b612190f279da3c11dd8b1396dd5e72779f8e463/lib/fast_rcnn/config.py
-        super(FasterRCNNOpenCVProcessor, self).__init__()
+        super(FasterRCNNOpenCVCallable, self).__init__()
         self._scale = 600
         self._max_size = 1000
         # Pixel mean values (BGR order) as a (1, 1, 3) array

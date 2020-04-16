@@ -69,7 +69,7 @@ def expected_instruction_obj():
 def processor_obj():
     return fsm.Processor(
         name='test_proc',
-        callable_obj=processor_zoo.DummyProcessor(
+        callable_obj=processor_zoo.DummyCallable(
             dummy_input='dummy_input_value'
         ))
 
@@ -78,7 +78,7 @@ def processor_obj():
 def expected_processor_obj():
     expected_obj = wca_state_machine_pb2.Processor()
     expected_obj.name = 'test_proc'
-    expected_obj.callable_name = processor_zoo.DummyProcessor.__name__
+    expected_obj.callable_name = processor_zoo.DummyCallable.__name__
     expected_obj.callable_args = json.dumps({
         'dummy_input': 'dummy_input_value'
     })

@@ -22,7 +22,7 @@ def build_sandwich_fsm():
     img_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images_feedback')
 
     labels = ["tomato", "cheese", "full", "ham", "lettuce", "cucumber", "half", "hamwrong", "bread"]
-    proc = processor_zoo.FasterRCNNOpenCVProcessor(
+    proc = processor_zoo.FasterRCNNOpenCVCallable(
         proto_path=os.path.join(data_dir, 'faster_rcnn_test.pt'),
         model_path=os.path.join(data_dir, 'model.caffemodel'),
         labels=labels
