@@ -11,9 +11,15 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = []
+requirements = [
+    'tensorflow-serving-api',
+    'docker',
+    'opencv-python>=3',
+    'logzero',
+    'gabriel-server'
+]
 
-setup_requirements = ['pytest-runner', ]
+setup_requirements = []
 
 test_requirements = ['pytest', ]
 
@@ -25,14 +31,12 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
+    python_requires=">=3.5",
     description="Tools for Making Wearable Cognitive Assitants",
     install_requires=requirements,
     license="Apache Software License 2.0",

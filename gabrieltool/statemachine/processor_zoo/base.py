@@ -13,24 +13,30 @@ from cv2 import dnn
 from logzero import logger
 import copy
 
-GABRIEL_DEBUG = os.getenv('GABRIEL_DEBUG', False)
 
-# TODO (junjuew): move this to cvutil?
+def visualize_detections(img, results):
+    """Visualize object detection outputs. 
 
+    This is a helper function for debugging processor callables.
+    The results should follow Gabrieltool's convention, which is
 
-def drawPred(frame, class_name, conf, left, top, right, bottom):
-    # Draw a bounding box.
-    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0))
+    Arguments:
+        img {OpenCV Image}
+        results {Dictionary} -- a dictionary of class_idx -> [[x1, y1, x2, y2, confidence, cls_idx],...]
 
-    label = '%.2f' % conf
-
-    label = '%s: %s' % (class_name, label)
-
-    labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    top = max(top, labelSize[1])
-    cv2.rectangle(frame, (left, top - labelSize[1]), (left + labelSize[0], top + baseLine), (255, 255, 255), cv2.FILLED)
-    cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
-    return frame
+    Returns:
+        OpenCV Image -- Image with detected objects annotated
+    """
+    img_detections = img.copy()
+    for _, dets in results.items():
+        for i in range(len(dets)):
+            cls_name = str(dets[i][-1])
+            bbox = dets[i][:4]
+            score = dets[i][-2]
+            text = "%s : %f" % (cls_name, score)
+            cv2.rectangle(img_detections, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 0, 255), 8)
+            cv2.putText(img_detections, text, (int(bbox[0]), int(bbox[1])), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+    return img_detections
 
 
 def record_kwargs(func):
@@ -200,13 +206,5 @@ class FasterRCNNOpenCVCallable(SerializableCallable):
                 results[self._labels[classId]] = []
             results[self._labels[classId]].append([left, top, left+width, top+height, confidence, classId])
 
-        if GABRIEL_DEBUG:
-            debug_image = image
-            for (class_name, detections) in list(results.items()):
-                for detection in detections:
-                    left, top, right, bottom, conf, _ = detection
-                    debug_image = drawPred(debug_image, class_name, conf, left, top, right, bottom)
-            cv2.imshow('debug', debug_image)
-            cv2.waitKey(1)
         logger.debug('results: {}'.format(results))
         return results

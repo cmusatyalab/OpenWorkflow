@@ -1,0 +1,12 @@
+
+tf_serving_exampleN
+startE
+tran_start_to_proc#
+TransitionPredicate_1always"{}"
+tf_servingü
+
+tf_serving›
+
+proc_startTFServingContainerCallable"q{"conf_threshold": 0.5, "model_name": "ssd_mobilenet_v2", "serving_dir": "examples/ssd_mobilenet_v2_saved_model"}P
+tran_tf_to_end>
+TransitionPredicate_5has_obj_cls"{"cls_name": "keyboard"}"start

@@ -13,7 +13,7 @@ import numpy as np
 import requests
 from logzero import logger
 
-from .base import SerializableCallable, record_kwargs
+from .base import SerializableCallable, record_kwargs, visualize_detections
 from . import tfutils
 
 docker_client = docker.from_env()
@@ -36,7 +36,7 @@ class SingletonContainerManager(object):
             self._container = self._get_container_obj()
         return self._container
 
-    def start_container(self, image_url, command, ports):
+    def start_container(self, image_url, command, **kwargs):
         if self.container is None or self.container.status != 'running':
             container = docker_client.containers.run(
                 image_url,
@@ -44,9 +44,10 @@ class SingletonContainerManager(object):
                 name=self.container_name,
                 auto_remove=True,
                 detach=True,
-                ports=ports
+                **kwargs
             )
             container.reload()
+            # sleep here to give some time for container to start
             time.sleep(10)
             self._container = container
         return self._container
@@ -82,7 +83,7 @@ class FasterRCNNContainerCallable(SerializableCallable):
         self.container_port = '8000/tcp'
         ports = {self.container_port: None}   # map container 8000 to a random host port
         command = '/bin/bash run_server.sh',
-        self.container_manager.start_container(self.container_image_url, command, ports)
+        self.container_manager.start_container(self.container_image_url, command, ports=ports)
 
     @property
     def container_server_url(self):
@@ -133,40 +134,73 @@ class FasterRCNNContainerCallable(SerializableCallable):
 
 
 class TFServingContainerCallable(SerializableCallable):
-    """Processor from frozen tensorflow models."""
+    """Processor from frozen tensorflow models.
+
+    Containers are started lazily when a runner is starting to run.
+    """
 
     # UNIQUE to each python process
     CONTAINER_NAME = 'GABRIELTOOL-TFServingContainerCallable-{}'.format(os.getpid())
+    # TF Serving image by default listens on 8500 for GRPC
     TFSERVING_GRPC_PORT = 8500
+    SERVED_DIRS = {}
 
     @record_kwargs
-    def __init__(self, container_image_url, model_name, conf_threshold=0.5):
+    def __init__(self, model_name, serving_dir, conf_threshold=0.5):
         super(TFServingContainerCallable, self).__init__()
-        self.container_image_url = container_image_url
+        self.serving_dir = serving_dir
         self.model_name = model_name
         self.conf_threshold = conf_threshold
-        self.container_manager = SingletonContainerManager(self.CONTAINER_NAME)
+        TFServingContainerCallable.SERVED_DIRS[model_name] = os.path.abspath(serving_dir)
+        self.container_manager = SingletonContainerManager(TFServingContainerCallable.CONTAINER_NAME)
+        self.container_internal_port = '{}/tcp'.format(TFServingContainerCallable.TFSERVING_GRPC_PORT)
+        self.predictor = None
 
-        # 8500 is the default gRPC port for TF-serving
-        self.container_port = '{}/tcp'.format(self.TFSERVING_GRPC_PORT)
-        self.predictor = tfutils.TFServingPredictor('localhost', self.TFSERVING_GRPC_PORT)
+    def prepare(self):
+        """Launch the TF serving container.
+        This is done in a separate function, because we want one TF serving
+        container to serve all the served_dirs for this class.
+        """
+        # launch container
+        self._start_container()
 
     def _start_container(self):
-        ports = {self.container_port: None}
-        container_image_url = self.container_image_url
-        self.container_manager.start_container(container_image_url, None, ports)
+        """Launch TF serving container image to serve all entries in SERVED_DIRS."""
+        ports = {self.container_internal_port: None}
+        container_image_url = 'tensorflow/serving'
+        # geerate model config
+        from tensorflow_serving.config import model_server_config_pb2
+        from google.protobuf import text_format
+        model_server_config = model_server_config_pb2.ModelServerConfig()
+        for model_name, model_dir in TFServingContainerCallable.SERVED_DIRS.items():
+            model_config = model_server_config.model_config_list.config.add()
+            model_config.name = model_name
+            model_config.base_path = '/models/{}'.format(model_name)
+            model_config.model_platform = 'tensorflow'
+        with open('models.config', 'w') as f:
+            f.write(text_format.MessageToString(model_server_config))
+        # mount volumes
+        volumes = {
+            os.path.abspath('models.config'): {'bind': '/models/models.config', 'mode': 'ro'}
+        }
+        for model_name, model_dir in TFServingContainerCallable.SERVED_DIRS.items():
+            volumes[model_dir] = {'bind': '/models/{}'.format(model_name), 'mode': 'ro'}
+        logger.debug('volumes: {}'.format(volumes))
+        cmd = '--model_config_file=/models/models.config'
+        self.container_manager.start_container(container_image_url, cmd, ports=ports, volumes=volumes)
 
     @property
-    def container_server_url(self):
+    def container_external_port(self):
         if self.container_manager.container is not None and self.container_manager.container.status == 'running':
-            return 'http://localhost:{}/detect'.format(self.container_manager.container.ports[self.container_port][0]['HostPort'])
+            return self.container_manager.container.ports[self.container_internal_port][0]['HostPort']
         return None
 
     @classmethod
     def from_json(cls, json_obj):
         try:
             kwargs = copy.copy(json_obj)
-            kwargs['container_image_url'] = json_obj['container_image_url']
+            kwargs['model_name'] = json_obj['model_name']
+            kwargs['serving_dir'] = json_obj['serving_dir']
             kwargs['conf_threshold'] = float(json_obj['conf_threshold'])
         except ValueError as e:
             raise ValueError(
@@ -176,19 +210,16 @@ class TFServingContainerCallable(SerializableCallable):
         return cls(**kwargs)
 
     def __call__(self, image):
-        detections = self.predictor.infer_one(self.model_name, image)
-        result = {}
-        for detection in detections:
-            logger.info(detection)
-            label = detection[0]
-            bbox = detection[1]
-            confidence = detection[2]
-            if label not in result:
-                result[label] = []
-            result[label].append(
-                [*bbox, confidence, label]
-            )
-        return result
+        if not self.predictor:
+            self.predictor = tfutils.TFServingPredictor('localhost', self.container_external_port)
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        results = self.predictor.infer_one(self.model_name, rgb_image, conf_threshold=self.conf_threshold)
+
+        # # debug
+        # debug_image = visualize_detections(image, results)
+        # cv2.imshow('debug', debug_image)
+        # cv2.waitKey(1)
+        return results
 
     def clean(self):
         self.container_manager.clean()

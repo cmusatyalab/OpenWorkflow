@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Finite State Machine Representation
+"""Finite State Machine Representation.
 
 Each message type in the protobuf definition has a corresponding data class.
 The data object is named as obj_<protobuf_msg_type>.
 """
-
 
 
 import functools
@@ -135,7 +134,7 @@ class Instruction(FSMObjBase):
 class Transition(FSMObjBase):
     """A Transition has satisfying predicates, next_state, and instructions."""
 
-    def __init__(self, name=None, predicates=None, instruction=None, next_state=None):
+    def __init__(self, name, predicates, instruction=None, next_state=None):
         """Transition among states
 
         Keyword Arguments:
@@ -179,7 +178,8 @@ class Transition(FSMObjBase):
             self._pb.predicates.extend([pred.to_desc()])
         if self.instruction is not None:
             self._pb.instruction.CopyFrom(self.instruction.to_desc())
-        self._pb.next_state = self.next_state.name
+        if self.next_state:
+            self._pb.next_state = self.next_state.name
         return super(Transition, self).to_desc()
 
     def from_desc(self):
@@ -192,12 +192,12 @@ class Transition(FSMObjBase):
 class Processor(FSMObjBase):
     """Processsor is a FSM element that processes image in a state."""
 
-    def __init__(self, name=None, callable_obj=None):
+    def __init__(self, name, callable_obj):
         """
 
         Keyword Arguments:
             name {string} -- name (default: {None})
-            callable_obj {functools.partial object} -- A instance from 
+            callable_obj {A callable object (e.g. funtools.partial)} -- A instance from 
             classes in processor_zoo. (default: {None})
         """
 
@@ -207,6 +207,14 @@ class Processor(FSMObjBase):
     @property
     def callable_obj(self):
         return self._callable_obj
+
+    def prepare(self):
+        """Prepare's a processor.
+
+        Invoke prepare() method of the callable if it has any. """
+        prepare_func = getattr(self._callable_obj, "prepare", None)
+        if callable(prepare_func):
+            prepare_func()
 
     def __call__(self, img):
         return self._callable_obj(img)
@@ -266,6 +274,14 @@ class State(FSMObjBase):
             if transition(app_state) is not None:
                 return transition
         return None
+
+    def prepare(self):
+        """Prepare a state to be run.
+
+        Invokes prepare function of all processors
+        """
+        for obj_processor in self.processors:
+            obj_processor.prepare()
 
     def __call__(self, img):
         """React to the image.
@@ -357,15 +373,14 @@ class StateMachine(object):
     @classmethod
     def bfs(cls, start_state):
         """Breadth-first Search on the graph, starting from start_state node."""
-        visited = []
+        visited = set([start_state])
         work_queue = [start_state]
         while work_queue:
             state = work_queue.pop(0)
-            if state in visited:
-                continue
             for tran in state.transitions:
-                work_queue.append(tran.next_state)
-            visited.append(state)
+                if tran.next_state is not None and tran.next_state not in visited:
+                    work_queue.append(tran.next_state)
+                    visited.add(tran.next_state)
             yield state
 
     @classmethod

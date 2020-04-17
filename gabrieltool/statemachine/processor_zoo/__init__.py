@@ -3,4 +3,4 @@
 """
 
 from gabrieltool.statemachine.processor_zoo.base import DummyCallable, FasterRCNNOpenCVCallable
-from gabrieltool.statemachine.processor_zoo.containerized import FasterRCNNContainerCallable
+from gabrieltool.statemachine.processor_zoo.containerized import FasterRCNNContainerCallable, TFServingContainerCallable
