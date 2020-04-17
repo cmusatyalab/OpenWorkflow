@@ -85,7 +85,7 @@ class SerializableCallable(object):
         return cls(**json_obj)
 
     def __eq__(self, other):
-        if isinstance(other, self.SerializableCallable):
+        if isinstance(other, SerializableCallable):
             return self.kwargs == other.kwargs
         return False
 
