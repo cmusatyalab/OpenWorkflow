@@ -43,7 +43,17 @@ What's included?
 
    * `examples/sandwich`_: Sandwich application made using the state machines.
 * `State Machine Editor`_: A browser-based state machine editor, implemented in React. Give it a try at https://cmusatyalab.github.io/OpenWorkflow/
-* `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for wearable cognitive assistants that are built using this tool.
+* `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for
+wearable cognitive assistants that are built using this tool.
+
+Generate Documentation
+----------------------------------------------------------------
+
+.. code-block::bash
+
+   $ sphinx-apidoc -f -o docs/source gabrieltool
+   $ cd docs
+   $ make html
 
 Credits
 -------
@@ -56,4 +66,4 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 .. _`Examples`: examples
 .. _`examples/sandwich`: examples/sandwich
 .. _`State Machine Editor`: gabrieltool/statemachine-editor-react
-.. _`Gabriel Deployment Dashboard`: gabrieltool/dashboard
+.. _`Gabriel Deployment Dashboard`: gabrieltool/dashboardmake html

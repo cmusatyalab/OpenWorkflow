@@ -13,6 +13,11 @@ Welcome to OpenWorkflow's documentation!
    authors
    history
 
+API
+-----------
+.. automodule:: gabrieltool.statemachine.fsm
+    :members:
+
 Features
 --------
 
