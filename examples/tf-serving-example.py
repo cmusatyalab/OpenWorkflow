@@ -4,12 +4,12 @@
 The TF models can be exported from OpenTPOD or any TF SavedModel that can be
 served by TF-Serving.
 
-An example model (SSD-MobilenetV2) can be downloaded from 
+An example model (SSD-MobilenetV2) can be downloaded from
 http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
 After downloading and unzipping the tar ball, rearrange the saved_model
-directory in the original package into the following structure by renaming and 
+directory in the original package into the following structure by renaming and
 making a version directory (00001).
-The labels for COCO dataset can be found at 
+The labels for COCO dataset can be found at
 https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt
 
 .
@@ -27,7 +27,7 @@ Usage: Run and see ./examples/tf-serving-example.py -h
 
 from __future__ import absolute_import, division, print_function
 
-from functools import partial
+import functools
 
 import cv2
 import fire
@@ -35,6 +35,16 @@ from logzero import logger
 from gabriel_server.local_engine import runner as gabriel_runner
 
 from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo, runner
+
+
+def _add_custom_transition_predicates():
+    """Here is how you can add a custom transition predicate to the predicate zoo
+
+    See _build_fsm to see how this custom transition predicate is used
+    """
+    def custom_transition_predicate_has_chair(app_state):
+        return '62' in app_state
+    predicate_zoo.custom_transition_predicate_has_chair = custom_transition_predicate_has_chair
 
 
 def _build_fsm():
@@ -52,7 +62,7 @@ def _build_fsm():
                 name='tran_start_to_proc',
                 predicates=[
                     fsm.TransitionPredicate(
-                        partial_obj=partial(
+                        partial_obj=functools.partial(
                             predicate_zoo.always
                         )
                     )
@@ -61,6 +71,7 @@ def _build_fsm():
             )
         ]
     )
+
     st_tf = fsm.State(
         name='tf_serving',
         processors=[fsm.Processor(
@@ -74,7 +85,7 @@ def _build_fsm():
             fsm.Transition(
                 predicates=[
                     fsm.TransitionPredicate(
-                        partial_obj=partial(
+                        partial_obj=functools.partial(
                             predicate_zoo.has_obj_cls,
                             cls_name='1'  # 1 is Person
                         )
@@ -85,9 +96,11 @@ def _build_fsm():
             fsm.Transition(
                 predicates=[
                     fsm.TransitionPredicate(
-                        # custom predicate callable
-                        # when chair is found in the scene.
-                        partial_obj=lambda app_state: '62' in app_state
+                        # use the custom transition predicate we created
+                        # in _add_custom_transition_predicate
+                        partial_obj=functools.partial(
+                            predicate_zoo.custom_transition_predicate_has_chair
+                        )
                     )
                 ],
                 instruction=fsm.Instruction(audio='Found Chair!')
@@ -198,6 +211,7 @@ def run_gabriel_server_from_saved_fsm(pbfsm_path):
 
 
 if __name__ == '__main__':
+    _add_custom_transition_predicates()
     fire.Fire({
         'generate_fsm': generate_fsm,
         'run_fsm': run_fsm,
