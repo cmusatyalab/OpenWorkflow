@@ -18,10 +18,9 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
-import gabrieltool
-import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+import os
+import gabrieltool
 
 
 # -- General configuration ---------------------------------------------

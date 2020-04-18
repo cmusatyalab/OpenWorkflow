@@ -12,7 +12,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'tensorflow-serving-api',
+    'tensorflow-serving-api~=1.15',
     'docker',
     'opencv-python>=3',
     'logzero',
