@@ -134,7 +134,7 @@ class Instruction(FSMObjBase):
 class Transition(FSMObjBase):
     """A Transition has satisfying predicates, next_state, and instructions."""
 
-    def __init__(self, name, predicates, instruction=None, next_state=None):
+    def __init__(self, predicates, name=None, instruction=None, next_state=None):
         """Transition among states
 
         Keyword Arguments:

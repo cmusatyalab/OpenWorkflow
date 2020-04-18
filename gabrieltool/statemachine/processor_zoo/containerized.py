@@ -38,6 +38,13 @@ class SingletonContainerManager(object):
 
     def start_container(self, image_url, command, **kwargs):
         if self.container is None or self.container.status != 'running':
+            logger.info(
+                'launching Docker container (name: {}, image: {}, command: {}, extra args: {})'.format(
+                    self.container_name,
+                    image_url,
+                    command,
+                    str(kwargs)
+                ))
             container = docker_client.containers.run(
                 image_url,
                 command=command,

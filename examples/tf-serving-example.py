@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-"""Example of using gabrieltool.statemachine for using TF models for analysis.
+#!/usr/bin/env python
+"""Example of using gabrieltool.statemachine with tensorflow/OpenTPOD models for analysis.
 
 The TF models can be exported from OpenTPOD or any TF SavedModel that can be
 served by TF-Serving.
@@ -19,7 +19,10 @@ https://github.com/tensorflow/models/blob/master/research/object_detection/data/
 │       └── variables
 └── tf-serving-example.py
 
-In this example, we create a naive 2-state FSM that detects the presence of a person.
+In this example, we create a naive 2-state FSM that detects the presence of a
+person or a chair.
+
+Usage: Run and see ./examples/tf-serving-example.py -h
 """
 
 from __future__ import absolute_import, division, print_function
@@ -27,12 +30,19 @@ from __future__ import absolute_import, division, print_function
 from functools import partial
 
 import cv2
+import fire
 from logzero import logger
+from gabriel_server.local_engine import runner as gabriel_runner
 
 from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo, runner
 
 
-def build_fsm():
+def _build_fsm():
+    """Build an example FSM for detecting a person.
+
+    Returns:
+        gabrieltool.statemchine.fsm.State -- The start state of the generated FSM.
+    """
     # create a three state state machine
     st_start = fsm.State(
         name='start',
@@ -47,7 +57,7 @@ def build_fsm():
                         )
                     )
                 ],
-                instruction=fsm.Instruction(audio='Looking for person...')
+                instruction=fsm.Instruction(audio='This app will tell you if a person or a chair is present.')
             )
         ]
     )
@@ -62,7 +72,6 @@ def build_fsm():
         )],
         transitions=[
             fsm.Transition(
-                name='tran_tf_to_end',
                 predicates=[
                     fsm.TransitionPredicate(
                         partial_obj=partial(
@@ -71,7 +80,17 @@ def build_fsm():
                         )
                     )
                 ],
-                instruction=fsm.Instruction(audio='Found a person!')
+                instruction=fsm.Instruction(audio='Found Person!')
+            ),
+            fsm.Transition(
+                predicates=[
+                    fsm.TransitionPredicate(
+                        # custom predicate callable
+                        # when chair is found in the scene.
+                        partial_obj=lambda app_state: '62' in app_state
+                    )
+                ],
+                instruction=fsm.Instruction(audio='Found Chair!')
             )
         ]
     )
@@ -79,19 +98,37 @@ def build_fsm():
     # transitions are created after the state objects
     st_start.transitions[0].next_state = st_tf
     st_tf.transitions[0].next_state = st_tf
+    st_tf.transitions[1].next_state = st_tf
     return st_start
 
 
-def save_model(start_state):
+def generate_fsm(output_path):
+    """Create and save an example FSM for detecting a person.
+
+    Arguments:
+        output_path {string} -- Path to save the FSM to.
+    """
+    start_state = _build_fsm()
     # save to disk
-    with open('examples/tf-serving-example.pbfsm', 'wb') as f:
+    with open(output_path, 'wb') as f:
         f.write(fsm.StateMachine.to_bytes(
             name='tf_serving_example',
             start_state=start_state
         ))
 
 
-def run_model(start_state, video_uri=0):
+def run_fsm(video_uri=0):
+    """Create and execute a state machine locally.
+
+    Create a FSM and feed it images from video_uri. The output instruction is
+    displayed on both command line and the OpenCV window.
+
+    Keyword Arguments:
+        video_uri {OpenCV VideoCapture Input String} -- id of the video
+        capturing device to open. (default: {0}). For all supported formats, 
+        see https://docs.opencv.org/master/d8/dfe/classcv_1_1VideoCapture.html.
+    """
+    start_state = _build_fsm()
     fsm_runner = runner.Runner(start_state)
     cam = cv2.VideoCapture(video_uri)
     while True:
@@ -108,7 +145,62 @@ def run_model(start_state, video_uri=0):
     cv2.destroyAllWindows()
 
 
+def run_gabriel_server():
+    """Create and execute a gabriel server for detecting people.
+
+    This gabriel server uses a gabrieltool.statemachine.fsm to represents
+    application logic. Use Gabriel Client to stream images and receive feedback.
+    """
+    logger.info('Building Person Detection FSM...')
+    start_state = _build_fsm()
+    logger.info('Initializing Cognitive Engine...')
+    # engine_name has to be 'instruction' to work with
+    # gabriel client from App Store. Someone working on Gabriel needs to fix this.
+    engine_name = 'instruction'
+    logger.info('Launching Gabriel server...')
+    gabriel_runner.run(
+        engine_setup=lambda: runner.BasicCognitiveEngineRunner(
+            engine_name=engine_name, fsm=start_state),
+        engine_name=engine_name,
+        input_queue_maxsize=60,
+        port=9099,
+        num_tokens=1
+    )
+
+
+def run_gabriel_server_from_saved_fsm(pbfsm_path):
+    """Create and execute a gabriel server for detecting people.
+
+    This gabriel server uses a gabrieltool.statemachine.fsm to represents
+    application logic. Use Gabriel Client to stream images and receive feedback.
+
+    Arguments:
+        pbfsm_path {string} -- File path of FSM file (e.g. examples/tf-serving-example.pbfsm).
+    """
+    start_state = None
+    logger.info('Loading FSM from {}...'.format(pbfsm_path))
+    with open(pbfsm_path, 'rb') as f:
+        start_state = fsm.StateMachine.from_bytes(f.read())
+    start_state = _build_fsm()
+    logger.info('Initializing Cognitive Engine...')
+    # engine_name has to be 'instruction' to work with
+    # gabriel client from App Store. Someone working on Gabriel needs to fix this.
+    engine_name = 'instruction'
+    logger.info('Launching Gabriel server...')
+    gabriel_runner.run(
+        engine_setup=lambda: runner.BasicCognitiveEngineRunner(
+            engine_name=engine_name, fsm=start_state),
+        engine_name=engine_name,
+        input_queue_maxsize=60,
+        port=9099,
+        num_tokens=1
+    )
+
+
 if __name__ == '__main__':
-    start_state = build_fsm()
-    # save_model(start_state)
-    run_model(start_state)
+    fire.Fire({
+        'generate_fsm': generate_fsm,
+        'run_fsm': run_fsm,
+        'run_gabriel_server': run_gabriel_server,
+        'run_gabriel_server_from_saved_fsm': run_gabriel_server_from_saved_fsm,
+    })

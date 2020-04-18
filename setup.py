@@ -16,7 +16,8 @@ requirements = [
     'docker',
     'opencv-python>=3',
     'logzero',
-    'gabriel-server'
+    'fire',
+    'gabriel-server',
 ]
 
 setup_requirements = []
