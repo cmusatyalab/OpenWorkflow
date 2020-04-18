@@ -134,7 +134,7 @@ class Instruction(FSMObjBase):
 class Transition(FSMObjBase):
     """A Transition has satisfying predicates, next_state, and instructions."""
 
-    def __init__(self, predicates, name=None, instruction=None, next_state=None):
+    def __init__(self, name=None, predicates=None, instruction=None, next_state=None):
         """Transition among states
 
         Keyword Arguments:
@@ -192,7 +192,7 @@ class Transition(FSMObjBase):
 class Processor(FSMObjBase):
     """Processsor is a FSM element that processes image in a state."""
 
-    def __init__(self, name, callable_obj):
+    def __init__(self, name=None, callable_obj=None):
         """
 
         Keyword Arguments:
@@ -202,7 +202,7 @@ class Processor(FSMObjBase):
         """
 
         super(Processor, self).__init__(name)
-        self._callable_obj = callable_obj
+        self._callable_obj = callable_obj if callable(callable_obj) else lambda x: None
 
     @property
     def callable_obj(self):
