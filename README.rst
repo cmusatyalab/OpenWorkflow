@@ -2,11 +2,6 @@
 OpenWorkflow
 ============================
 
---------------------------------------------------------------------------------
-A suite of tools for creating wearable cognitive assistants.
---------------------------------------------------------------------------------
-
-
 .. image:: https://img.shields.io/pypi/v/gabrieltool.svg
         :target: https://pypi.python.org/pypi/gabrieltool
 
@@ -18,26 +13,20 @@ A suite of tools for creating wearable cognitive assistants.
         :alt: Documentation Status
 
 
-Tools for making wearable cognitive assistants. 
+A suite of tools for creating wearable cognitive assistants.
 
 * Free software: Apache Software License 2.0
 * Documentation: https://openworkflow.readthedocs.io.
 
-Usage
+Installation
 --------
 
 .. code-block:: bash
 
-   $ git clone https://github.com/cmusatyalab/OpenWorkflow.git
-   $ cd gabriel-tool 
-   $ pip install -r requirements.txt
-   $ python setup.py install
+   $ pip install gabrieltool
 
-.. code-block:: python
 
-   import gabrieltool
-
-What's included?
+What's in here
 ----------------------
 
 * `State Machine`_: Tools to create and persist state machines to describe a wearable cognitive assistant. 

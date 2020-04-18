@@ -81,7 +81,7 @@ Ready to contribute? Here's how to set up `OpenWorkflow` for local development.
 5. When you're done making changes, check that your changes pass linter (autopep8) and the
    tests::
 
-    $ pytest
+    $ python -m pytest <directory>
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -100,15 +100,8 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
 3. The pull request should work for Python 3.5, 3.6, and 3.7. Check
-   https://travis-ci.org/junjuew/gabrieltool/pull_requests
+   https://github.com/cmusatyalab/OpenWorkflow/actions
    and make sure that the tests pass for all supported Python versions.
-
-Tips
-----
-
-To run a subset of tests::
-
-$ py.test tests.test_gabrieltool
 
 
 Deploying
