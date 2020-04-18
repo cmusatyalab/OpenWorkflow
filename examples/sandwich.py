@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Simple example of using gabrieltool.statemachine.
-"""
-
-from __future__ import absolute_import, division, print_function
+"""Sandwich Cognitive Assistant."""
 
 import os
 from functools import partial
 
+from gabriel_server.local_engine import runner as gabriel_runner
 from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo
+from logzero import logger
 
 
 def _load_image_bytes(file_path):
@@ -126,11 +125,39 @@ def build_sandwich_fsm():
     return st_start
 
 
-if __name__ == "__main__":
-    sandwich_fsm = build_sandwich_fsm()
+def run_gabriel_server():
+    """Create and execute a gabriel server for helping making a toy sandwich."""
+    logger.info('Building Sandwich FSM...')
+    start_state = build_sandwich_fsm()
+    logger.info('Initializing Cognitive Engine...')
+    # engine_name has to be 'instruction' to work with
+    # gabriel client from App Store. Someone working on Gabriel needs to fix this.
+    engine_name = 'instruction'
+    logger.info('Launching Gabriel server...')
+    gabriel_runner.run(
+        engine_setup=lambda: runner.BasicCognitiveEngineRunner(
+            engine_name=engine_name, fsm=start_state),
+        engine_name=engine_name,
+        input_queue_maxsize=60,
+        port=9099,
+        num_tokens=1
+    )
+
+
+def generate_sandwich_fsm(output_path):
+    """Create and save a FSM for sandwich assistant.
+
+    Arguments:
+        output_path {string} -- Path to save the FSM to.
+    """
+    start_state = build_sandwich_fsm()
     # save to disk
-    with open('examples/sandwich/sandwich.pbfsm', 'wb') as f:
+    with open(output_path, 'wb') as f:
         f.write(fsm.StateMachine.to_bytes(
             name='sandwich',
-            start_state=sandwich_fsm
+            start_state=start_state
         ))
+
+
+if __name__ == "__main__":
+    run_gabriel_server()
