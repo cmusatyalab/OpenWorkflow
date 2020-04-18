@@ -10,7 +10,8 @@ A suite of tools for creating wearable cognitive assistants.
 .. image:: https://img.shields.io/pypi/v/gabrieltool.svg
         :target: https://pypi.python.org/pypi/gabrieltool
 
-.. image:: https://github.com/cmusatyalab/openworkflow/workflows/gabrieltool/badge.svg
+.. image:: https://github.com/cmusatyalab/openworkflow/workflows/gabrieltool-build/badge.svg
+        :target: https://github.com/cmusatyalab/OpenWorkflow/actions
 
 .. image:: https://readthedocs.org/projects/openworkflow/badge/?version=latest
         :target: https://openworkflow.readthedocs.io/en/latest/
