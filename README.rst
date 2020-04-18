@@ -26,7 +26,7 @@ Usage
 
 .. code-block:: bash
 
-   $ git clone https://github.com/junjuew/gabriel-tool.git
+   $ git clone https://github.com/cmusatyalab/OpenWorkflow.git
    $ cd gabriel-tool 
    $ pip install -r requirements.txt
    $ python setup.py install
@@ -42,7 +42,7 @@ What's included?
 * `Examples`_: Examples on how to use this tool.
 
    * `examples/sandwich`_: Sandwich application made using the state machines.
-* `State Machine Editor`_: A browser-based state machine editor, implemented in React. Give it a try at https://junjuew.github.io/gabriel-tool.
+* `State Machine Editor`_: A browser-based state machine editor, implemented in React. Give it a try at https://cmusatyalab.github.io/OpenWorkflow/
 * `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for wearable cognitive assistants that are built using this tool.
 
 Credits

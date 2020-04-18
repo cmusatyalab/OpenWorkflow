@@ -1,4 +1,9 @@
 {
+    "TFServingContainerCallable": {
+        "model_name": "",
+        "serving_dir": "relative_path_to_tf_savedmodel_dir",
+        "conf_threshold": "0.8"
+    },
     "FasterRCNNContainerProcessor": {
         "container_image_url": "",
         "conf_threshold": "0.8"
