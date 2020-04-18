@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/gabriel-tool/precache-manifest.26c3988eadcca4052f1706f65a4f3377.js"
+  "/OpenWorkflow/precache-manifest.5b16982624458d912297e2c8c4181ca3.js"
 );
 
 workbox.clientsClaim();
@@ -28,7 +28,7 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerNavigationRoute("/gabriel-tool/index.html", {
+workbox.routing.registerNavigationRoute("/OpenWorkflow/index.html", {
   
   blacklist: [/^\/_/,/\/[^\/]+\.[^\/]+$/],
 });

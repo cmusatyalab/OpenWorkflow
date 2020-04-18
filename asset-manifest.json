@@ -1,15 +1,15 @@
 {
-  "main.css": "/gabriel-tool/static/css/main.975543ee.chunk.css",
-  "main.js": "/gabriel-tool/static/js/main.3b987af0.chunk.js",
-  "main.js.map": "/gabriel-tool/static/js/main.3b987af0.chunk.js.map",
-  "static/css/1.a5bc045c.chunk.css": "/gabriel-tool/static/css/1.a5bc045c.chunk.css",
-  "static/js/1.e82e7685.chunk.js": "/gabriel-tool/static/js/1.e82e7685.chunk.js",
-  "static/js/1.e82e7685.chunk.js.map": "/gabriel-tool/static/js/1.e82e7685.chunk.js.map",
-  "runtime~main.js": "/gabriel-tool/static/js/runtime~main.a6093358.js",
-  "runtime~main.js.map": "/gabriel-tool/static/js/runtime~main.a6093358.js.map",
-  "static/css/main.975543ee.chunk.css.map": "/gabriel-tool/static/css/main.975543ee.chunk.css.map",
-  "static/css/1.a5bc045c.chunk.css.map": "/gabriel-tool/static/css/1.a5bc045c.chunk.css.map",
-  "index.html": "/gabriel-tool/index.html",
-  "precache-manifest.26c3988eadcca4052f1706f65a4f3377.js": "/gabriel-tool/precache-manifest.26c3988eadcca4052f1706f65a4f3377.js",
-  "service-worker.js": "/gabriel-tool/service-worker.js"
+  "main.css": "/OpenWorkflow/static/css/main.21f3d894.chunk.css",
+  "main.js": "/OpenWorkflow/static/js/main.a0eaade7.chunk.js",
+  "main.js.map": "/OpenWorkflow/static/js/main.a0eaade7.chunk.js.map",
+  "static/css/1.4be75de8.chunk.css": "/OpenWorkflow/static/css/1.4be75de8.chunk.css",
+  "static/js/1.26a5d92b.chunk.js": "/OpenWorkflow/static/js/1.26a5d92b.chunk.js",
+  "static/js/1.26a5d92b.chunk.js.map": "/OpenWorkflow/static/js/1.26a5d92b.chunk.js.map",
+  "runtime~main.js": "/OpenWorkflow/static/js/runtime~main.8a2de10a.js",
+  "runtime~main.js.map": "/OpenWorkflow/static/js/runtime~main.8a2de10a.js.map",
+  "static/css/1.4be75de8.chunk.css.map": "/OpenWorkflow/static/css/1.4be75de8.chunk.css.map",
+  "static/css/main.21f3d894.chunk.css.map": "/OpenWorkflow/static/css/main.21f3d894.chunk.css.map",
+  "index.html": "/OpenWorkflow/index.html",
+  "precache-manifest.5b16982624458d912297e2c8c4181ca3.js": "/OpenWorkflow/precache-manifest.5b16982624458d912297e2c8c4181ca3.js",
+  "service-worker.js": "/OpenWorkflow/service-worker.js"
 }
