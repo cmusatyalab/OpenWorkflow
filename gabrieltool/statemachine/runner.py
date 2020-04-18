@@ -2,7 +2,7 @@
 """Finite State Machine Runner.
 
 This is a fsm runner to run cognitive assistance that are
-expressed as state machines. 
+expressed as state machines.
 """
 
 import cv2
@@ -11,7 +11,7 @@ from gabriel_protocol import gabriel_pb2
 from gabriel_server import cognitive_engine
 from logzero import logger
 
-from gabrieltool.statemachine import fsm, instruction_pb2, processor_zoo
+from gabrieltool.statemachine import fsm, instruction_pb2
 
 
 class Runner(object):

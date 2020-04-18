@@ -5,7 +5,7 @@ import os
 from functools import partial
 
 from gabriel_server.local_engine import runner as gabriel_runner
-from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo
+from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo, runner
 from logzero import logger
 
 

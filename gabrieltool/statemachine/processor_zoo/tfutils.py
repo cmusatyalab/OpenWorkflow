@@ -29,7 +29,7 @@ class TFServingPredictor(object):
         # detection_classes: 2d array, [image_idx, bbx_idx]
         # detection_boxes: 3d array, [image_idx, bbx_idx, (ymin,xmin,ymax,xmax)]
         # for each image, should only be 1 image here.
-        num_detections = parsed_results['num_detections']
+        # num_detections = parsed_results['num_detections']
         detection_scores = parsed_results['detection_scores']
         detection_classes = parsed_results['detection_classes']
         detection_boxes = parsed_results['detection_boxes']

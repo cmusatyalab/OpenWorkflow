@@ -19,9 +19,6 @@
 # absolute, like shown here.
 #
 import gabrieltool
-import sys
-import os
-
 
 # -- General configuration ---------------------------------------------
 

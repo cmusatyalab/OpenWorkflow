@@ -1,19 +1,15 @@
 import ast
 import copy
-import inspect
 import io
-import json
 import os
 import time
-from functools import wraps
 
 import cv2
 import docker
-import numpy as np
 import requests
 from logzero import logger
 
-from .base import SerializableCallable, record_kwargs, visualize_detections
+from .base import SerializableCallable, record_kwargs
 from . import tfutils
 
 docker_client = docker.from_env()
@@ -95,7 +91,8 @@ class FasterRCNNContainerCallable(SerializableCallable):
     @property
     def container_server_url(self):
         if self.container_manager.container is not None and self.container_manager.container.status == 'running':
-            return 'http://localhost:{}/detect'.format(self.container_manager.container.ports[self.container_port][0]['HostPort'])
+            return 'http://localhost:{}/detect'.format(
+                self.container_manager.container.ports[self.container_port][0]['HostPort'])
         return None
 
     @classmethod
@@ -107,8 +104,8 @@ class FasterRCNNContainerCallable(SerializableCallable):
         except ValueError as e:
             raise ValueError(
                 'Failed to convert json object to {} instance. '
-                'The input json object is {}'.format(cls.__name__,
-                                                     json_obj))
+                'The input json object is {}. ({})'.format(cls.__name__,
+                                                           json_obj, e))
         return cls(**kwargs)
 
     def __call__(self, image):
@@ -212,8 +209,8 @@ class TFServingContainerCallable(SerializableCallable):
         except ValueError as e:
             raise ValueError(
                 'Failed to convert json object to {} instance. '
-                'The input json object is {}'.format(cls.__name__,
-                                                     json_obj))
+                'The input json object is {}. ({})'.format(cls.__name__,
+                                                           json_obj, e))
         return cls(**kwargs)
 
     def __call__(self, image):

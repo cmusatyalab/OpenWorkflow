@@ -1,17 +1,12 @@
-
 # -*- coding: utf-8 -*-
 
 """Tests for `statemachine` processors."""
 
-import functools
 import os
-import pickle
-import time
 
-import pytest
+import cv2
 
 from gabrieltool.statemachine import processor_zoo
-import cv2
 
 
 def drawPred(frame, class_name, conf, left, top, right, bottom):
@@ -43,7 +38,6 @@ def test_FasterRCNNOpenCVProcessor():
             labels=labels
         )
         im = cv2.imread(os.path.join(data_dir, 'test.jpg'))
-        st = time.time()
         app_state = proc(im)
         for (cls_name, objects) in app_state.items():
             for (left, top, right, bottom, confidence, classId) in objects:

@@ -197,7 +197,7 @@ class Processor(FSMObjBase):
 
         Keyword Arguments:
             name {string} -- name (default: {None})
-            callable_obj {A callable object (e.g. funtools.partial)} -- A instance from 
+            callable_obj {A callable object (e.g. funtools.partial)} -- A instance from
             classes in processor_zoo. (default: {None})
         """
 

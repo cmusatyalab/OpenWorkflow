@@ -1,6 +1,10 @@
-=========
-gabrieltool
-=========
+============================
+OpenWorkflow
+============================
+
+--------------------------------------------------------------------------------
+A suite of tools for creating wearable cognitive assistants.
+--------------------------------------------------------------------------------
 
 
 .. image:: https://img.shields.io/pypi/v/gabrieltool.svg
@@ -9,17 +13,15 @@ gabrieltool
 .. image:: https://img.shields.io/travis/junjuew/gabrieltool.svg
         :target: https://travis-ci.org/junjuew/gabrieltool
 
-.. image:: https://readthedocs.org/projects/gabrieltool/badge/?version=latest
-        :target: https://gabrieltool.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/openworkflow/badge/?version=latest
+        :target: https://openworkflow.readthedocs.io/en/latest/
         :alt: Documentation Status
-
-
 
 
 Tools for making wearable cognitive assistants. 
 
 * Free software: Apache Software License 2.0
-* Documentation: https://gabrieltool.readthedocs.io.
+* Documentation: https://openworkflow.readthedocs.io.
 
 Usage
 --------
@@ -40,11 +42,8 @@ What's included?
 
 * `State Machine`_: Tools to create and persist state machines to describe a wearable cognitive assistant. 
 * `Examples`_: Examples on how to use this tool.
-
-   * `examples/sandwich`_: Sandwich application made using the state machines.
 * `State Machine Editor`_: A browser-based state machine editor, implemented in React. Give it a try at https://cmusatyalab.github.io/OpenWorkflow/
-* `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for
-wearable cognitive assistants that are built using this tool.
+* `Gabriel Deployment Dashboard`_: A gabriel application deployment portal for wearable cognitive assistants that are built using this tool.
 
 Generate Documentation
 ----------------------------------------------------------------

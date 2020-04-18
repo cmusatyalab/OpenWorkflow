@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/junjuew/gabrieltool/issues.
+Report bugs at https://github.com/cmusatyalab/OpenWorkflow/issues.
 
 If you are reporting a bug, please include:
 
@@ -38,14 +38,14 @@ and "help wanted" is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-gabrieltool could always use more documentation, whether as part of the
-official gabrieltool docs, in docstrings, or even on the web in blog posts,
+OpenWorkflow could always use more documentation, whether as part of the
+official OpenWorkflow docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/junjuew/gabrieltool/issues.
+The best way to send feedback is to file an issue at https://github.com/cmusatyalab/OpenWorkflow/issues.
 
 If you are proposing a feature:
 
@@ -57,18 +57,20 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `gabrieltool` for local development.
+Ready to contribute? Here's how to set up `OpenWorkflow` for local development.
 
-1. Fork the `gabrieltool` repo on GitHub.
+1. Fork the `OpenWorkflow` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/gabrieltool.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy into a virtualenv::
 
-    $ mkvirtualenv gabrieltool
+    $ python3 -m venv env
+    $ . env/bin/activate
     $ cd gabrieltool/
-    $ python setup.py develop
+    $ pip install -r requirements/dev.txt
+    $ python setup.py install
 
 4. Create a branch for local development::
 
@@ -76,14 +78,10 @@ Ready to contribute? Here's how to set up `gabrieltool` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+5. When you're done making changes, check that your changes pass linter (autopep8) and the
+   tests::
 
-    $ flake8 gabrieltool tests
-    $ python setup.py test or py.test
-    $ tox
-
-   To get flake8 and tox, just pip install them into your virtualenv.
+    $ pytest
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -100,9 +98,8 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 2.7, 3.4, 3.5 and 3.6, and for PyPy. Check
+   your new functionality into a function with a docstring.
+3. The pull request should work for Python 3.5, 3.6, and 3.7. Check
    https://travis-ci.org/junjuew/gabrieltool/pull_requests
    and make sure that the tests pass for all supported Python versions.
 

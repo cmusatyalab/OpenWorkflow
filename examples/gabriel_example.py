@@ -138,7 +138,7 @@ def run_fsm(video_uri=0):
 
     Keyword Arguments:
         video_uri {OpenCV VideoCapture Input String} -- id of the video
-        capturing device to open. (default: {0}). For all supported formats, 
+        capturing device to open. (default: {0}). For all supported formats,
         see https://docs.opencv.org/master/d8/dfe/classcv_1_1VideoCapture.html.
     """
     start_state = _build_fsm()

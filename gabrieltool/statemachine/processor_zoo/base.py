@@ -3,19 +3,16 @@
 """Abstract base classes for processors
 """
 import inspect
-import json
-import os
 from functools import wraps
 
 import cv2
 import numpy as np
-from cv2 import dnn
 from logzero import logger
 import copy
 
 
 def visualize_detections(img, results):
-    """Visualize object detection outputs. 
+    """Visualize object detection outputs.
 
     This is a helper function for debugging processor callables.
     The results should follow Gabrieltool's convention, which is
@@ -141,8 +138,8 @@ class FasterRCNNOpenCVCallable(SerializableCallable):
         except ValueError as e:
             raise ValueError(
                 'Failed to convert json object to {} instance. '
-                'The input json object is {}'.format(cls.__name__,
-                                                     json_obj))
+                'The input json object is {}. ({})'.format(cls.__name__,
+                                                           json_obj, e))
         return cls(**json_obj)
 
     def _getOutputsNames(self, net):
