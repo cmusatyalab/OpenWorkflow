@@ -117,3 +117,13 @@ $ git push
 Create a release on Github. [This Github
 workflow](https://github.com/cmusatyalab/OpenWorkflow/blob/master/.github/workflows/pythonpublish.yml)
 will then deploy to PyPI if tests pass.
+
+
+Generate Documentation
+----------------------------------------------------------------
+
+.. code-block::bash
+
+   $ sphinx-apidoc -f -o docs/source gabrieltool
+   $ cd docs
+   $ make html
