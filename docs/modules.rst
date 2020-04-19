@@ -2,4 +2,5 @@
 Modules
 =========
 
-.. automodule:: gabrieltool.statemachine
+.. automodule:: gabrieltool.statemachine.fsm
+    :members:
