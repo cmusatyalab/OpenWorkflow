@@ -18,6 +18,8 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
+import sys
+sys.path.insert(0, '..')
 import gabrieltool
 
 # -- General configuration ---------------------------------------------
@@ -43,8 +45,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'gabrieltool'
-copyright = u"2018, Junjue Wang"
+project = u''
+copyright = u"2020, Carnegie Mellon University"
 author = u"Junjue Wang"
 
 # The version info for the project you're documenting, acts as replacement
