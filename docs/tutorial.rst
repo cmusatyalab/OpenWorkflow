@@ -11,7 +11,7 @@ will focus on creating a gabriel server in this example.
 
 To recognize a person or a chair, we will use a SSD MobileNet v2 object detector
 network from Tensorflow. Download and decompress the detector from
-`to_fill <>`_.
+`here <https://storage.cmusatyalab.org/openworkflow/ssd_mobilenet_v2_saved_model.zip>`_.
 
 Next, let's build a two-state FSM. The first state *st_start* is where our FSM
 starts from. We want to send a welcoming message when a user first connects.
@@ -55,7 +55,7 @@ Gabriel client.
             processors=[fsm.Processor(
                 name='proc_process',
                 callable_obj=processor_zoo.TFServingContainerCallable('ssd_mobilenet_v2',
-                                                                    'examples/ssd_mobilenet_v2_saved_model',
+                                                                    'ssd_mobilenet_v2_saved_model',
                                                                     conf_threshold=0.8
                                                                     )
             )],

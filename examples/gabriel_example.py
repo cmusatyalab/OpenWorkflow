@@ -5,24 +5,21 @@ The TF models can be exported from OpenTPOD or any TF SavedModel that can be
 served by TF-Serving.
 
 An example model (SSD-MobilenetV2) can be downloaded from
-http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz
-After downloading and unzipping the tar ball, rearrange the saved_model
-directory in the original package into the following structure by renaming and
-making a version directory (00001).
-The labels for COCO dataset can be found at
-https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt
+https://storage.cmusatyalab.org/openworkflow/ssd_mobilenet_v2_saved_model.zip
+After downloading and unzipping the file, arrange the saved_model
+directory into the following structure (in the same directory as this script).
 
-.
 ├── ssd_mobilenet_v2_saved_model
 │   └── 00001
 │       ├── saved_model.pb
 │       └── variables
-└── tf-serving-example.py
+└── gabriel_example.py
 
 In this example, we create a naive 2-state FSM that detects the presence of a
-person or a chair.
+person or a chair. The labels for COCO dataset can be found at
+https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt
 
-Usage: Run and see ./examples/tf-serving-example.py -h
+Usage: Run and see gabriel_example.py -h
 """
 
 from __future__ import absolute_import, division, print_function
@@ -76,7 +73,7 @@ def _build_fsm():
         processors=[fsm.Processor(
             name='proc_start',
             callable_obj=processor_zoo.TFServingContainerCallable('ssd_mobilenet_v2',
-                                                                  'examples/ssd_mobilenet_v2_saved_model',
+                                                                  'ssd_mobilenet_v2_saved_model',
                                                                   conf_threshold=0.8
                                                                   )
         )],
@@ -187,7 +184,7 @@ def run_gabriel_server_from_saved_fsm(pbfsm_path):
     application logic. Use Gabriel Client to stream images and receive feedback.
 
     Arguments:
-        pbfsm_path {string} -- File path of FSM file (e.g. examples/tf-serving-example.pbfsm).
+        pbfsm_path {string} -- File path of FSM file (e.g. gabriel_example.pbfsm).
     """
     start_state = None
     logger.info('Loading FSM from {}...'.format(pbfsm_path))
