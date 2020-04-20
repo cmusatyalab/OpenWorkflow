@@ -34,7 +34,7 @@ st_end = fsm.State(
 st_start.transitions[0].next_state = st_end
 
 # save to disk
-with open('examples/simple.pbfsm', 'wb') as f:
+with open('simple.pbfsm', 'wb') as f:
     f.write(fsm.StateMachine.to_bytes(
         name='simple_fsm',
         start_state=st_start
