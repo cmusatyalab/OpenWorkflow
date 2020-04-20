@@ -23,7 +23,7 @@ From Source
 FSM Web Editor
 ---------------------------
 
-Visit `https://cmusatyalab.github.io/OpenWorkflow/`_. Or You can download its
+Visit `<https://cmusatyalab.github.io/OpenWorkflow>`_. Or You can download its
 build from the repo's `gh-pages branch 
 <https://github.com/cmusatyalab/OpenWorkflow/archive/gh-pages.zip>`_ and open
 the downloaded index.html.

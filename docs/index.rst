@@ -31,8 +31,8 @@ User Guide
 Contribute
 **********************
 
-- Issue Tracker: github.com/cmusatyalab/OpenWorkflow/issues
-- Source Code: github.com/cmusatyalab/OpenWorkflow
+- Issue Tracker: `<https://www.github.com/cmusatyalab/OpenWorkflow/issues>`_
+- Source Code: `<https://www.github.com/cmusatyalab/OpenWorkflow>`_
 
 Indices and tables
 **********************
