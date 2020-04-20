@@ -111,10 +111,10 @@ Make sure all your changes are committed (including an entry in HISTORY.rst).
 Then run::
 
 $ bump2version patch # possible: major / minor / patch
-$ git push
+$ git push origin <tag_name>
 
-Create a release on Github. [This Github
-workflow](https://github.com/cmusatyalab/OpenWorkflow/blob/master/.github/workflows/pythonpublish.yml)
+[This Github
+workflow](https://github.com/cmusatyalab/OpenWorkflow/blob/master/.github/workflows/pythonpackage.yml.yml)
 will then deploy to PyPI if tests pass.
 
 

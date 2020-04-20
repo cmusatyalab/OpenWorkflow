@@ -41,3 +41,27 @@ jobs:
               run: |
                   pip install pytest
                   python -m pytest gabrieltool
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Set up Python
+              uses: actions/setup-python@v1
+              with:
+                  python-version: "3.7"
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip setuptools
+                  pip install -r requirements/base.txt
+                  pip install wheel twine
+            - name: Build
+              run: |
+                  python setup.py sdist bdist_wheel
+            - name: pypi-publish
+              if: startsWith(github.event.ref, 'refs/tags')
+              uses: pypa/gh-action-pypi-publish@master
+              with:
+                  user: __token__
+                  password: ${{ secrets.pypi_password }}
