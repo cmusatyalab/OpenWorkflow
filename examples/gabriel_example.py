@@ -48,12 +48,11 @@ def _add_custom_transition_predicates():
 
 
 def _build_fsm():
-    """Build an example FSM for detecting a person.
+    """Build an example FSM for detecting a person or a chair.
 
     Returns:
         gabrieltool.statemchine.fsm.State -- The start state of the generated FSM.
     """
-    # create a three state state machine
     st_start = fsm.State(
         name='start',
         processors=[],

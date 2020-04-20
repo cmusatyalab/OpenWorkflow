@@ -1,8 +1,7 @@
 .. highlight:: shell
 
-============
 Contributing
-============
+**********************
 
 Contributions are welcome, and they are greatly appreciated! Every little bit
 helps, and credit will always be given.
@@ -124,6 +123,6 @@ Generate Documentation
 
 .. code-block::bash
 
-   $ sphinx-apidoc -f -o docs/source gabrieltool
-   $ cd docs
-   $ make html
+    $ sphinx-apidoc -f -o docs/source gabrieltool
+    $ cd docs
+    $ make html
