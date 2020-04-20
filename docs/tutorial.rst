@@ -117,4 +117,8 @@ Now, let's launch a gabriel server using this FSM.
             num_tokens=1
         )
 
-Now, the server is ready. Download `Gabriel client <https://play.google.com/store/apps/details?id=edu.cmu.cs.gabrielclient>`_ from Android Play Store and try it out.
+Now, the server is ready. Download `Gabriel client
+<https://play.google.com/store/apps/details?id=edu.cmu.cs.gabrielclient>`_ from
+Android Play Store and try it out.
+
+You can also build this WCA from the web GUI.
