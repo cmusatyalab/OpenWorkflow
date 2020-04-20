@@ -4,10 +4,10 @@ Tutorial
 **********************
 
 We will create a wearable cognitive assistant that recognize a person or a chair
-in this tutorial. The complete code is `here
+in this tutorial. The `complete code
 <https://github.com/cmusatyalab/OpenWorkflow/blob/master/examples/gabriel_example.py>`_.
-The code contains a few more use cases of gabrieltool package. We
-will focus on creating a gabriel server in this example.
+contains a few more use cases of gabrieltool package. We will focus on
+creating a gabriel server in this example.
 
 To recognize a person or a chair, we will use a SSD MobileNet v2 object detector
 network from Tensorflow. Download and decompress the detector from

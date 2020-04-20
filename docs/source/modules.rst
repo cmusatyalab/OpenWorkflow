@@ -1,5 +1,5 @@
-gabrieltool
-===========
+gabrieltool API
+===============
 
 .. toctree::
    :maxdepth: 4

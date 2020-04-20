@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u''
+project = u'OpenWorkflow\'s Doc'
 copyright = u"2020, Carnegie Mellon University"
 author = u"Junjue Wang"
 
@@ -72,7 +72,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-add_module_names = True
+add_module_names = False
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'

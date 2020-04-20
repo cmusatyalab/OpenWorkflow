@@ -21,7 +21,7 @@ User Guide
    installation
    quickstart
    tutorial
-   modules
+   source/modules
    contributing
    history
 
