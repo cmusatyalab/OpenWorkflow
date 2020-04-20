@@ -56,7 +56,7 @@ jobs:
                   python -m pip install --upgrade pip setuptools
                   pip install -r requirements/base.txt
                   pip install wheel twine
-            - name: Build
+            - name: Build Package
               run: |
                   python setup.py sdist bdist_wheel
             - name: pypi-publish
