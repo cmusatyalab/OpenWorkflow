@@ -7,7 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   gabrieltool.statemachine.processor_zoo
+   gabrieltool.statemachine.callable_zoo
 
 Submodules
 ----------
@@ -19,6 +19,7 @@ gabrieltool.statemachine.fsm module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 gabrieltool.statemachine.instruction\_pb2 module
 ------------------------------------------------
@@ -27,14 +28,7 @@ gabrieltool.statemachine.instruction\_pb2 module
    :members:
    :undoc-members:
    :show-inheritance:
-
-gabrieltool.statemachine.predicate\_zoo module
-----------------------------------------------
-
-.. automodule:: gabrieltool.statemachine.predicate_zoo
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :inherited-members:
 
 gabrieltool.statemachine.runner module
 --------------------------------------
@@ -43,6 +37,7 @@ gabrieltool.statemachine.runner module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 gabrieltool.statemachine.wca\_state\_machine\_pb2 module
 --------------------------------------------------------
@@ -51,6 +46,7 @@ gabrieltool.statemachine.wca\_state\_machine\_pb2 module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 
 Module contents
@@ -60,3 +56,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:

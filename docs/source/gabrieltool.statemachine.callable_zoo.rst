@@ -1,0 +1,32 @@
+gabrieltool.statemachine.callable\_zoo package
+==============================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   gabrieltool.statemachine.callable_zoo.processor_zoo
+
+Submodules
+----------
+
+gabrieltool.statemachine.callable\_zoo.predicate\_zoo module
+------------------------------------------------------------
+
+.. automodule:: gabrieltool.statemachine.callable_zoo.predicate_zoo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+
+Module contents
+---------------
+
+.. automodule:: gabrieltool.statemachine.callable_zoo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:

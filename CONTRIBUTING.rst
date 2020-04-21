@@ -123,6 +123,6 @@ Generate Documentation
 
 .. code-block::bash
 
-    $ sphinx-apidoc -f -o docs/source gabrieltool
+    $ SPHINX_APIDOC_OPTIONS=members,undoc-members,show-inheritance,inherited-members sphinx-apidoc -H gabrieltool API -f -o docs/source gabrieltool
     $ cd docs
     $ make html

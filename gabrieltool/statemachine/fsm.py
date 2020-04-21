@@ -1,8 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Finite State Machine Representation.
+"""Components to Create a Finite State Machine.
 
-Each message type in the protobuf definition has a corresponding data class.
-The data object is named as obj_<protobuf_msg_type>.
+See FSM's wikipedia page for its basics:
+https://en.wikipedia.org/wiki/Finite-state_machine.
+
+This modules provides components to create, edit, serialize, and deserialize a
+finite state machine. Below is a list of key concepts.
+  * State: FSM states represents the status of a cognitive assistant. States
+    have Processors, which are executed to analyze the input data when the
+    application is in the state.
+  * Transitions: Transitions define the conditions (TransitionPredicate) for
+    state change and actions (Instruction) to take when changing states.
+  * Finite State Machine (StateMachine): An FSM is a set of states and
+    transitions. Helper functions are provided in the StateMachine class for
+    serialization, deserialization and traversal.
 """
 
 
@@ -13,24 +24,28 @@ from gabrieltool.statemachine import (predicate_zoo, processor_zoo,
                                       wca_state_machine_pb2)
 
 
-class FSMObjBase(object):
-    """Adapter class to translate protobuf's serialized class.
+class _FSMObjBase:
+    """Base class for all FSM component classes.
 
-    This adapter class exposes protobuf message attributes
-    as class attributes.
+    This base class serves as an adapter to help serialize/deserialize
+    components into the protobuf message formats defined in
+    proto/wca-state-machine.proto. Variables defined in the proto are exposed as
+    instance variables.
     """
     _obj_cnt = 0
 
     def __init__(self, name=None):
-        """Base Initializer
+        """Constructor
 
-        Arguments:
-            parent {FSMObjBase Children Classes} -- Pointer to the parent element.
-            protobuf_message {ProtoBuf Class} -- Serialized description of the element.
+        A protobuf message is created to store all the variables for
+        serialization.
+
+        Args:
+            name (string, optional): name of the component. Defaults to None.
         """
 
-        super(FSMObjBase, self).__init__()
-        FSMObjBase._obj_cnt += 1
+        super().__init__()
+        _FSMObjBase._obj_cnt += 1
         protobuf_message = getattr(wca_state_machine_pb2,
                                    self.__class__.__name__)()
         self._pb = protobuf_message
@@ -41,19 +56,19 @@ class FSMObjBase(object):
 
     def _get_default_name(self):
         return '{}_{}'.format(self.__class__.__name__,
-                              FSMObjBase._obj_cnt)
+                              _FSMObjBase._obj_cnt)
 
     def __repr__(self):
-        default = super(FSMObjBase, self).__repr__()
+        default = super(_FSMObjBase, self).__repr__()
         return '<{} ({})>'.format(self.name, default)
 
     def _expose_serializer_attr(self, name, mode):
-        """Helper method to provide easy access to serializer attribute."""
+        """Helper method to provide easy access to read and write the protobuf message as instance variables."""
         if mode == 'r':
-            setattr(FSMObjBase, name, property(
+            setattr(_FSMObjBase, name, property(
                 lambda self: getattr(self._pb, name)))
         elif mode == 'rw':
-            setattr(FSMObjBase,
+            setattr(_FSMObjBase,
                     name,
                     property(lambda self: getattr(self._pb, name),
                              lambda self, value: setattr(
@@ -68,19 +83,86 @@ class FSMObjBase(object):
         self._pb = desc
 
     def to_desc(self):
-        """Returned serialized description as a protobuf message."""
+        """Returned the serialized description of this object as a protobuf message."""
         return self._pb
 
 
-class TransitionPredicate(FSMObjBase):
-    """A TriggerPredicate is an callable object."""
+class _FSMCallable(_FSMObjBase):
+    """A callable FSM component.
+
+    This serves as a base class for FSM components that needs to implement a
+    callable interface (e.g. Processor, TransitionPredicate).
+    """
+
+    def __init__(self, name=None, callable_obj=None, callable_zoo=None):
+        super().__init__(name)
+        self._callable_obj = callable_obj if callable(callable_obj) else lambda x: None
+        self._callable_zoo = callable_zoo
+
+    @property
+    def callable_obj(self):
+        """The callable object to invoke when this object is called."""
+        return self._callable_obj
+
+    def prepare(self):
+        """Invoke prepare() method of the callable_obj if it has any.
+
+        This prepare method is called when the FSM runner starts executing to
+        give callables an opportunity to intialize themselves.
+        """
+        prepare_func = getattr(self._callable_obj, "prepare", None)
+        if callable(prepare_func):
+            prepare_func()
+
+    def __call__(self, current_input):
+        return self._callable_obj(current_input)
+
+    def from_desc(self, data):
+        super().from_desc(data)
+        callable_class = getattr(self._callable_zoo, self._pb.callable_name)
+        initializer_args = json.loads(self._pb.callable_args)
+        self._callable_obj = callable_class.from_json(initializer_args)
+
+    def to_desc(self):
+        self._pb.callable_name = self._callable_obj.__class__.__name__
+        self._pb.callable_args = json.dumps(self._callable_obj.kwargs)
+        return super().to_desc()
+
+
+class Processor(_FSMCallable):
+    """Processor specifies how to process input (e.g. an image) in a state.
+    """
+
+    def __init__(self, name=None, callable_obj=None):
+        """Construct a processor.
+
+        Args:
+            name (string, optional): Name of the processor. Defaults to None.
+            callable_obj (subclass of callable_zoo.CallableBase, optional): An
+                object whose type is a subclass of callable_zoo.CallableBase. This
+                object is called/executed when there is a new input (e.g. an image). Defaults to None.
+        """
+        super().__init__(name=name, callable_obj=callable_obj, callable_zoo=processor_zoo)
+
+
+class TransitionPredicate(_FSMObjBase):
+    """Condition for state transition.
+
+    TransitionPredicate determines whether a state transition should taken.
+    TransitionPredciate implements the callable interface so that its objects
+    can be evaluated as a function. A state transition is taken when a
+    TransitionPredicate evaluates to True.
+    """
 
     def __init__(self, name=None, partial_obj=None):
-        """TransitionPredicate callable object
+        """Constructor for TransitionPredicate.
 
-        Keyword Arguments:
-            name {[type]} -- [description] (default: {None})
-            func {partial object} -- Partial Function Object (default: {None})
+        Args:
+            name (string, optional): Name of the TransitionPredicate. Defaults to None.
+            partial_obj (functools.partial, optional): Partial object that
+                returns whether a condition is satisfied. The partial object should
+                expect exact one positional argument of type dictionary, which
+                contains the output of current state's processors. Defaults to None.
         """
 
         super(TransitionPredicate, self).__init__(name)
@@ -91,11 +173,11 @@ class TransitionPredicate(FSMObjBase):
         return self._partial_obj
 
     @callable_obj.setter
-    def callable_obj(self, val):
+    def set_callable_obj(self, val):
         if type(val) is not functools.partial:
             raise TypeError(
                 'Invalid type ({}). '
-                'TransitionPredicate\'s callable_obj requires '
+                'TransitionPredicate\'s partial_obj requires '
                 'a functool.parital object.'.format(type(val)))
         self._partial_obj = val
 
@@ -115,7 +197,7 @@ class TransitionPredicate(FSMObjBase):
         return super(TransitionPredicate, self).to_desc()
 
 
-class Instruction(FSMObjBase):
+class Instruction(_FSMObjBase):
     """Instruction to user."""
 
     def __init__(self, name=None, audio=None, image=None, video=None):
@@ -131,7 +213,7 @@ class Instruction(FSMObjBase):
             self.video = video
 
 
-class Transition(FSMObjBase):
+class Transition(_FSMObjBase):
     """A Transition has satisfying predicates, next_state, and instructions."""
 
     def __init__(self, name=None, predicates=None, instruction=None, next_state=None):
@@ -189,49 +271,7 @@ class Transition(FSMObjBase):
                                   "Use StateMachine Helper Class instead.")
 
 
-class Processor(FSMObjBase):
-    """Processsor is a FSM element that processes image in a state."""
-
-    def __init__(self, name=None, callable_obj=None):
-        """
-
-        Keyword Arguments:
-            name {string} -- name (default: {None})
-            callable_obj {A callable object (e.g. funtools.partial)} -- A instance from
-            classes in processor_zoo. (default: {None})
-        """
-
-        super(Processor, self).__init__(name)
-        self._callable_obj = callable_obj if callable(callable_obj) else lambda x: None
-
-    @property
-    def callable_obj(self):
-        return self._callable_obj
-
-    def prepare(self):
-        """Prepare's a processor.
-
-        Invoke prepare() method of the callable if it has any. """
-        prepare_func = getattr(self._callable_obj, "prepare", None)
-        if callable(prepare_func):
-            prepare_func()
-
-    def __call__(self, img):
-        return self._callable_obj(img)
-
-    def from_desc(self, data):
-        super(Processor, self).from_desc(data)
-        callable_class = getattr(processor_zoo, self._pb.callable_name)
-        initializer_args = json.loads(self._pb.callable_args)
-        self._callable_obj = callable_class.from_json(initializer_args)
-
-    def to_desc(self):
-        self._pb.callable_name = self._callable_obj.__class__.__name__
-        self._pb.callable_args = json.dumps(self._callable_obj.kwargs)
-        return super(Processor, self).to_desc()
-
-
-class State(FSMObjBase):
+class State(_FSMObjBase):
     """A state has many processors and transitions.
 
     This class is used to represent all the actions/code that can be called for

@@ -7,7 +7,7 @@ message TransitionPredicate {
   // since the predicate operator is likely to be changed/added frequently
   // while the serialization protocol shouldn't change frequently
   string callable_name = 2; 
-  map<string, bytes> callable_kwargs = 3; // arguments
+  map<string, bytes> callable_kwargs = 3; // arguments, not used
   string callable_args = 4; // arguments
 }
 
@@ -34,7 +34,7 @@ message Processor {
   // because the processors should be easily added/changed
   // without changing the serialization protocol
   string callable_name = 2; 
-  map<string, bytes> callable_kwargs = 3; // arguments
+  map<string, bytes> callable_kwargs = 3; // arguments, not used
   string callable_args = 4; // arguments
 }
 
