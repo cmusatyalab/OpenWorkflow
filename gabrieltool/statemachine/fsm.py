@@ -227,7 +227,7 @@ class Transition(_FSMObjBase):
         """
         super(Transition, self).__init__(name)
         self.predicates = predicates if predicates is not None else []
-        self.instruction = instruction
+        self.instruction = instruction if instruction is not None else Instruction()
         self.next_state = next_state
 
     @property

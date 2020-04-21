@@ -45,7 +45,7 @@ def _add_custom_transition_predicates():
             # id 62 is chair
             return '62' in app_state
 
-    predicate_zoo.HasObjectClass = HasChairClass
+    predicate_zoo.HasChairClass = HasChairClass
 
 
 def _build_fsm():
