@@ -57,9 +57,7 @@ def build_sandwich_fsm():
         fsm.Transition(
             predicates=[
                 fsm.TransitionPredicate(
-                    partial_obj=partial(
-                        predicate_zoo.always
-                    )
+                    callable_obj=predicate_zoo.Always()
                 )
             ],
             instruction=fsm.Instruction(
@@ -74,10 +72,7 @@ def build_sandwich_fsm():
         fsm.Transition(
             predicates=[
                 fsm.TransitionPredicate(
-                    partial_obj=partial(
-                        predicate_zoo.has_obj_cls,
-                        cls_name='bread'
-                    )
+                    callable_obj=predicate_zoo.HasObjectClass(class_name='bread')
                 )
             ],
             instruction=fsm.Instruction(
@@ -92,10 +87,7 @@ def build_sandwich_fsm():
         fsm.Transition(
             predicates=[
                 fsm.TransitionPredicate(
-                    partial_obj=partial(
-                        predicate_zoo.has_obj_cls,
-                        cls_name='ham'
-                    )
+                    callable_obj=predicate_zoo.HasObjectClass(class_name='ham')
                 )
             ],
             instruction=fsm.Instruction(
@@ -110,10 +102,7 @@ def build_sandwich_fsm():
         fsm.Transition(
             predicates=[
                 fsm.TransitionPredicate(
-                    partial_obj=partial(
-                        predicate_zoo.has_obj_cls,
-                        cls_name='lettuce'
-                    )
+                    callable_obj=predicate_zoo.HasObjectClass(class_name='lettuce')
                 )
             ],
             instruction=fsm.Instruction(

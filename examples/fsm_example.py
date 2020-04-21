@@ -20,9 +20,7 @@ st_start = fsm.State(
             name='tran_start_to_end',
             predicates=[
                 fsm.TransitionPredicate(
-                    partial_obj=partial(
-                        predicate_zoo.always
-                    )
+                    callable_obj=predicate_zoo.Always()
                 )
             ]
         )

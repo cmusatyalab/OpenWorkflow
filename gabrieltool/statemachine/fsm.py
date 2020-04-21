@@ -21,6 +21,7 @@ import functools
 import json
 
 from gabrieltool.statemachine import (predicate_zoo, processor_zoo,
+                                      callable_zoo,
                                       wca_state_machine_pb2)
 
 
@@ -94,21 +95,30 @@ class _FSMCallable(_FSMObjBase):
     callable interface (e.g. Processor, TransitionPredicate).
     """
 
-    def __init__(self, name=None, callable_obj=None, callable_zoo=None):
+    def __init__(self, name=None, callable_obj=None, zoo=None):
         super().__init__(name)
-        self._callable_obj = callable_obj if callable(callable_obj) else lambda x: None
-        self._callable_zoo = callable_zoo
+        self._callable_zoo = zoo
+        self.callable_obj = callable_obj if callable_obj is not None else callable_zoo.Null()
 
     @property
     def callable_obj(self):
         """The callable object to invoke when this object is called."""
         return self._callable_obj
 
+    @callable_obj.setter
+    def callable_obj(self, obj):
+        if not isinstance(obj, callable_zoo.CallableBase):
+            raise TypeError(
+                'Invalid type ({}). '
+                '_FSMCallable\'s callable_obj requires '
+                'a callable_zoo.CallableBase object.'.format(type(obj)))
+        self._callable_obj = obj
+
     def prepare(self):
         """Invoke prepare() method of the callable_obj if it has any.
 
         This prepare method is called when the FSM runner starts executing to
-        give callables an opportunity to intialize themselves.
+        give callables an opportunity to initialize themselves.
         """
         prepare_func = getattr(self._callable_obj, "prepare", None)
         if callable(prepare_func):
@@ -139,13 +149,14 @@ class Processor(_FSMCallable):
         Args:
             name (string, optional): Name of the processor. Defaults to None.
             callable_obj (subclass of callable_zoo.CallableBase, optional): An
-                object whose type is a subclass of callable_zoo.CallableBase. This
-                object is called/executed when there is a new input (e.g. an image). Defaults to None.
+                object whose type is a subclass of callable_zoo.CallableBase.
+                This object is called/executed when there is a new input (e.g. an image).
+                This callable_obj should expect exact one positional argument. Defaults to None.
         """
-        super().__init__(name=name, callable_obj=callable_obj, callable_zoo=processor_zoo)
+        super().__init__(name=name, callable_obj=callable_obj, zoo=processor_zoo)
 
 
-class TransitionPredicate(_FSMObjBase):
+class TransitionPredicate(_FSMCallable):
     """Condition for state transition.
 
     TransitionPredicate determines whether a state transition should taken.
@@ -154,53 +165,33 @@ class TransitionPredicate(_FSMObjBase):
     TransitionPredicate evaluates to True.
     """
 
-    def __init__(self, name=None, partial_obj=None):
-        """Constructor for TransitionPredicate.
+    def __init__(self, name=None, callable_obj=None):
+        """Construct a transition predicate.
 
         Args:
             name (string, optional): Name of the TransitionPredicate. Defaults to None.
-            partial_obj (functools.partial, optional): Partial object that
-                returns whether a condition is satisfied. The partial object should
-                expect exact one positional argument of type dictionary, which
-                contains the output of current state's processors. Defaults to None.
+            callable_obj (subclass of callable_zoo.CallableBase, optional): An
+                object whose type is a subclass of callable_zoo.CallableBase. This
+                object is called/executed when this transition predicate is called
+                to determine whether the current transition should be taken.
+                This callable_obj should expect exact one positional argument of type dictionary,
+                which contains the output of current state's processors. Defaults to None.
         """
-
-        super(TransitionPredicate, self).__init__(name)
-        self._partial_obj = partial_obj
-
-    @property
-    def callable_obj(self):
-        return self._partial_obj
-
-    @callable_obj.setter
-    def set_callable_obj(self, val):
-        if type(val) is not functools.partial:
-            raise TypeError(
-                'Invalid type ({}). '
-                'TransitionPredicate\'s partial_obj requires '
-                'a functool.parital object.'.format(type(val)))
-        self._partial_obj = val
-
-    def __call__(self, app_state):
-        return self._partial_obj(app_state=app_state)
-
-    def from_desc(self, data):
-        super(TransitionPredicate, self).from_desc(data)
-        func = getattr(predicate_zoo, self._pb.callable_name)
-        kwargs = {}
-        kwargs = json.loads(self._pb.callable_args)
-        self._partial_obj = functools.partial(func, **kwargs)
-
-    def to_desc(self):
-        self._pb.callable_name = self._partial_obj.func.__name__
-        self._pb.callable_args = json.dumps(self._partial_obj.keywords)
-        return super(TransitionPredicate, self).to_desc()
+        super().__init__(name=name, callable_obj=callable_obj, zoo=predicate_zoo)
 
 
 class Instruction(_FSMObjBase):
-    """Instruction to user."""
+    """Instruction to return when a transition is taken."""
 
     def __init__(self, name=None, audio=None, image=None, video=None):
+        """Instructions can have audio, image, or video.
+
+        Args:
+            name (string, optional): Name of the instruction. Defaults to None.
+            audio (string, optional): Verbal instruction in text. Defaults to None.
+            image (bytes, optional): Encoded Image in bytes. Defaults to None.
+            video (url string, optional): Video Url in string. Defaults to None.
+        """
         super(Instruction, self).__init__(name=name)
         expose_attrs = [('audio', 'rw'), ('image', 'rw'), ('video', 'rw')]
         for (attr, mode) in expose_attrs:
@@ -214,20 +205,26 @@ class Instruction(_FSMObjBase):
 
 
 class Transition(_FSMObjBase):
-    """A Transition has satisfying predicates, next_state, and instructions."""
+    """Links among FSM states that defines state changes and results to return when changing states.
+
+    A Transition has the following components:
+      * transition predicates: The conditions that need to be satisfied to take this transition.
+      * next_state: The next FSM state to visit after taking the transition.
+      * instructions: Instructions returned to users when this
+        transition is taken.
+    """
 
     def __init__(self, name=None, predicates=None, instruction=None, next_state=None):
-        """Transition among states
+        """Construct a Transition
 
-        Keyword Arguments:
-            name {string} -- name of the transition. (default: {None})
-            predicates {list of TransitionPredicate} -- a list of
-            TransitionPredicates. They are daisy-chained (AND) together when
-            evaluating whether this transition should be taken.  (default: {None})
-            instruction {Instruction} -- Instruction to give when taking a transition. (default: {None})
-            next_state {State} -- State to transit to. (default: {None})
+        Args:
+            name (string, optional): Name of the transition. Defaults to None.
+            predicates (a list of TransitionPredicate, optional): A list of
+                condition to satisfy. They are daisy-chained (AND) together when
+                evaluating whether this transition takes place. Defaults to None.
+            instruction (Instruction, optional): Instruction to give. Defaults to None.
+            next_state (State, optional): Next state to move to. Defaults to None.
         """
-
         super(Transition, self).__init__(name)
         self.predicates = predicates if predicates is not None else []
         self.instruction = instruction
@@ -235,6 +232,7 @@ class Transition(_FSMObjBase):
 
     @property
     def predicates(self):
+        """The list of TransitionPredicates."""
         return self._predicates
 
     @predicates.setter
@@ -265,6 +263,14 @@ class Transition(_FSMObjBase):
         return super(Transition, self).to_desc()
 
     def from_desc(self):
+        """Do not call this method directly.
+
+        Transition itself does not know enough information to build from its
+        description. next_state variable depends on a FSM. Use StateMachine Helper Class instead.
+
+        Raises:
+            NotImplementedError: Always
+        """
         raise NotImplementedError("Transition itself does not know enough information "
                                   "to build from its description. "
                                   "next_state variable depends on a FSM. "
@@ -272,19 +278,35 @@ class Transition(_FSMObjBase):
 
 
 class State(_FSMObjBase):
-    """A state has many processors and transitions.
+    """A FSM state represents the status of the system.
 
-    This class is used to represent all the actions/code that can be called for
-    a state.
+    A state can have many processors and transitions.
     """
 
     def __init__(self, name=None, processors=None, transitions=None):
+        """Construct a FSM state.
+
+        Args:
+            name (string, required): Name of the State. Each state in a FSM needs to
+                have an unique name.
+            processors (list of Processor, optional): Processor to run on an
+                input in this state. Each processor will be called with exactly one
+                positional argument (input), and should return a dictionary that
+                contains the extracted information. The returned dictionaries from
+                multiple processors will be unioned together to serve as inputs to
+                transition predicates. Defaults to None.
+            transitions (list of Transition, optional): Possible Transitions
+                from this state. Transitions are evaluated one by one in the order
+                of this list. The first transition that satisfies will be taken.
+                Defaults to None.
+        """
         super(State, self).__init__(name)
         self.processors = processors if processors is not None else []
         self.transitions = transitions if transitions is not None else []
 
     @property
     def processors(self):
+        """The list of processors to be executed in this state."""
         return self._processors
 
     @processors.setter
@@ -295,6 +317,7 @@ class State(_FSMObjBase):
 
     @property
     def transitions(self):
+        """The list of possible transitions to take in this state."""
         return self._transitions
 
     @transitions.setter
@@ -316,26 +339,15 @@ class State(_FSMObjBase):
         return None
 
     def prepare(self):
-        """Prepare a state to be run.
+        """Prepare a state (e.g. initialize all processors and transition predicates.)
 
-        Invokes prepare function of all processors
+        This method is called when the FSM runner first starts to
+        give callables an opportunity to initialize themselves.
         """
         for obj_processor in self.processors:
             obj_processor.prepare()
 
     def __call__(self, img):
-        """React to the image.
-
-        Within each state, the processors should first run based on their order
-        to get application state.
-        Then, the triggerPredicates should be run.
-
-        Arguments:
-            img {np array} -- input image
-
-        Returns:
-            next state {State}
-        """
         app_state = self._run_processors(img)
         transition = self._get_one_satisfied_transition(app_state)
         if transition is None:
@@ -351,6 +363,14 @@ class State(_FSMObjBase):
         return super(State, self).to_desc()
 
     def from_desc(self):
+        """Do not call this method directly.
+
+        State itself does not know enough information to build from its
+        description. The next_state in state's transitions depends on a FSM. Use StateMachine Helper Class instead.
+
+        Raises:
+            NotImplementedError: Always
+        """
         raise NotImplementedError("State itself does not know enough information "
                                   "to build from its description. "
                                   "next_state variable depends on a FSM. "
@@ -358,7 +378,7 @@ class State(_FSMObjBase):
 
 
 class StateMachine(object):
-    """State Machine helper class to serialize/deserialize a state machine.
+    """Helper class to serialize, deserialize, and traverse a state machine.
     """
 
     @classmethod
@@ -392,7 +412,15 @@ class StateMachine(object):
     def from_bytes(cls, data):
         """Load a State Machine from bytes.
 
-        Return the start state of the state machine.
+        Args:
+            data (bytes): Serialized FSM in bytes. Format is specified in
+            wca_state_machine.proto.
+
+        Raises:
+            ValueError: raised when there are duplicate state names.
+
+        Returns:
+            State: The start state of the FSM.
         """
         pb_fsm = wca_state_machine_pb2.StateMachine()
         pb_fsm.ParseFromString(data)
@@ -412,7 +440,16 @@ class StateMachine(object):
 
     @classmethod
     def bfs(cls, start_state):
-        """Breadth-first Search on the graph, starting from start_state node."""
+        """Generator for a breadth-first traversal on the FSM.
+
+        This method can be used to enumerate states in an FSM.
+
+        Args:
+            start_state (State): The start state of the traversal.
+
+        Yields:
+            State: The current state of the traversal.
+        """
         visited = set([start_state])
         work_queue = [start_state]
         while work_queue:
@@ -425,10 +462,20 @@ class StateMachine(object):
 
     @classmethod
     def to_bytes(cls, name, start_state):
-        """Dump a State Machine rooted at start_state.
+        """Serialize a FSM to bytes.
 
-        Arguments:
-            start_state {State} -- Start state of the state machine.
+        States in the FSM are discovered using a breadth-first search (see the
+        bfs method in this class).
+
+        Args:
+            name (string): The name of the FSM.
+            start_state (State): The start state of the FSM.
+
+        Raises:
+            ValueError: raised when there are duplicate state names.
+
+        Returns:
+            bytes: Serialized FSM in bytes. Format is defined in wca_state_machine.proto.
         """
         # TODO(junjuew) optimize/dedup assets/kwargs
         visited = {}

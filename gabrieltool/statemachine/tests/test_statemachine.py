@@ -29,18 +29,17 @@ def test_protobuf_serialization(tmpdir):
 def transition_predicate_obj():
     return fsm.TransitionPredicate(
         name='test_tp',
-        partial_obj=functools.partial(
-            predicate_zoo.has_obj_cls,
-            cls_name='test_cls'))
+        callable_obj=predicate_zoo.HasObjectClass(class_name='test_cls')
+    )
 
 
 @pytest.fixture
 def expected_transition_predicate_obj():
     expected_pred = wca_state_machine_pb2.TransitionPredicate()
     expected_pred.name = 'test_tp'
-    expected_pred.callable_name = 'has_obj_cls'
+    expected_pred.callable_name = 'HasObjectClass'
     expected_pred.callable_args = json.dumps({
-        'cls_name': 'test_cls'
+        'class_name': 'test_cls'
     })
     return expected_pred
 
@@ -102,9 +101,9 @@ def expected_transition_obj():
         name='test_tran',
         predicates=[wca_state_machine_pb2.TransitionPredicate(
             name='test_tp',
-            callable_name='has_obj_cls',
+            callable_name='HasObjectClass',
             callable_args=json.dumps(
-                {'cls_name': 'test_cls'}
+                {'class_name': 'test_cls'}
             )
         )],
         instruction=wca_state_machine_pb2.Instruction(
@@ -189,8 +188,7 @@ def assert_processor_content_equal(actual, expected):
 
 def assert_predicate_content_equal(actual, expected):
     assert actual.name == expected.name
-    assert actual.callable_obj.func == expected.callable_obj.func
-    assert actual.callable_obj.keywords == expected.callable_obj.keywords
+    assert actual.callable_obj == expected.callable_obj
 
 
 def assert_transition_content_equal(actual, expected):

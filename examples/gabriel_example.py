@@ -24,8 +24,6 @@ Usage: Run and see gabriel_example.py -h
 
 from __future__ import absolute_import, division, print_function
 
-import functools
-
 import cv2
 import fire
 from logzero import logger
@@ -39,9 +37,15 @@ def _add_custom_transition_predicates():
 
     See _build_fsm to see how this custom transition predicate is used
     """
-    def custom_transition_predicate_has_chair(app_state):
-        return '62' in app_state
-    predicate_zoo.custom_transition_predicate_has_chair = custom_transition_predicate_has_chair
+
+    from gabrieltool.statemachine import callable_zoo
+
+    class HasChairClass(callable_zoo.CallableBase):
+        def __call__(self, app_state):
+            # id 62 is chair
+            return '62' in app_state
+
+    predicate_zoo.HasObjectClass = HasChairClass
 
 
 def _build_fsm():
@@ -58,9 +62,7 @@ def _build_fsm():
                 name='tran_start_to_proc',
                 predicates=[
                     fsm.TransitionPredicate(
-                        partial_obj=functools.partial(
-                            predicate_zoo.always
-                        )
+                        callable_obj=predicate_zoo.Always()
                     )
                 ],
                 instruction=fsm.Instruction(audio='This app will tell you if a person or a chair is present.')
@@ -81,10 +83,8 @@ def _build_fsm():
             fsm.Transition(
                 predicates=[
                     fsm.TransitionPredicate(
-                        partial_obj=functools.partial(
-                            predicate_zoo.has_obj_cls,
-                            cls_name='1'  # 1 is Person
-                        )
+                        # person id is 1 in coco labelmap
+                        callable_obj=predicate_zoo.HasObjectClass(class_name='1')
                     )
                 ],
                 instruction=fsm.Instruction(audio='Found Person!')
@@ -94,9 +94,7 @@ def _build_fsm():
                     fsm.TransitionPredicate(
                         # use the custom transition predicate we created
                         # in _add_custom_transition_predicate
-                        partial_obj=functools.partial(
-                            predicate_zoo.custom_transition_predicate_has_chair
-                        )
+                        callable_obj=predicate_zoo.HasChairClass()
                     )
                 ],
                 instruction=fsm.Instruction(audio='Found Chair!')
