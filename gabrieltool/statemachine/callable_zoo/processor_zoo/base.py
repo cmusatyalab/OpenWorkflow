@@ -1,6 +1,5 @@
-
 # -*- coding: utf-8 -*-
-"""Abstract base classes for processors
+"""Basic callable classes for Processor.
 """
 import copy
 
@@ -38,6 +37,8 @@ def visualize_detections(img, results):
 
 
 class DummyCallable(CallableBase):
+    """A Dummy Callable class for testing and examples.
+    """
 
     @record_kwargs
     def __init__(self, dummy_input='dummy_input_value'):
@@ -48,9 +49,19 @@ class DummyCallable(CallableBase):
 
 
 class FasterRCNNOpenCVCallable(CallableBase):
+    """A callable class that executes a FasterRCNN object detection model using OpenCV.
+    """
 
     @record_kwargs
     def __init__(self, proto_path, model_path, labels=None, conf_threshold=0.8):
+        """Constructor.
+
+        Args:
+            proto_path (string): Path to the caffe proto files that defines the DNN.
+            model_path (string): Path to the model weights file.
+            labels (list of string, optional): List of labels. Defaults to None.
+            conf_threshold (float, optional): Confidence threshold for a detection. Defaults to 0.8.
+        """
         # For default parameter settings,
         # see:
         # https://github.com/rbgirshick/fast-rcnn/blob/b612190f279da3c11dd8b1396dd5e72779f8e463/lib/fast_rcnn/config.py
@@ -72,6 +83,18 @@ class FasterRCNNOpenCVCallable(CallableBase):
 
     @classmethod
     def from_json(cls, json_obj):
+        """Create an object from a JSON object.
+
+        Args:
+            json_obj (json): JSON object that has all the serialized constructor
+                arguments.
+
+        Raises:
+            ValueError: when constructor arguments' type don't match.
+
+        Returns:
+            FasterRCNNOpenCVCallable: The deserialized FasterRCNNOpenCVCallable object.
+        """
         try:
             kwargs = copy.copy(json_obj)
             kwargs['labels'] = json_obj['labels']

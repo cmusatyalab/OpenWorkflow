@@ -6,32 +6,41 @@ Tutorial
 We will create a wearable cognitive assistant that recognize a person or a chair
 in this tutorial. The `complete code
 <https://github.com/cmusatyalab/OpenWorkflow/blob/master/examples/gabriel_example.py>`_.
-contains a few more use cases of gabrieltool package. We will focus on
-creating a gabriel server in this example.
+contains a few more use cases of gabrieltool package. We will focus on creating
+a gabriel server in this tutorial. We will create the application logic as a FSM
+using gabrieltool python library below. You can also build the FSM from the web
+GUI. In general, the web GUI is good for simple application logic while the
+python library provides more flexibility and supports more complicated
+application logic.
 
 To recognize a person or a chair, we will use a SSD MobileNet v2 object detector
 network from Tensorflow. Download and decompress the detector from
 `here <https://storage.cmusatyalab.org/openworkflow/ssd_mobilenet_v2_saved_model.zip>`_.
 
-Next, let's build a two-state FSM. The first state *st_start* is where our FSM
-starts from. We want to send a welcoming message when a user first connects.
-Therefore, *st_start* doesn't have any processing involved and will always
-transition immediately to the next state while returning a welcome message to the client.
+Next, let's build a two-state FSM. The first state is *st_start*. We want to
+send a welcome message when a user first connects. Therefore, *st_start* doesn't
+have any processing involved and will always transition immediately to the next
+state and return a welcome message to the client.
 
 The second state *st_tf* is the core of this application. When in this state,
 input sensor data, which is an image in this example, is analyzed by our object
 detector to see if there is a person or a chair. This is specified by a
 fsm.Processor with a processor_zoo.TFServingContainerCallable. Since we want to
 recognize either a person or a chair, we define two transitions, one for person,
-one for chair to give user instructions. These transitions have predicates
-checking whether the person or the chair class exist in the output of our
-TFServingContainerCallable processor. If a person is found, the person
-transition will be taken and return an instruction of 'Found Person' to the
-Gabriel client. 
+another for chair. These transitions have predicates checking whether the person
+or the chair object class exist in the output of our TFServingContainerCallable
+processor. If a person is found, the person transition will be taken and return
+an instruction of 'Found Person' to the Gabriel client. 
 
-::
+.. code-block:: python
+   :linenos:
 
     def _build_fsm():
+        """Build an example FSM for detecting a person or a chair.
+
+        Returns:
+            gabrieltool.statemchine.fsm.State -- The start state of the generated FSM.
+        """
         st_start = fsm.State(
             name='start',
             processors=[],
@@ -40,9 +49,7 @@ Gabriel client.
                     name='tran_start_to_proc',
                     predicates=[
                         fsm.TransitionPredicate(
-                            partial_obj=functools.partial(
-                                predicate_zoo.always
-                            )
+                            callable_obj=predicate_zoo.Always()
                         )
                     ],
                     instruction=fsm.Instruction(audio='This app will tell you if a person or a chair is present.')
@@ -53,7 +60,7 @@ Gabriel client.
         st_tf = fsm.State(
             name='tf_serving',
             processors=[fsm.Processor(
-                name='proc_process',
+                name='proc_start',
                 callable_obj=processor_zoo.TFServingContainerCallable('ssd_mobilenet_v2',
                                                                     'ssd_mobilenet_v2_saved_model',
                                                                     conf_threshold=0.8
@@ -63,10 +70,8 @@ Gabriel client.
                 fsm.Transition(
                     predicates=[
                         fsm.TransitionPredicate(
-                            partial_obj=functools.partial(
-                                predicate_zoo.has_obj_cls,
-                                cls_name='1'  # 1 is Person
-                            )
+                            # person id is 1 in coco labelmap
+                            callable_obj=predicate_zoo.HasObjectClass(class_name='1')
                         )
                     ],
                     instruction=fsm.Instruction(audio='Found Person!')
@@ -74,10 +79,9 @@ Gabriel client.
                 fsm.Transition(
                     predicates=[
                         fsm.TransitionPredicate(
-                            partial_obj=functools.partial(
-                                predicate_zoo.has_obj_cls,
-                                cls_name='62' # 62 is chair
-                            )
+                            # use the custom transition predicate we created
+                            # in _add_custom_transition_predicate
+                            callable_obj=predicate_zoo.HasChairClass()
                         )
                     ],
                     instruction=fsm.Instruction(audio='Found Chair!')
@@ -85,7 +89,7 @@ Gabriel client.
             ]
         )
 
-        # transitions are created after the state objects
+        # We need the state objects to mark the destinations of transitions
         st_start.transitions[0].next_state = st_tf
         st_tf.transitions[0].next_state = st_tf
         st_tf.transitions[1].next_state = st_tf
@@ -93,7 +97,9 @@ Gabriel client.
 
 Now, let's launch a gabriel server using this FSM.
 
-::
+.. code-block:: python
+   :linenos:
+
 
     def run_gabriel_server():
         """Create and execute a gabriel server for detecting people.
@@ -117,8 +123,6 @@ Now, let's launch a gabriel server using this FSM.
             num_tokens=1
         )
 
-Now, the server is ready. Download `Gabriel client
+Now, call the run_gabriel_server method and the server will be started. Download `Gabriel client
 <https://play.google.com/store/apps/details?id=edu.cmu.cs.gabrielclient>`_ from
-Android Play Store and try it out.
-
-You can also build this WCA from the web GUI.
+Android Play Store to connect to it and try it out.

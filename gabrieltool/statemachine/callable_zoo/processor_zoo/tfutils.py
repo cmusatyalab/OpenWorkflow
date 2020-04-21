@@ -1,3 +1,5 @@
+"""Utilities for using Tensorflow models.
+"""
 import numpy as np
 import tensorflow as tf
 from grpc.beta import implementations
@@ -5,19 +7,32 @@ from tensorflow_serving.apis import predict_pb2, prediction_service_pb2
 
 
 class TFServingPredictor(object):
+    """An agent that makes request to a TF serving server to get object detection results.
+
+    This agent communicates with the TF serving server (often a container at
+    localhost) through gRPC.
+    """
+
     def __init__(self, host, port):
+        """Constructor.
+
+        Args:
+            host (string): TF serving server hostname or IP address.
+            port (int): TF serving server port number.
+        """
         self.channel = implementations.insecure_channel(host, int(port))
         self.stub = prediction_service_pb2.beta_create_PredictionService_stub(self.channel)
 
     def infer_one(self, model_name, rgb_image, conf_threshold=0.5):
         """Infer one image by sending a request to TF serving server.
 
-        Arguments:
-            model_name {string} -- Name of the Model
-            rgb_image {OpenCV Image} -- OpenCV Image in RGB format
+        Args:
+            model_name (string): Name of the Model
+            rgb_image (numpy array): Image in RGB format
+            conf_threshold (float, optional): Cut-off threshold for detection. Defaults to 0.5.
 
         Returns:
-            Dictionary -- keys are class ids, values are list of [x1, y1, x2,
+            Dictionary: keys are class ids, values are list of [x1, y1, x2,
             y2, confidence, label_idx]. e.g {'cat': [[0, 0, 100, 100, 0.6, 'cat']],
             1: [[0, 0, 100, 100, 0.7, 1]]}
         """

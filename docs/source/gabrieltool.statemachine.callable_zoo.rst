@@ -12,6 +12,15 @@ Subpackages
 Submodules
 ----------
 
+gabrieltool.statemachine.callable\_zoo.base module
+--------------------------------------------------
+
+.. automodule:: gabrieltool.statemachine.callable_zoo.base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 gabrieltool.statemachine.callable\_zoo.predicate\_zoo module
 ------------------------------------------------------------
 

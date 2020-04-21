@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Simple example of using gabrieltool.statemachine.
+
+Create and save a two state FSM.
 """
 
 from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo

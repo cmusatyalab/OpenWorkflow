@@ -19,10 +19,8 @@ In this example, we create a naive 2-state FSM that detects the presence of a
 person or a chair. The labels for COCO dataset can be found at
 https://github.com/tensorflow/models/blob/master/research/object_detection/data/mscoco_label_map.pbtxt
 
-Usage: Run and see gabriel_example.py -h
+Usage: ./gabriel_example.py -h
 """
-
-from __future__ import absolute_import, division, print_function
 
 import cv2
 import fire
@@ -102,7 +100,7 @@ def _build_fsm():
         ]
     )
 
-    # transitions are created after the state objects
+    # We need the state objects to mark the destinations of transitions
     st_start.transitions[0].next_state = st_tf
     st_tf.transitions[0].next_state = st_tf
     st_tf.transitions[1].next_state = st_tf

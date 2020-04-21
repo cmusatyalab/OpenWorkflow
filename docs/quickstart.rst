@@ -8,7 +8,7 @@ Create a Two State FSM
 
 ::
 
-    from functools import partial
+
     from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo
 
     # create a two state state machine
@@ -23,9 +23,7 @@ Create a Two State FSM
                 name='tran_start_to_end',
                 predicates=[
                     fsm.TransitionPredicate(
-                        partial_obj=partial(
-                            predicate_zoo.always
-                        )
+                        callable_obj=predicate_zoo.Always()
                     )
                 ]
             )
@@ -36,14 +34,13 @@ Create a Two State FSM
     )
     st_start.transitions[0].next_state = st_end
 
-
 .. _python_save_fsm:
 
 Save the FSM to a file
 ::
 
     # save to disk
-    with open('examples/simple.pbfsm', 'wb') as f:
+    with open('simple.pbfsm', 'wb') as f:
         f.write(fsm.StateMachine.to_bytes(
             name='simple_fsm',
             start_state=st_start

@@ -1,10 +1,12 @@
+"""Base class and helper functions for callable classes.
+"""
 import inspect
 from functools import wraps
 
 
 def record_kwargs(func):
     """
-    Automatically record constructor arguments
+    Decorator to automatically record constructor arguments
 
     >>> class process:
     ...     @record_kwargs
@@ -32,15 +34,10 @@ def record_kwargs(func):
 
 
 class CallableBase():
-    """Base class for processor callables.
+    """Base class for Callables used in FSMs.
 
-    Callables needs to be able to be serialized and de-serialized.
-
-    Arguments:
-        object {[type]} -- [description]
-
-    Returns:
-        [type] -- [description]
+    Custom callable classes need to inherit from this class. Inherited classes
+    should add decorator @record_kwargs to their constructors for serialization.
     """
 
     def __init__(self):
@@ -49,7 +46,7 @@ class CallableBase():
 
     @classmethod
     def from_json(cls, json_obj):
-        """Create a class instance from a json object.
+        """Create a CallableBase class instance from a json object.
 
         Subclasses should overide this class depending on the input type of
         their constructor.
@@ -66,5 +63,10 @@ class CallableBase():
 
 
 class Null(CallableBase):
+    """A empty callable class that returns None.
+
+    Useful for initialization.
+    """
+
     def __call__(self, *args, **kwargs):
         return None
