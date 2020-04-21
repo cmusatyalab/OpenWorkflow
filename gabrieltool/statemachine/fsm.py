@@ -6,12 +6,13 @@ https://en.wikipedia.org/wiki/Finite-state_machine.
 
 This modules provides components to create, edit, serialize, and deserialize a
 finite state machine. Below is a list of key concepts.
-  * State: FSM states represents the status of a cognitive assistant. States
+
+* State: FSM states represents the status of a cognitive assistant. States
     have Processors, which are executed to analyze the input data when the
     application is in the state.
-  * Transitions: Transitions define the conditions (TransitionPredicate) for
+* Transitions: Transitions define the conditions (TransitionPredicate) for
     state change and actions (Instruction) to take when changing states.
-  * Finite State Machine (StateMachine): An FSM is a set of states and
+* Finite State Machine (StateMachine): An FSM is a set of states and
     transitions. Helper functions are provided in the StateMachine class for
     serialization, deserialization and traversal.
 """

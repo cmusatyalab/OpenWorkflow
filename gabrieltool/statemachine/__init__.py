@@ -1,6 +1,6 @@
 """Library to build application logic as a Finite State Machine.
 
-*_pb2 modules are generated python modules by Protobuf for serialization.
+\*_pb2 modules are generated python modules by Protobuf for serialization.
 See the proto directory for the serialization formats.
 """
 
