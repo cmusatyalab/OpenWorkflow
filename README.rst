@@ -24,6 +24,11 @@ What's in here?
 Credits
 -------
 
+This research was supported by the National Science Foundation (NSF) under grant
+number CNS-1518865. Additional support was provided by Intel, Vodafone, Deutsche
+Telekom, Verizon, Crown Castle, Seagate, VMware, MobiledgeX, InterDigital, and
+the Conklin Kistler family fund.
+
 This repo was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
