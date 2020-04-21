@@ -10,7 +10,7 @@ From PyPI
 
 .. code-block:: console
 
-    $ pip install gabrieltool
+    $ pip install -U gabrieltool
 
 From Source
 

@@ -5,7 +5,7 @@ Tutorial
 
 We will create a wearable cognitive assistant that recognize a person or a chair
 in this tutorial. The `complete code
-<https://github.com/cmusatyalab/OpenWorkflow/blob/master/examples/gabriel_example.py>`_.
+<https://github.com/cmusatyalab/OpenWorkflow/blob/master/examples/gabriel_example.py>`_
 contains a few more use cases of gabrieltool package. We will focus on creating
 a gabriel server in this tutorial. We will create the application logic as a FSM
 using gabrieltool python library below. You can also build the FSM from the web
