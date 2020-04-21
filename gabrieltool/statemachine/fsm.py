@@ -17,7 +17,6 @@ finite state machine. Below is a list of key concepts.
 """
 
 
-import functools
 import json
 
 from gabrieltool.statemachine import (predicate_zoo, processor_zoo,

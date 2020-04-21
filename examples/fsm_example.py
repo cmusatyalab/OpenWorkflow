@@ -2,10 +2,6 @@
 """Simple example of using gabrieltool.statemachine.
 """
 
-from __future__ import absolute_import, division, print_function
-
-from functools import partial
-
 from gabrieltool.statemachine import fsm, predicate_zoo, processor_zoo
 
 # create a two state state machine

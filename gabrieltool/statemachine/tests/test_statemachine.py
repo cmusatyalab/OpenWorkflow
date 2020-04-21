@@ -2,7 +2,6 @@
 
 """Tests for `statemachine` subpackage."""
 
-import functools
 import json
 import os
 
