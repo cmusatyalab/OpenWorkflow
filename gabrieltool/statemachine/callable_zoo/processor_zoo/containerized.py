@@ -42,6 +42,27 @@ class SingletonContainerManager():
             self._container = self._get_container_obj()
         return self._container
 
+    def _add_image_tag_if_not_available(self, image_url):
+        """default to latest tag if tag is not specified."""
+        if ':' not in image_url:
+            image_url = '{}:{}'.format(image_url, 'latest')
+        return image_url
+
+    def _make_image_available(self, image_url):
+        logger.info(
+            'Checking if the container image is available locally... (image: {})'.format(image_url))
+        try:
+            docker_client.images.get(image_url)
+            logger.info(
+                'Found local image (image: {})!'.format(image_url))
+        except docker.errors.ImageNotFound:
+            logger.info('{} not found locally. Trying to downloading it...'.format(image_url))
+            logger.info('Downloading image: {}...'.format(image_url))
+            repo = image_url.split(':')[0]
+            tag = image_url.split(':')[-1]
+            docker_client.images.pull(repo, tag=tag)
+            logger.info('Download finished!')
+
     def start_container(self, image_url, command, **kwargs):
         """Start a container
 
@@ -53,7 +74,10 @@ class SingletonContainerManager():
         Returns:
             Container: A container
         """
+        image_url = self._add_image_tag_if_not_available(image_url)
         if self.container is None or self.container.status != 'running':
+            self._make_image_available(image_url)
+            # start container
             logger.info(
                 'launching Docker container (name: {}, image: {}, command: {}, extra args: {})'.format(
                     self.container_name,
@@ -61,18 +85,21 @@ class SingletonContainerManager():
                     command,
                     str(kwargs)
                 ))
-            container = docker_client.containers.run(
-                image_url,
-                command=command,
-                name=self.container_name,
-                auto_remove=True,
-                detach=True,
-                **kwargs
-            )
-            container.reload()
-            # sleep here to give some time for container to start
-            time.sleep(10)
-            self._container = container
+            try:
+                container = docker_client.containers.run(
+                    image_url,
+                    command=command,
+                    name=self.container_name,
+                    auto_remove=True,
+                    detach=True,
+                    **kwargs
+                )
+                container.reload()
+                # sleep here to give some time for container to start
+                time.sleep(10)
+                self._container = container
+            except Exception as e:
+                logger.error('Error starting container: {}'.format(e))
         return self._container
 
     def _get_container_obj(self):
@@ -216,7 +243,7 @@ class TFServingContainerCallable(CallableBase):
     def _start_container(self):
         """Launch TF serving container image to serve all entries in SERVED_DIRS."""
         ports = {self.container_internal_port: None}
-        container_image_url = 'tensorflow/serving'
+        container_image_url = 'tensorflow/serving:2.1.0'
         # geerate model config
         from tensorflow_serving.config import model_server_config_pb2
         from google.protobuf import text_format
