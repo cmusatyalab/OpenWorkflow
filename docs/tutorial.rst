@@ -174,3 +174,11 @@ The gabriel cognitive engine is created using a `FSM cognitive engine runner <ht
             port=9099,
             num_tokens=1
         )
+
+Gabrieltool currently doesn't support cleaning up the launched containers
+automatically. You can stop and remove all gabrieltool related containers
+using the following command.
+
+.. code-block:: console
+
+    $ docker stop -t 0 $(docker ps -a -q --filter="name=GABRIELTOOL")
