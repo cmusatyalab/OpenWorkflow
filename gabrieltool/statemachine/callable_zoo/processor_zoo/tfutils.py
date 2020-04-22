@@ -2,8 +2,8 @@
 """
 import numpy as np
 import tensorflow as tf
-from grpc.beta import implementations
-from tensorflow_serving.apis import predict_pb2, prediction_service_pb2
+import grpc
+from tensorflow_serving.apis import predict_pb2, prediction_service_pb2_grpc
 
 
 class TFServingPredictor(object):
@@ -20,8 +20,13 @@ class TFServingPredictor(object):
             host (string): TF serving server hostname or IP address.
             port (int): TF serving server port number.
         """
-        self.channel = implementations.insecure_channel(host, int(port))
-        self.stub = prediction_service_pb2.beta_create_PredictionService_stub(self.channel)
+        options = [
+            ('grpc.max_message_length', 500 * 1024 * 1024),
+            ('grpc.max_send_message_length', 500 * 1024 * 1024),
+            ('grpc.max_receive_message_length', 500 * 1024 * 1024),
+        ]
+        self.channel = grpc.insecure_channel('{}:{}'.format(host, int(port)), options=options)
+        self.stub = prediction_service_pb2_grpc.PredictionServiceStub(self.channel)
 
     def infer_one(self, model_name, rgb_image, conf_threshold=0.5):
         """Infer one image by sending a request to TF serving server.

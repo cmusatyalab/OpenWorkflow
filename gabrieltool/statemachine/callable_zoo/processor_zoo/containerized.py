@@ -242,7 +242,7 @@ class TFServingContainerCallable(CallableBase):
 
     def _start_container(self):
         """Launch TF serving container image to serve all entries in SERVED_DIRS."""
-        ports = {self.container_internal_port: None}
+        ports = {self.container_internal_port: ('127.0.0.1', None)}
         container_image_url = 'tensorflow/serving:2.1.0'
         # geerate model config
         from tensorflow_serving.config import model_server_config_pb2
