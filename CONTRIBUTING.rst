@@ -107,22 +107,37 @@ Deploying
 ---------
 
 A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run::
+Make sure all your changes are committed.
 
-$ bump2version patch # possible: major / minor / patch
-$ git push origin master --follow-tags
+gabrieltool Python Package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code-block::bash
+
+    $ bump2version patch # possible: major / minor / patch
+    $ git push origin master --follow-tags
 
 [This Github
 workflow](https://github.com/cmusatyalab/OpenWorkflow/blob/master/.github/workflows/pythonpackage.yml.yml)
 will then deploy to PyPI if tests pass.
 
+FSM Web Editor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. code-block::bash
+
+    $ cd gabrieltool/statemachine-editor-react
+    $ npm i # install npm if not available
+    $ npm build # build react jsx to HTML and Javascript to a dir called build
+    $ npm deploy # push the generated HTML and Javascript to remote gh-pages branch
 
 Generate Documentation
-----------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block::bash
 
     $ SPHINX_APIDOC_OPTIONS=members,undoc-members,show-inheritance,inherited-members sphinx-apidoc -H gabrieltool API -f -o docs/source gabrieltool
     $ cd docs
     $ make html
+
+After pushing to remove, `The documentation page
+<https://readthedocs.org/projects/openworkflow/>`_ will automatically build the
+docs directory through a webhook integration.
