@@ -1,1 +1,1 @@
-from .base import HasObjectClass, Always, HasObjectClassWhileNotOthers, Wait
+from .base import HasObjectClass, Always, HasObjectClassWhileNotOthers, Wait  # noqa: F401

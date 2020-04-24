@@ -16,7 +16,7 @@ def _load_image_bytes(file_path):
 
 
 def build_sandwich_fsm():
-    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data/sandwich-model')
+    data_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sandwich-model')
     img_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'images_feedback')
 
     labels = ["tomato", "cheese", "full", "ham", "lettuce", "cucumber", "half", "hamwrong", "bread"]

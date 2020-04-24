@@ -33,7 +33,7 @@ def test_HasObjectClassWhileNotOthers():
 def test_Wait():
     app_state = {}
     wait_time = 5
-    predicate_obj = predicate_zoo.Wait(wait_time=5)
+    predicate_obj = predicate_zoo.Wait(wait_time=wait_time)
     assert not predicate_obj(app_state)
     time.sleep(1)
     assert not predicate_obj(app_state)
