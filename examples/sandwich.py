@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Sandwich Cognitive Assistant."""
+"""Sandwich Cognitive Assistant.
+
+Asset files for DNN object detector and image feedback can be downloaded from
+https://storage.cmusatyalab.org/openworkflow/ssd_mobilenet_v2_saved_model.zip
+"""
 
 import os
 

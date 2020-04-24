@@ -77,7 +77,7 @@ class Wait(CallableBase):
             wait_time (int, optional): Wait time in seconds. Defaults to None.
         """
         super().__init__()
-        self.wait_time = wait_time
+        self.wait_time = wait_time if wait_time is not None else 0
         # set when this predicate this first called
         # or returned True in the last call.
         self._start_time = None
