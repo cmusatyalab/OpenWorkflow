@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+"""Gabriel Tool cli.
+
+Usage: gbt -h
+"""
+import fire
+from logzero import logger
+from gabriel_server.local_engine import runner as gabriel_runner
+
+from gabrieltool.statemachine import fsm, runner
+
+def run_gabriel_server_from_saved_fsm(pbfsm_path, port=9099, input_queue_maxsize=60, num_tokens=1):
+    """Create and execute a gabriel server for detecting people.
+
+    This gabriel server uses a gabrieltool.statemachine.fsm to represents
+    application logic. Use Gabriel Client to stream images and receive feedback.
+
+    Arguments:
+        pbfsm_path {string} -- File path of FSM file (e.g. gabriel_example.pbfsm).
+    """
+    start_state = None
+    logger.info('Loading FSM from {}...'.format(pbfsm_path))
+    with open(pbfsm_path, 'rb') as f:
+        start_state = fsm.StateMachine.from_bytes(f.read())
+    logger.info('Initializing Cognitive Engine...')
+    # engine_name has to be 'instruction' to work with
+    # gabriel client from App Store. Someone working on Gabriel needs to fix this.
+    engine_name = 'instruction'
+    logger.info('Launching Gabriel server...')
+    gabriel_runner.run(
+        engine_setup=lambda: runner.BasicCognitiveEngineRunner(
+            engine_name=engine_name, fsm=start_state),
+        engine_name=engine_name,
+        input_queue_maxsize=input_queue_maxsize,
+        port=port,
+        num_tokens=num_tokens
+    )
+
+if __name__ == '__main__':
+    fire.Fire({
+        'run': run_gabriel_server_from_saved_fsm,
+    })

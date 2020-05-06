@@ -79,6 +79,7 @@ def _build_fsm():
         )],
         transitions=[
             fsm.Transition(
+                name='tf_serving_to_tf_serving_person',
                 predicates=[
                     fsm.TransitionPredicate(
                         # person id is 1 in coco labelmap
@@ -88,11 +89,13 @@ def _build_fsm():
                 instruction=fsm.Instruction(audio='Found Person!')
             ),
             fsm.Transition(
+                name='tf_serving_to_tf_serving_chair',
                 predicates=[
                     fsm.TransitionPredicate(
-                        # use the custom transition predicate we created
-                        # in _add_custom_transition_predicate
-                        callable_obj=predicate_zoo.HasChairClass()
+                        # You can also use the custom transition predicate we
+                        # created in _add_custom_transition_predicate here. e.g.
+                        # callable_obj=predicate_zoo.HasChairClass()
+                        callable_obj=predicate_zoo.HasObjectClass(class_name='62')
                     )
                 ],
                 instruction=fsm.Instruction(audio='Found Chair!')
@@ -173,40 +176,10 @@ def run_gabriel_server():
     )
 
 
-def run_gabriel_server_from_saved_fsm(pbfsm_path):
-    """Create and execute a gabriel server for detecting people.
-
-    This gabriel server uses a gabrieltool.statemachine.fsm to represents
-    application logic. Use Gabriel Client to stream images and receive feedback.
-
-    Arguments:
-        pbfsm_path {string} -- File path of FSM file (e.g. gabriel_example.pbfsm).
-    """
-    start_state = None
-    logger.info('Loading FSM from {}...'.format(pbfsm_path))
-    with open(pbfsm_path, 'rb') as f:
-        start_state = fsm.StateMachine.from_bytes(f.read())
-    start_state = _build_fsm()
-    logger.info('Initializing Cognitive Engine...')
-    # engine_name has to be 'instruction' to work with
-    # gabriel client from App Store. Someone working on Gabriel needs to fix this.
-    engine_name = 'instruction'
-    logger.info('Launching Gabriel server...')
-    gabriel_runner.run(
-        engine_setup=lambda: runner.BasicCognitiveEngineRunner(
-            engine_name=engine_name, fsm=start_state),
-        engine_name=engine_name,
-        input_queue_maxsize=60,
-        port=9099,
-        num_tokens=1
-    )
-
-
 if __name__ == '__main__':
     _add_custom_transition_predicates()
     fire.Fire({
         'generate_fsm': generate_fsm,
         'run_fsm': run_fsm,
         'run_gabriel_server': run_gabriel_server,
-        'run_gabriel_server_from_saved_fsm': run_gabriel_server_from_saved_fsm,
     })

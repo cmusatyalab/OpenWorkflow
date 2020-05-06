@@ -6,6 +6,9 @@ Installation
 gabrieltool Python Library
 ---------------------------
 
+First, make sure Docker is installed. You can follow the `Docker installation
+guide <https://docs.docker.com/get-docker/>`_.
+
 From PyPI
 
 .. code-block:: console
