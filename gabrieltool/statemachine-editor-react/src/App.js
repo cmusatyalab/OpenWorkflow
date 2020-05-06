@@ -11,6 +11,7 @@ import {
     FSMElementType,
     getFSMElementType,
     formValuesToElement,
+    allNamesAreValid,
 } from "./utils.js";
 import ElementModal from "./elementModal.js";
 import saveAs from "file-saver";
@@ -21,7 +22,10 @@ function loadFsm(fsmData) {
     try {
         fsm = fsmPb.StateMachine.deserializeBinary(fsmData);
     } catch (err) {
-        throw err;
+        throw "Incorrect file format. " + err;
+    }
+    if (fsm && !allNamesAreValid(fsm)) {
+        throw "FSM contains duplicate names! For this web editor to work properly, all states and transitions need to have unique names.";
     }
     return fsm;
 }
@@ -136,10 +140,7 @@ class App extends Component {
                 this.setState({ fsm: fsm, curFSMElement: null });
                 this.alert("info", "Success! State machine imported.");
             } catch (err) {
-                this.alert(
-                    "danger",
-                    "Incorrect File Format. Failed to import the file. \n" + err
-                );
+                this.alert("danger", "Failed to import the file. \n" + err);
             }
         });
     }

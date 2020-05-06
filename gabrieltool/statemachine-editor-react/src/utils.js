@@ -207,6 +207,22 @@ const setTransitionFromState = function(element, newFromStateName, aux) {
     }
 };
 
+export const allNamesAreValid = (fsm) => {
+    let curCellNames = [];
+    let valid = true;
+    fsm.getStatesList().map((state) => {
+        if (curCellNames.includes(state.getName())) valid = false;
+        curCellNames.push(state.getName());
+        state.getTransitionsList().map((transition) => {
+            if (curCellNames.includes(state.getName())) valid = false;
+            curCellNames.push(transition.getName());
+            return null;
+        });
+        return null;
+    });
+    return valid;
+};
+
 /**
  * Get all state and transition names from a FSM
  */
