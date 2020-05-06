@@ -21,6 +21,12 @@ What's in here?
 * `Examples`_: Examples showing the usage of gabrieltool.statemachine Python package.
 * `State Machine Web Editor`_: A browser-based GUI to view and modify state machines. Give it a try at https://cmusatyalab.github.io/OpenWorkflow/
 
+State Machine Web Editor Demo Video
+-------------------------------------
+.. image:: http://img.youtube.com/vi/L9ugONLpnwc/0.jpg
+   :target: https://youtu.be/L9ugONLpnwc
+
+
 Credits
 -------
 
