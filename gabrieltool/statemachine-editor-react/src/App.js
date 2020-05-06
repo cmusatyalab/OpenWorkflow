@@ -25,7 +25,9 @@ function loadFsm(fsmData) {
         throw "Incorrect file format. " + err;
     }
     if (fsm && !allNamesAreValid(fsm)) {
-        throw "FSM contains duplicate names! For this web editor to work properly, all states and transitions need to have unique names.";
+        throw "FSM contains duplicate names! For this web editor to work properly, " +
+            "all states and transitions need to have unique names." +
+            "If you create the FSM using the python library, make sure to assign unique names for states and transitions.";
     }
     return fsm;
 }
