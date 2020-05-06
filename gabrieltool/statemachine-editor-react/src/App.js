@@ -57,7 +57,7 @@ class App extends Component {
     render() {
         return (
             <Container fluid>
-                <h1>Gabriel State Machine Editor</h1>
+                <h1>OpenWorkflow State Machine Editor</h1>
                 {this.state.alertMsg.msg !== "" && (
                     <Alert dismissible variant={this.state.alertMsg.type}>
                         {this.state.alertMsg.msg}
