@@ -50,30 +50,19 @@ Save the FSM to a file
 
 Launch a gabriel server using the FSM.
 
-.. code-block:: python
-   :linenos:
+.. code-block:: console
 
-    from gabriel_server.local_engine import runner as gabriel_runner
-    from gabrieltool.statemachine import runner
+    $ gbt run ./simple.pbfsm
 
-    gabriel_runner.run(
-        engine_setup=lambda: runner.BasicCognitiveEngineRunner(
-            engine_name='instruction', fsm=st_start),
-        engine_name=engine_name,
-        input_queue_maxsize=60,
-        port=9099,
-        num_tokens=1
-    )
+See :ref:`tutorial` for a detailed example.
 
-See :ref:`tutorial` for a more detailed example.
-
-Finite State Machine Web Editor
+OpenWorkflow State Machine Editor
 -------------------------------------
 
 The editor is hosted at `<https://cmusatyalab.github.io/OpenWorkflow/>`_. An
 instruction video is available `here <https://youtu.be/L9ugONLpnwc>`_. 
 
-The web editor provides the following functionalities.
+This web editor provides the following functionalities.
 
 1. Import to view a saved FSM file. This FSM file can be created either from :ref:`gabrieltool<python_save_fsm>` or from the web editor.
 2. Export a FSM to a file.
@@ -82,3 +71,13 @@ The web editor provides the following functionalities.
 Compared to the gabrieltool Python library, the web editor provides better
 visualization and is great for creating small FSMs. For more complicated FSMs,
 consider using the gabrieltool for better reproducibility and efficiency.
+
+Gabrieltool CLI (gbt)
+-------------------------------------
+The gabrieltool cli (gbt) provides a convenient method to launch a gabriel
+server given an FSM, created by the python library or the web editor.
+
+.. code-block:: console
+
+    $ gbt run <path-to-fsm>
+    $ # for usage details, see gbt -h

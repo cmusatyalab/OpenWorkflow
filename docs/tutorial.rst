@@ -10,9 +10,15 @@ its implementation.
 1. `Install gabrieltool <https://openworkflow.readthedocs.io/en/latest/installation.html>`_. 
 2. Download `gabriel_example.py <https://github.com/cmusatyalab/OpenWorkflow/blob/master/examples/gabriel_example.py>`_
    and the `object detector <https://storage.cmusatyalab.org/openworkflow/ssd_mobilenet_v2_saved_model.zip>`_
-   into the same directory. This object detector is the SSD MobileNet v2 DNN from `Tensorflow <https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md>`_.
+   into the same directory. This object detector is the SSD MobileNet v2 DNN
+   from Tensorflow Object Detection API model zoo.
    In this example, we will use this object detector to detect people and chairs.
 3. Unzip the downloaded object detector into the same directory.
+
+.. code-block:: console
+
+    $ unzip ssd_mobilenet_v2_saved_model.zip
+
 4. Launch the gabriel server.
 
 .. code-block:: console
@@ -29,8 +35,11 @@ its implementation.
     $ docker ps -a --filter="name=GABRIELTOOL"
 
 7. Once you see the container is up, the server is ready for connection. 
-   Download `Gabriel client <https://play.google.com/store/apps/details?id=edu.cmu.cs.gabrielclient>`_ 
-   from Android Play Store to connect to it and try it out.
+   Download `Gabriel client <https://play.google.com/store/apps/details?id=edu.cmu.cs.gabrielclient>`_
+   from Android Play Store to connect to it and try it out. When the client has
+   a person or a chair in view, the application should say "Found Person" or
+   "Found chair" correspondingly.
+
 8. Once you're done with the demo, make sure to clean up the created docker
    container with the following commands.
 
@@ -166,7 +175,6 @@ The gabriel cognitive engine is created using a `FSM cognitive engine runner <ht
 .. code-block:: python
    :linenos:
 
-
     def run_gabriel_server():
         """Create and execute a gabriel server for detecting people.
 
@@ -198,16 +206,149 @@ using the following command.
     $ docker stop -t 0 $(docker ps -a -q --filter="name=GABRIELTOOL")
 
 
-Using the Web GUI
----------------------------
+Using OpenWorkflow State Machine Web Editor
+---------------------------------------------------
 
-Let's use the `Web GUI <https://cmusatyalab.github.io/OpenWorkflow/>`_ to create
+Let's use the `Web Editor <https://cmusatyalab.github.io/OpenWorkflow/>`_ to create
 the same application. 
 
 First, let's create states. Go to Add >> State.
 
-Start state: set name to be "start". Check Start from this state. 
+start state: 
+
+- name: "start"
+- Check Start from this state. 
+
 .. image:: img/start_state.png
 
-tf_serving state: set name to be "start". Check Start from this state. 
-.. image:: img/start_state.png
+tf_serving state: 
+
+- name: "tf_serving"
+- add a new processor
+
+    - name: "tf_vision_processor"
+    - type: "TFServingContainerCallable"
+    - model_name: "ssd_mobilenet_v2"
+    - serving_dir: "ssd_mobilenet_v2_saved_model". This is directory of the
+      downloaded and unzipped model.
+    - conf_threshold: 0.8
+
+.. image:: img/tf_serving.png
+
+chair_detected state: 
+
+- name: "chair_detected"
+
+.. image:: img/chair_detected.png
+
+person_detected state: 
+
+- name: "person_detected"
+
+.. image:: img/person_detected.png
+
+Now, let's add transitions. Go to Add >> Transition
+
+start to tf_serving
+
+- name: "start_to_tf_serving"
+- From State: start
+- To State: tf_serving
+- Audio Instruction: "This app will tell you if a person or a chair is present."
+- Add Predicate
+
+    - name: "start_to_tf_serving_predicate"
+    - type: Always
+
+.. image:: img/start_to_tf_serving.png
+
+
+tf_serving to chair_detected
+
+- name: "tf_serving_to_chair"
+- From State: tf_serving
+- To State: chair_detected
+- Audio Instruction: "Found Chair!"
+- Add Predicate
+
+    - name: "tf_serving_to_chair_predicate"
+    - type: HasObjectClass
+    - class_name: 62
+
+.. image:: img/tf_serving_to_chair.png
+
+
+chair_detected back to tf_serving
+
+- name: "chair_to_tf_serving"
+- From State: chair_detected
+- To State: tf_serving
+- Add Predicate
+
+    - name: "chair_to_tf_serving_predicate"
+    - type: Always
+
+.. image:: img/chair_to_tf_serving.png
+
+
+tf_serving to person_detected
+
+- name: "tf_serving_to_person"
+- From State: tf_serving
+- To State: person_detected
+- Audio Instruction: "Found Person!"
+- Add Predicate
+
+    - name: "tf_serving_to_chair_predicate"
+    - type: HasObjectClass
+    - class_name: 1
+
+.. image:: img/tf_serving_to_person.png
+
+
+person_detected back to tf_serving
+
+- name: "person_to_tf_serving"
+- From State: person_detected
+- To State: tf_serving
+- Add Predicate
+
+    - name: "person_to_tf_serving_predicate"
+    - type: Always
+
+.. image:: img/person_to_tf_serving.png
+
+By now, we have finished creating the FSM. The complete FSM looks as 
+follows.
+
+.. image:: img/complete_fsm.png
+
+
+Let's export the FSM to the same directory of our downloaded object detectors. 
+The directory structure should look like the following.
+
+
+.. code-block:: 
+
+    ├── ssd_mobilenet_v2_saved_model
+    │   └── 00001
+    │       ├── saved_model.pb
+    │       └── variables
+    └── app.pbfsm
+
+Gabrieltool CLI provides a convenient command-line tool to launch a gabriel
+server with the exported FSM. Connect Gabriel Client to your server. When you
+point the client to a person or a chair, the application should say "Found
+Person" or "Found chair" correspondingly.
+
+.. code-block:: console
+
+    $ gbt run ./app.pbfsm
+
+
+Once you're done with the demo, make sure to clean up the created docker
+container with the following commands.
+
+.. code-block:: console
+
+    $ docker stop -t 0 $(docker ps -a -q --filter="name=GABRIELTOOL")

@@ -2,15 +2,16 @@ OpenWorkflow Documentation
 ###########################
 
 OpenWorkflow is a suite of development tools to facilitate the creation and
-implemention of `Wearable Cognitive Assistants (WCA)`_. They key idea of
-OpenWorkflow is to represent WCA application logic as finite state machines (FSM). You
-can read more about the fast prototyping methodology of OpenWorkflow in
-`this document (Section 6.2) <https://junjuew.github.io/assets/thesis.pdf>`_.
+implementation of `Wearable Cognitive Assistants (WCA)`_. They key idea of
+OpenWorkflow is to represent WCA application logic as a finite state machine
+(FSM). You can read more about the fast prototyping methodology of OpenWorkflow
+in `this document (Section 6.2) <https://junjuew.github.io/assets/thesis.pdf>`_.
 
 OpenWorkflow provides the following tools.
 
 * gabrieltool: A Python library to create and persist finite state machine based wearable cognitive assistants.
-* Finite State Machine (FSM) Web Editor: A browser-based GUI to view and edit state machines.
+* OpenWorkflow State Machine Web Editor: A browser-based GUI to view and edit state machines.
+* gabrieltool CLI (gbt): A command-line tool to launch a gabriel server given an FSM.
 
 User Guide
 **********************

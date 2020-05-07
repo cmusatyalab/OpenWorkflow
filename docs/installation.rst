@@ -9,13 +9,13 @@ gabrieltool Python Library
 First, make sure Docker is installed. You can follow the `Docker installation
 guide <https://docs.docker.com/get-docker/>`_.
 
-From PyPI
+Option 1. From PyPI (recommended)
 
 .. code-block:: console
 
     $ pip install -U gabrieltool
 
-From Source
+Option 2. From Source
 
 .. code-block:: console
 
@@ -23,10 +23,10 @@ From Source
     $ cd OpenWorkflow/
     $ python setup.py install
 
-FSM Web Editor
----------------------------
+OpenWorkflow State Machine Web Editor
+---------------------------------------------------
 
-Visit `<https://cmusatyalab.github.io/OpenWorkflow>`_. Or You can download its
+Visit `<https://cmusatyalab.github.io/OpenWorkflow>`_. Or You can download the
 build from the repo's `gh-pages branch 
 <https://github.com/cmusatyalab/OpenWorkflow/archive/gh-pages.zip>`_ and open
-the downloaded index.html.
+the index.html.

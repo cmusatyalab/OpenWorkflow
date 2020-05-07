@@ -214,7 +214,7 @@ export const allNamesAreValid = (fsm) => {
         if (curCellNames.includes(state.getName())) valid = false;
         curCellNames.push(state.getName());
         state.getTransitionsList().map((transition) => {
-            if (curCellNames.includes(state.getName())) valid = false;
+            if (curCellNames.includes(transition.getName())) valid = false;
             curCellNames.push(transition.getName());
             return null;
         });
@@ -249,6 +249,7 @@ export const formValuesToElement = function(formValue, fsm, type, initElement) {
     let element = null;
     let existingNames = getAllNames(fsm);
     if (initElement === null || initElement === undefined) {
+        debugger;
         if (existingNames.includes(formValue.name))
             throw "Error: Duplicate name! All states and transitions must have unique names.";
         switch (type) {
@@ -271,9 +272,10 @@ export const formValuesToElement = function(formValue, fsm, type, initElement) {
         }
     } else {
         // if the element name changed and the new name is a duplicate
+        debugger;
         if (
             existingNames.includes(formValue.name) &&
-            initElement.name !== formValue.name
+            initElement.getName() !== formValue.name
         )
             throw "Error: Duplicate name! All states and transitions must have unique names.";
         element = initElement;
