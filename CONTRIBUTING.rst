@@ -61,7 +61,7 @@ Ready to contribute? Here's how to set up `OpenWorkflow` for local development.
 1. Fork the `OpenWorkflow` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/gabrieltool.git
+    $ git clone git@github.com:your_name_here/OpenWorkflow.git
 
 3. Install your local copy into a virtualenv::
 
@@ -77,10 +77,11 @@ Ready to contribute? Here's how to set up `OpenWorkflow` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass linter (autopep8) and the
+5. When you're done making changes, check that your changes pass linter (flake8) and the
    tests::
 
-    $ python -m pytest <directory>
+    $ flake8 .
+    $ python -m pytest gabrieltool
 
 6. Commit your changes and push your branch to GitHub::
 
