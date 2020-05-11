@@ -43,7 +43,14 @@ its implementation.
 
 7. Once you see the container is up, the server is ready for connection. 
    Download `Gabriel client <https://play.google.com/store/apps/details?id=edu.cmu.cs.gabrielclient>`_
-   from Android Play Store to connect to the server and try the application out. When the client has
+   from Android Play Store to connect to the server and try the application out.
+   Make sure to turn on option "Stateful Server (e.g. OpenWorkflow
+   Applications)". You should turn this option on for all gabriel applications
+   made with OpenWorkflow.
+   
+.. image:: img/client_screen_shot.png
+   
+8. When the client has
    a person or a chair in view, the application should say "Found Person" or
    "Found chair" correspondingly.
 
@@ -348,9 +355,10 @@ The directory structure should look like the following.
     └── app.pbfsm
 
 Gabrieltool CLI provides a convenient command-line tool to launch a gabriel
-server with the exported FSM. Connect Gabriel Client to your server. When you
-point the client to a person or a chair, the application should say "Found
-Person" or "Found chair" correspondingly.
+server with the exported FSM. Connect Gabriel Client to your server. Make sure
+to turn on option "Stateful Server (e.g. OpenWorkflow Applications)" in the
+client. When you point the client to a person or a chair, the application should
+say "Found Person" or "Found chair" correspondingly.
 
 .. code-block:: console
 
