@@ -1,16 +1,17 @@
 # Overview
 
-This directory contains the React source for the OpenWorkflow web GUI. There is
-no server component for the web GUI. Everything is done in browser.
+This directory contains the React source for the OpenWorkflow web GUI. This is a pure front-end 
+web GUI (no backend is needed). Everything is done in browser itself with HTML, CSS, and Javascript.
+This Github page of this repository serves the compiled frontend code at https://cmusatyalab.github.io/OpenWorkflow/.
 
-This project was bootstrapped with [Create React
-App](https://github.com/facebook/create-react-app).
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 
 ## Compilation
 
+First install nodejs (npm). 
+
 ```
-# First install npm/nodejs.
 # in current directory
 npm install
 npm run build
@@ -47,9 +48,9 @@ Deploy the application to the gh-page branch of this repository.
 You would only need to do this if you changed the serialization format of
 OpenWorkflow finite state machine in wca-state-machine.proto.
 
-1. Run (gen-jspb.sh)[gen-jspb.sh]. 
+1. Run [gen-jspb.sh](gen-jspb.sh).
 2. To generate the proper protobuf js, "/* eslint-disable */" needs to be added to the top of the file. The gen-jspb.sh
-script does this. See (here)[https://github.com/improbable-eng/grpc-web/issues/96#issuecomment-347871452].
+script does this. See [here](https://github.com/improbable-eng/grpc-web/issues/96#issuecomment-347871452).
 
 ## Learn More
 
