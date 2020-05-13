@@ -1,16 +1,24 @@
+# Overview
+
+This directory contains the React source for the OpenWorkflow web GUI. There is
+no server component for the web GUI. Everything is done in browser.
+
 This project was bootstrapped with [Create React
 App](https://github.com/facebook/create-react-app).
 
-## Generate JS Protobuf library from .proto file
 
-Run (gen-jspb.sh)[gen-jspb.sh].
-To generate the proper protobuf js, "/* eslint-disable */" needs to be added to
-the top of the file. The gen-jspb.sh script does this.
-See (here)[https://github.com/improbable-eng/grpc-web/issues/96#issuecomment-347871452].
+## Compilation
 
-## Available Scripts
+```
+# First install npm/nodejs.
+# in current directory
+npm install
+npm run build
+```
 
-In the project directory, you can run:
+Open build/index.html to access the web GUI.
+
+## Other available NPM commands
 
 ### `npm start`
 
@@ -19,11 +27,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.<br>
 You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
 ### `npm run build`
 
@@ -39,15 +42,14 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 Deploy the application to the gh-page branch of this repository.
 
-### `npm run eject`
+## Generate Javascript protobuf library for Finite State Machine serialization/deserialization.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+You would only need to do this if you changed the serialization format of
+OpenWorkflow finite state machine in wca-state-machine.proto.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+1. Run (gen-jspb.sh)[gen-jspb.sh]. 
+2. To generate the proper protobuf js, "/* eslint-disable */" needs to be added to the top of the file. The gen-jspb.sh
+script does this. See (here)[https://github.com/improbable-eng/grpc-web/issues/96#issuecomment-347871452].
 
 ## Learn More
 
