@@ -1,7 +1,7 @@
 # Overview
 
 This directory contains the React source for the OpenWorkflow web GUI. This is a pure front-end 
-web GUI (no backend is needed). Everything is done in browser itself with HTML, CSS, and Javascript.
+web GUI (no backend is needed). Everything is done in the browser with HTML, CSS, and Javascript.
 This Github page of this repository serves the compiled frontend code at https://cmusatyalab.github.io/OpenWorkflow/.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
