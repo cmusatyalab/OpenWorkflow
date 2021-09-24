@@ -19,7 +19,7 @@ requirements = [
     'opencv-python>=3',
     'logzero',
     'fire',
-    'gabriel-server',
+    'gabriel-server==0.1.1',
 ]
 
 setup_requirements = []
