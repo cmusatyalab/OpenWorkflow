@@ -14,6 +14,11 @@
         "labels": "None",
         "conf_threshold": "0.8"
     },
+    "TwoStageProcessor": {
+        "classifier_path": "",
+	"detector_path": "",
+        "conf_threshold": "0.4"
+    },
     "DummyProcessor": {
         "dummy_input": "dummy_input_value"
     }
