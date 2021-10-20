@@ -4,15 +4,15 @@ self.__precacheManifest = [
     "url": "/OpenWorkflow/static/js/runtime~main.8a2de10a.js"
   },
   {
-    "revision": "23314ddd863155c3deac",
-    "url": "/OpenWorkflow/static/js/main.23314ddd.chunk.js"
+    "revision": "32ef732f60b237af402d",
+    "url": "/OpenWorkflow/static/js/main.32ef732f.chunk.js"
   },
   {
     "revision": "07c5fa80cef8b32c33af",
     "url": "/OpenWorkflow/static/js/1.07c5fa80.chunk.js"
   },
   {
-    "revision": "23314ddd863155c3deac",
+    "revision": "32ef732f60b237af402d",
     "url": "/OpenWorkflow/static/css/main.a8b8abd6.chunk.css"
   },
   {
@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/OpenWorkflow/static/css/1.195fcb7b.chunk.css"
   },
   {
-    "revision": "ee6701c3ef097e12a1c3171a09fa8b09",
+    "revision": "81962830c462cd245c8e13133c33b098",
     "url": "/OpenWorkflow/index.html"
   }
 ];
