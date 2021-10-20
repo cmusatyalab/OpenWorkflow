@@ -17,6 +17,7 @@
     "TwoStageProcessor": {
         "classifier_path": "",
 	"detector_path": "",
+	"detector_class_name": "",
         "conf_threshold": "0.4"
     },
     "DummyProcessor": {
