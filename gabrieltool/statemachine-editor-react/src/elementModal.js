@@ -161,6 +161,66 @@ class ImageUploadField extends Component {
     }
 }
 
+class VideoUploadField extends Component {
+    constructor(props) {
+        super(props);
+        this.videoInstUrl = null;
+    }
+
+    prepareResource(videoBytes) {
+        // clear up urls to prevent leaking memories
+        if (this.videoInstUrl !== null) {
+            URL.revokeObjectURL(this.videoInstUrl);
+        }
+        let blob = new Blob([videoBytes], {
+            type: "video",
+        });
+        this.videoInstUrl = URL.createObjectURL(blob);
+        return {
+            videoInstUrl: this.videoInstUrl,
+        };
+    }
+
+    render() {
+        const { field, form, label } = this.props;
+        let res = {};
+        if (field.value) {
+            res = this.prepareResource(field.value);
+        }
+        return (
+            <Form.Group as={Row}>
+                <Form.Label column>{label}</Form.Label>
+                {res.videoInstUrl && (
+                    <Form.Label column sm={1}>
+			<video width="40">
+			    <source src={res.videoInstUrl} />
+			</video>
+                    </Form.Label>
+                )}
+                <Col>
+                    <FileReaderInput
+                        as="buffer"
+                        onChange={(e, fileArray) => {
+                            fileArray.forEach((result) => {
+                                const e = result[0];
+                                let fileContent = e.target.result;
+                                form.setFieldValue(
+                                    field.name,
+                                    new Uint8Array(fileContent)
+                                );
+                            });
+                        }}
+                    >
+                        <Button variant="light" className="fw-btn">
+                            New Video
+                        </Button>
+                    </FileReaderInput>
+                </Col>
+            </Form.Group>
+        );
+    }
+}
+
 /** Custom the look of a Formik Select field with react-select
  *
  * @param {*} param0
@@ -352,10 +412,8 @@ const createTransitionBasicFields = (fsm, form, errors) => {
             />
             <Field
                 name="instruction.video"
-                component={BSFormikField}
-                type="text"
+                component={VideoUploadField}
                 label="Video Instruction"
-                defaultValue=""
             />
         </>
     );

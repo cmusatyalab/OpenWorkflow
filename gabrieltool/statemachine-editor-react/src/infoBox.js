@@ -29,6 +29,9 @@ class InfoBox extends Component {
     if (this.imageInstUrl !== null) {
       URL.revokeObjectURL(this.imageInstUrl);
     }
+    if (this.videoInstUrl !== null) {
+      URL.revokeObjectURL(this.videoInstUrl);
+    }
     if (element.getInstruction()) {
       if (element.getInstruction().getImage()) {
         let blob = new Blob([element.getInstruction().getImage()], {
@@ -36,6 +39,13 @@ class InfoBox extends Component {
         });
         this.imageInstUrl = URL.createObjectURL(blob);
         res.imageInstUrl = this.imageInstUrl;
+      }
+      if (element.getInstruction().getVideo()) {
+        let blob = new Blob([element.getInstruction().getVideo()], {
+          type: "video"
+        });
+        this.videoInstUrl = URL.createObjectURL(blob);
+        res.videoInstUrl = this.videoInstUrl;
       }
     }
     return res;
@@ -118,9 +128,13 @@ class InfoBox extends Component {
             ) : (
               <ListGroupItem>Image: </ListGroupItem>
             )}
-            <ListGroupItem>
-              Video: {element.getInstruction().getVideo()}
-            </ListGroupItem>
+            {res.videoInstUrl ? (
+              <ListGroupItem>
+                Video: <video controls><source src={res.videoInstUrl} /></video>
+              </ListGroupItem>
+            ) : (
+              <ListGroupItem>Video: </ListGroupItem>
+            )}
           </>
         )}
         <ListGroupItem variant="secondary">
