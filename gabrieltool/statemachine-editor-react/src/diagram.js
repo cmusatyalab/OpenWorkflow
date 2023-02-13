@@ -260,6 +260,13 @@ export class Diagram extends Component {
                 if (fsm.getStartState() === state.getName()) {
                     cell.attr("circle/stroke-width", "5");
                 }
+                // mark gated state
+                if (state.getProcessorsList()
+                    .map(callableItem => callableItem.getCallableName())
+                    .includes("GatedTwoStageProcessor")
+                ) {
+                    cell.attr("circle/fill", "yellow");
+                }
                 this.addGraphCellWithRef(state.getName(), cell, state);
             }
             return null;

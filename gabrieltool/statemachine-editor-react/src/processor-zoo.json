@@ -16,9 +16,17 @@
     },
     "TwoStageProcessor": {
         "classifier_path": "",
-	"detector_path": "",
-	"detector_class_name": "",
+        "detector_path": "",
+        "detector_class_name": "",
         "conf_threshold": "0.4"
+    },
+    "GatedTwoStageProcessor": {
+        "classifier_path": "",
+        "detector_path": "",
+        "detector_class_name": "",
+        "conf_threshold": "0.4",
+        "thumbs_up_required": "True/False",
+        "transition_word": "-"
     },
     "DummyProcessor": {
         "dummy_input": "dummy_input_value"
