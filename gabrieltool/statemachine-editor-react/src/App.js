@@ -15,6 +15,7 @@ import {
 } from "./utils.js";
 import ElementModal from "./elementModal.js";
 import saveAs from "file-saver";
+import ReactPlayer from "react-player";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -57,6 +58,10 @@ class App extends Component {
             },
             showNewElementModal: false,
             newElementModalType: null,
+            videoUrl: null,
+            videoName: null,
+            videoDuration: 0,
+            playedSeconds: 0,
         };
     }
 
@@ -70,8 +75,23 @@ class App extends Component {
                     </Alert>
                 )}
                 <Row>
+                    <Col sm={3}>
+                        <h4>Upload Video</h4>
+                        <div className='player-wrapper'>
+                            <input onChange={this.onChooseFile} type='file' accept='video/*' />
+                            <ReactPlayer
+                                url={this.state.videoUrl}
+                                className='react-player'
+                                controls
+                                width='100%'
+                                height='100%'
+                                onProgress={this.handleProgress}
+                                onDuration={this.handleDuration}
+                            />
+                        </div>
+                    </Col>
                     <Col
-                        sm={6}
+                        sm={4}
                         ref={this.diagramContainerRef}
                         style={{ backgroundColor: "lavender" }}
                     >
@@ -80,10 +100,10 @@ class App extends Component {
                             fsm={this.state.fsm}
                             onClickCell={this.onClickCell}
                             ref={this.diagramRef}
-                            paperWidth={window.innerWidth / 2} // half of current window's inner width
+                            paperWidth={window.innerWidth / 3} // 1/3 of current window's inner width
                         />
                     </Col>
-                    <Col sm={6}>
+                    <Col sm={5}>
                         <ToolBar
                             onImport={this.onImport}
                             onAdd={this.onAdd}
@@ -116,6 +136,10 @@ class App extends Component {
                         initElement={this.state.modalInitElement} // if element is not null, then edit the element
                         onModalSave={this.onModalSave}
                         onModalCancel={this.onModalCancel}
+                        videoUrl={this.state.videoUrl}
+                        videoName={this.state.videoName}
+                        videoDuration={this.state.videoDuration}
+                        videoSeekPos={this.state.playedSeconds}
                     />
                 )}
             </Container>
@@ -129,6 +153,21 @@ class App extends Component {
                 msg: msg,
             },
         });
+    }
+
+    onChooseFile = e => {
+        const url = URL.createObjectURL(e.target.files[0]);
+        this.setState({ videoUrl: url, videoName: e.target.files[0].name });
+    }
+
+    handleProgress = state => {
+        console.log('onProgress', state)
+        this.setState({ playedSeconds: state.playedSeconds });
+    }
+
+    handleDuration = duration => {
+        console.log('onDuration', duration)
+        this.setState({ videoDuration: duration })
     }
 
     // toolbar callbacks

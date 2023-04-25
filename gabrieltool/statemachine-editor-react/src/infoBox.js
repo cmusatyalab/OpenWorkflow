@@ -123,14 +123,14 @@ class InfoBox extends Component {
             </ListGroupItem>
             {res.imageInstUrl ? (
               <ListGroupItem>
-                Image: <img src={res.imageInstUrl} alt="instruction" />
+                Image: <img src={res.imageInstUrl} alt="instruction" width="100%" height="100%" />
               </ListGroupItem>
             ) : (
               <ListGroupItem>Image: </ListGroupItem>
             )}
             {res.videoInstUrl ? (
               <ListGroupItem>
-                Video: <video controls><source src={res.videoInstUrl} /></video>
+                Video: <video controls><source src={res.videoInstUrl} width="100%" height="100%" /></video>
               </ListGroupItem>
             ) : (
               <ListGroupItem>Video: </ListGroupItem>

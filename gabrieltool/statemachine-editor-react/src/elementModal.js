@@ -16,6 +16,11 @@ import {
     elementToFormValues,
     getAllNames,
 } from "./utils.js";
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+
+const ffmpeg = createFFmpeg({
+    log: true,
+});
 
 /** Helper function to create options for Select elements
  * from a pre-defined callable zoo (procZoo or predZoo)
@@ -119,8 +124,29 @@ class ImageUploadField extends Component {
         };
     }
 
+    getVideoThumbnail = async (url, vFilename, pos) => {
+        if (!ffmpeg.isLoaded()) {
+            await ffmpeg.load();
+        }
+        ffmpeg.FS('writeFile', vFilename, await fetchFile(url));
+
+        // Time format conversion
+        const numHrs = Math.floor(pos / 3600);
+        const numMin = Math.floor(pos / 60) % 60;
+        const numSec = pos - numHrs * 3600 - numMin * 60;
+        const hmsString = [
+            (numHrs < 10) ? "0" + numHrs : "" + numHrs,
+            (numMin < 10) ? "0" + numMin : "" + numMin,
+            (numSec < 10) ? "0" + Math.floor(numSec * 1000) / 1000 : "" + Math.floor(numSec * 1000) / 1000,
+        ].join(":");
+        await ffmpeg.run('-ss', hmsString, '-i', vFilename, '-frames:v', '1', 'outFrame.png');
+        return ffmpeg.FS('readFile', 'outFrame.png')
+    };
+
+    // TODO: trimVideoClips()
+
     render() {
-        const { field, form, label } = this.props;
+        const { field, form, label, url, vFilename, pos } = this.props;
         let res = {};
         if (field.value) {
             res = this.prepareResource(field.value);
@@ -155,6 +181,24 @@ class ImageUploadField extends Component {
                             New Image
                         </Button>
                     </FileReaderInput>
+                </Col>
+                <Col>
+                    <Button
+                        variant="light"
+                        className="fw-btn"
+                        onClick={() => {
+                            if (url) {
+                                this.getVideoThumbnail(url, vFilename, pos).then(value => {
+                                    form.setFieldValue(
+                                        field.name,
+                                        value
+                                    );
+                                })
+                            }
+                        }}
+                    >
+                        Use Thumbnail
+                    </Button>
                 </Col>
             </Form.Group>
         );
@@ -376,7 +420,7 @@ const createCallableArgMultiFields = (args, index, errors) => {
  *
  * @param {*} values
  */
-const createTransitionBasicFields = (fsm, form, errors) => {
+const createTransitionBasicFields = (fsm, form, errors, videoUrl, videoName, seekPos) => {
     const fsmStateOptions = fsm.getStatesList().map((state) => {
         return { value: state.getName(), label: state.getName() };
     });
@@ -409,6 +453,9 @@ const createTransitionBasicFields = (fsm, form, errors) => {
                 name="instruction.image"
                 component={ImageUploadField}
                 label="Image Instruction"
+                url={videoUrl}
+                vFilename={videoName}
+                pos={seekPos}
             />
             <Field
                 name="instruction.video"
@@ -453,6 +500,10 @@ class ElementModal extends Component {
             onModalCancel,
             onModalSave,
             initElement,
+            videoUrl,
+            videoName,
+            videoDuration,
+            videoSeekPos
         } = this.props;
 
         let title,
@@ -563,7 +614,7 @@ class ElementModal extends Component {
                                                                                     values[
                                                                                         field
                                                                                             .name
-                                                                                    ]
+                                                                                    ] || ""
                                                                                 }
                                                                                 onChange={() => {
                                                                                     if (
@@ -631,7 +682,10 @@ class ElementModal extends Component {
                                                         {createTransitionBasicFields(
                                                             fsm,
                                                             form,
-                                                            errors
+                                                            errors,
+                                                            videoUrl,
+                                                            videoName,
+                                                            videoSeekPos
                                                         )}
                                                     </>
                                                 )}

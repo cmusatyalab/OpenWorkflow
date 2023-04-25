@@ -204,7 +204,7 @@ export class Diagram extends Component {
 
         this.state_shape_width = 50;
         this.state_shape_height = 50;
-        this.state_spacing_x = 250;
+        this.state_spacing_x = 200;
         this.state_spacing_y = 150;
         this.state_per_row = 3;
         this.cellId2FSMElement = {};
