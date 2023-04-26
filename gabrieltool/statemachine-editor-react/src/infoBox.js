@@ -6,6 +6,7 @@ import ListGroupItem from "react-bootstrap/lib/ListGroupItem";
 import { FSMElementType, getFSMElementType } from "./utils.js";
 import "react-table/react-table.css";
 import ReactJson from "react-json-view";
+import ReactPlayer from "react-player";
 
 const getColumnWidth = (rows, accessor, headerText) => {
   const maxWidth = 400;
@@ -130,7 +131,12 @@ class InfoBox extends Component {
             )}
             {res.videoInstUrl ? (
               <ListGroupItem>
-                Video: <video controls><source src={res.videoInstUrl} width="100%" height="100%" /></video>
+                Video: <ReactPlayer url={res.videoInstUrl}
+                                    className="react-player"
+                                    controls
+                                    light
+                                    width="100%"
+                                    height="100%" />
               </ListGroupItem>
             ) : (
               <ListGroupItem>Video: </ListGroupItem>

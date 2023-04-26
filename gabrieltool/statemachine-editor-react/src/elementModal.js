@@ -124,26 +124,15 @@ class ImageUploadField extends Component {
         };
     }
 
-    getVideoThumbnail = async (url, vFilename, pos) => {
+    createThumbnail = async (url, vFilename, pos) => {
         if (!ffmpeg.isLoaded()) {
             await ffmpeg.load();
         }
         ffmpeg.FS('writeFile', vFilename, await fetchFile(url));
-
-        // Time format conversion
-        const numHrs = Math.floor(pos / 3600);
-        const numMin = Math.floor(pos / 60) % 60;
-        const numSec = pos - numHrs * 3600 - numMin * 60;
-        const hmsString = [
-            (numHrs < 10) ? "0" + numHrs : "" + numHrs,
-            (numMin < 10) ? "0" + numMin : "" + numMin,
-            (numSec < 10) ? "0" + Math.floor(numSec * 1000) / 1000 : "" + Math.floor(numSec * 1000) / 1000,
-        ].join(":");
-        await ffmpeg.run('-ss', hmsString, '-i', vFilename, '-frames:v', '1', 'outFrame.png');
-        return ffmpeg.FS('readFile', 'outFrame.png')
+        const outFile = "out" + vFilename + ".png"
+        await ffmpeg.run('-ss', pos, '-i', vFilename, '-frames:v', '1', outFile);
+        return ffmpeg.FS('readFile', outFile)
     };
-
-    // TODO: trimVideoClips()
 
     render() {
         const { field, form, label, url, vFilename, pos } = this.props;
@@ -188,7 +177,7 @@ class ImageUploadField extends Component {
                         className="fw-btn"
                         onClick={() => {
                             if (url) {
-                                this.getVideoThumbnail(url, vFilename, pos).then(value => {
+                                this.createThumbnail(url, vFilename, pos).then(value => {
                                     form.setFieldValue(
                                         field.name,
                                         value
@@ -197,7 +186,7 @@ class ImageUploadField extends Component {
                             }
                         }}
                     >
-                        Use Thumbnail
+                        Use Current Frame
                     </Button>
                 </Col>
             </Form.Group>
@@ -225,8 +214,18 @@ class VideoUploadField extends Component {
         };
     }
 
+    createVideoClip = async (url, vFilename, start, end) => {
+        if (!ffmpeg.isLoaded()) {
+            await ffmpeg.load();
+        }
+        ffmpeg.FS('writeFile', vFilename, await fetchFile(url));
+        const outFile = "out" + vFilename
+        await ffmpeg.run('-ss', start, '-to', end, '-i', vFilename, '-c', 'copy', outFile);
+        return ffmpeg.FS('readFile', outFile)
+    };
+
     render() {
-        const { field, form, label } = this.props;
+        const { field, form, label, url, vFilename, start, end } = this.props;
         let res = {};
         if (field.value) {
             res = this.prepareResource(field.value);
@@ -236,9 +235,9 @@ class VideoUploadField extends Component {
                 <Form.Label column>{label}</Form.Label>
                 {res.videoInstUrl && (
                     <Form.Label column sm={1}>
-			<video width="40">
-			    <source src={res.videoInstUrl} />
-			</video>
+                        <video width="40">
+                            <source src={res.videoInstUrl} />
+                        </video>
                     </Form.Label>
                 )}
                 <Col>
@@ -259,6 +258,34 @@ class VideoUploadField extends Component {
                             New Video
                         </Button>
                     </FileReaderInput>
+                </Col>
+                <Col>
+                    <Button
+                        variant="light"
+                        className="fw-btn"
+                        onClick={() => {
+                            if (url && start && end) {
+                                const startTime = start.split(":")
+                                const endTime = end.split(":")
+                                const startSec = parseInt(startTime[0]) * 3600
+                                    + parseInt(startTime[1]) * 60
+                                    + parseFloat(startTime[2])
+                                const endSec = parseInt(endTime[0]) * 3600
+                                    + parseInt(endTime[1]) * 60
+                                    + parseFloat(endTime[2])
+                                if (startSec < endSec) {
+                                    this.createVideoClip(url, vFilename, start, end).then(value => {
+                                        form.setFieldValue(
+                                            field.name,
+                                            value
+                                        );
+                                    })
+                                }
+                            }
+                        }}
+                    >
+                        Use Video Clip
+                    </Button>
                 </Col>
             </Form.Group>
         );
@@ -420,7 +447,7 @@ const createCallableArgMultiFields = (args, index, errors) => {
  *
  * @param {*} values
  */
-const createTransitionBasicFields = (fsm, form, errors, videoUrl, videoName, seekPos) => {
+const createTransitionBasicFields = (fsm, form, errors, videoUrl, videoName, seekPos, clipStart, clipEnd) => {
     const fsmStateOptions = fsm.getStatesList().map((state) => {
         return { value: state.getName(), label: state.getName() };
     });
@@ -461,6 +488,10 @@ const createTransitionBasicFields = (fsm, form, errors, videoUrl, videoName, see
                 name="instruction.video"
                 component={VideoUploadField}
                 label="Video Instruction"
+                url={videoUrl}
+                vFilename={videoName}
+                start={clipStart}
+                end={clipEnd}
             />
         </>
     );
@@ -502,8 +533,9 @@ class ElementModal extends Component {
             initElement,
             videoUrl,
             videoName,
-            videoDuration,
-            videoSeekPos
+            videoSeekPos,
+            clipStart,
+            clipEnd
         } = this.props;
 
         let title,
@@ -685,7 +717,9 @@ class ElementModal extends Component {
                                                             errors,
                                                             videoUrl,
                                                             videoName,
-                                                            videoSeekPos
+                                                            videoSeekPos,
+                                                            clipStart,
+                                                            clipEnd
                                                         )}
                                                     </>
                                                 )}

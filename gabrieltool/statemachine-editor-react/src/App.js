@@ -16,6 +16,8 @@ import {
 import ElementModal from "./elementModal.js";
 import saveAs from "file-saver";
 import ReactPlayer from "react-player";
+import Form from "react-bootstrap/lib/Form";
+import Button from "react-bootstrap/lib/Button";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -47,6 +49,8 @@ class App extends Component {
         this.onClickCell = this.onClickCell.bind(this);
         this.onModalCancel = this.onModalCancel.bind(this);
         this.onModalSave = this.onModalSave.bind(this);
+        this.clipStart = React.createRef();
+        this.clipEnd = React.createRef();
         this.state = {
             fsm: new fsmPb.StateMachine(),
             curFSMElement: null,
@@ -60,8 +64,7 @@ class App extends Component {
             newElementModalType: null,
             videoUrl: null,
             videoName: null,
-            videoDuration: 0,
-            playedSeconds: 0,
+            playedSeconds: null,
         };
     }
 
@@ -86,8 +89,52 @@ class App extends Component {
                                 width='100%'
                                 height='100%'
                                 onProgress={this.handleProgress}
-                                onDuration={this.handleDuration}
                             />
+                            {this.state.videoUrl && (
+                                <Form>
+                                    <Form.Group as={Row}>
+                                        <Form.Label column>Video Clip Start</Form.Label>
+                                        <Col>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="HH:mm:ss.sss"
+                                                ref={this.clipStart}
+                                                readOnly
+                                            />
+                                            <Button
+                                                variant="primary"
+                                                className="fw-btn"
+                                                onClick={() => {
+                                                    this.clipStart.current.value = this.state.playedSeconds
+                                                }}
+                                            >
+                                                Use Current Frame
+                                            </Button>
+                                        </Col>
+
+                                    </Form.Group>
+                                    <Form.Group as={Row}>
+                                        <Form.Label column>Video Clip End</Form.Label>
+                                        <Col>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="HH:mm:ss.sss"
+                                                ref={this.clipEnd}
+                                                readOnly
+                                            />
+                                            <Button
+                                                variant="primary"
+                                                className="fw-btn"
+                                                onClick={() => {
+                                                    this.clipEnd.current.value = this.state.playedSeconds
+                                                }}
+                                            >
+                                                Use Current Frame
+                                            </Button>
+                                        </Col>
+                                    </Form.Group>
+                                </Form>
+                            )}
                         </div>
                     </Col>
                     <Col
@@ -138,8 +185,9 @@ class App extends Component {
                         onModalCancel={this.onModalCancel}
                         videoUrl={this.state.videoUrl}
                         videoName={this.state.videoName}
-                        videoDuration={this.state.videoDuration}
                         videoSeekPos={this.state.playedSeconds}
+                        clipStart={this.clipStart.current ? this.clipStart.current.value : null}
+                        clipEnd={this.clipEnd.current? this.clipEnd.current.value : null}
                     />
                 )}
             </Container>
@@ -156,18 +204,28 @@ class App extends Component {
     }
 
     onChooseFile = e => {
+        // clear up urls to prevent leaking memories
+        if (this.state.videoUrl !== null) {
+            URL.revokeObjectURL(this.state.videoUrl);
+            this.clipStart.current.value = null;
+            this.clipEnd.current.value = null;
+        }
         const url = URL.createObjectURL(e.target.files[0]);
         this.setState({ videoUrl: url, videoName: e.target.files[0].name });
     }
 
     handleProgress = state => {
-        console.log('onProgress', state)
-        this.setState({ playedSeconds: state.playedSeconds });
-    }
-
-    handleDuration = duration => {
-        console.log('onDuration', duration)
-        this.setState({ videoDuration: duration })
+        // Time format conversion
+        const pos = state.playedSeconds
+        const numHrs = Math.floor(pos / 3600);
+        const numMin = Math.floor(pos / 60) % 60;
+        const numSec = pos - numHrs * 3600 - numMin * 60;
+        const hmsString = [
+            (numHrs < 10) ? "0" + numHrs : "" + numHrs,
+            (numMin < 10) ? "0" + numMin : "" + numMin,
+            (numSec < 10) ? "0" + Math.floor(numSec * 1000) / 1000 : "" + Math.floor(numSec * 1000) / 1000,
+        ].join(":");
+        this.setState({ playedSeconds: hmsString });
     }
 
     // toolbar callbacks
