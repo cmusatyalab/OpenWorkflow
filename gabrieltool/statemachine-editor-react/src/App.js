@@ -18,6 +18,7 @@ import saveAs from "file-saver";
 import ReactPlayer from "react-player";
 import Form from "react-bootstrap/lib/Form";
 import Button from "react-bootstrap/lib/Button";
+import StateTable from "./stateTable";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -47,6 +48,7 @@ class App extends Component {
         this.onDelete = this.onDelete.bind(this);
         this.onEdit = this.onEdit.bind(this);
         this.onClickCell = this.onClickCell.bind(this);
+        this.onClickBlank = this.onClickBlank.bind(this);
         this.onModalCancel = this.onModalCancel.bind(this);
         this.onModalSave = this.onModalSave.bind(this);
         this.clipStart = React.createRef();
@@ -97,7 +99,7 @@ class App extends Component {
                                         <Col>
                                             <Form.Control
                                                 type="text"
-                                                placeholder="HH:mm:ss.sss"
+                                                placeholder="HH:mm:ss.xxx"
                                                 ref={this.clipStart}
                                                 readOnly
                                             />
@@ -118,7 +120,7 @@ class App extends Component {
                                         <Col>
                                             <Form.Control
                                                 type="text"
-                                                placeholder="HH:mm:ss.sss"
+                                                placeholder="HH:mm:ss.xxx"
                                                 ref={this.clipEnd}
                                                 readOnly
                                             />
@@ -146,6 +148,7 @@ class App extends Component {
                         <Diagram
                             fsm={this.state.fsm}
                             onClickCell={this.onClickCell}
+                            onClickBlank={this.onClickBlank}
                             ref={this.diagramRef}
                             paperWidth={window.innerWidth / 3} // 1/3 of current window's inner width
                         />
@@ -158,13 +161,17 @@ class App extends Component {
                             onDelete={this.onDelete}
                             onEdit={this.onEdit}
                         />
-                        {this.state.curFSMElement && (
+                        {this.state.curFSMElement ? (
                             <Row>
                                 <InfoBox
                                     element={this.state.curFSMElement}
                                     style={{ width: "100%" }}
                                 />
                             </Row>
+                        ) : (
+                            <div>
+                                <StateTable fsm={this.state.fsm} />
+                            </div>
                         )}
                     </Col>
                 </Row>
@@ -380,6 +387,12 @@ class App extends Component {
         ];
         this.setState({
             curFSMElement: fsmElement,
+        });
+    }
+
+    onClickBlank(elementView) {
+        this.setState({
+            curFSMElement: null,
         });
     }
 

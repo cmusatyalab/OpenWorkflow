@@ -8,8 +8,8 @@ import "react-table/react-table.css";
 import ReactJson from "react-json-view";
 import ReactPlayer from "react-player";
 
-const getColumnWidth = (rows, accessor, headerText) => {
-  const maxWidth = 400;
+export const getColumnWidth = (rows, accessor, headerText) => {
+  const maxWidth = 100;
   const magicSpacing = 11;
   const cellLength = Math.max(
     ...rows.map(row => (`${row[accessor]}` || "").length),
