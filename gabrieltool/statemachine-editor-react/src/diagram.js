@@ -204,7 +204,7 @@ export class Diagram extends Component {
 
         this.state_shape_width = 50;
         this.state_shape_height = 50;
-        this.state_spacing_x = 250;
+        this.state_spacing_x = 200;
         this.state_spacing_y = 150;
         this.state_per_row = 3;
         this.cellId2FSMElement = {};
@@ -217,7 +217,7 @@ export class Diagram extends Component {
     }
 
     componentDidMount() {
-        const { onClickCell, paperWidth } = this.props;
+        const { onClickCell, onClickBlank, paperWidth } = this.props;
         this.$el = $(this.el);
         console.log("paper width is: " + paperWidth);
         const paper = new joint.dia.Paper({
@@ -230,6 +230,8 @@ export class Diagram extends Component {
         });
         paper.on("cell:pointerdblclick", onClickCell);
         paper.on("cell:pointerclick", onClickCell);
+        paper.on("blank:pointerclick", onClickBlank);
+        paper.on("blank:pointerclick", onClickBlank);
         this.state_per_row =
             Math.floor(
                 parseInt(paper.options.width, 10) /

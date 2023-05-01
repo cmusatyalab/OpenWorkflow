@@ -15,6 +15,10 @@ import {
 } from "./utils.js";
 import ElementModal from "./elementModal.js";
 import saveAs from "file-saver";
+import ReactPlayer from "react-player";
+import Form from "react-bootstrap/lib/Form";
+import Button from "react-bootstrap/lib/Button";
+import StateTable from "./stateTable";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -44,8 +48,11 @@ class App extends Component {
         this.onDelete = this.onDelete.bind(this);
         this.onEdit = this.onEdit.bind(this);
         this.onClickCell = this.onClickCell.bind(this);
+        this.onClickBlank = this.onClickBlank.bind(this);
         this.onModalCancel = this.onModalCancel.bind(this);
         this.onModalSave = this.onModalSave.bind(this);
+        this.clipStart = React.createRef();
+        this.clipEnd = React.createRef();
         this.state = {
             fsm: new fsmPb.StateMachine(),
             curFSMElement: null,
@@ -57,6 +64,9 @@ class App extends Component {
             },
             showNewElementModal: false,
             newElementModalType: null,
+            videoUrl: null,
+            videoName: null,
+            playedSeconds: null,
         };
     }
 
@@ -70,8 +80,67 @@ class App extends Component {
                     </Alert>
                 )}
                 <Row>
+                    <Col sm={3}>
+                        <h4>Upload Video</h4>
+                        <div className='player-wrapper'>
+                            <input onChange={this.onChooseFile} type='file' accept='video/*' />
+                            <ReactPlayer
+                                url={this.state.videoUrl}
+                                className='react-player'
+                                controls
+                                width='100%'
+                                height='100%'
+                                onProgress={this.handleProgress}
+                            />
+                            {this.state.videoUrl && (
+                                <Form>
+                                    <Form.Group as={Row}>
+                                        <Form.Label column>Video Clip Start</Form.Label>
+                                        <Col>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="HH:mm:ss.xxx"
+                                                ref={this.clipStart}
+                                                readOnly
+                                            />
+                                            <Button
+                                                variant="primary"
+                                                className="fw-btn"
+                                                onClick={() => {
+                                                    this.clipStart.current.value = this.state.playedSeconds
+                                                }}
+                                            >
+                                                Use Current Frame
+                                            </Button>
+                                        </Col>
+
+                                    </Form.Group>
+                                    <Form.Group as={Row}>
+                                        <Form.Label column>Video Clip End</Form.Label>
+                                        <Col>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="HH:mm:ss.xxx"
+                                                ref={this.clipEnd}
+                                                readOnly
+                                            />
+                                            <Button
+                                                variant="primary"
+                                                className="fw-btn"
+                                                onClick={() => {
+                                                    this.clipEnd.current.value = this.state.playedSeconds
+                                                }}
+                                            >
+                                                Use Current Frame
+                                            </Button>
+                                        </Col>
+                                    </Form.Group>
+                                </Form>
+                            )}
+                        </div>
+                    </Col>
                     <Col
-                        sm={6}
+                        sm={4}
                         ref={this.diagramContainerRef}
                         style={{ backgroundColor: "lavender" }}
                     >
@@ -79,11 +148,12 @@ class App extends Component {
                         <Diagram
                             fsm={this.state.fsm}
                             onClickCell={this.onClickCell}
+                            onClickBlank={this.onClickBlank}
                             ref={this.diagramRef}
-                            paperWidth={window.innerWidth / 2} // half of current window's inner width
+                            paperWidth={window.innerWidth / 3} // 1/3 of current window's inner width
                         />
                     </Col>
-                    <Col sm={6}>
+                    <Col sm={5}>
                         <ToolBar
                             onImport={this.onImport}
                             onAdd={this.onAdd}
@@ -91,13 +161,17 @@ class App extends Component {
                             onDelete={this.onDelete}
                             onEdit={this.onEdit}
                         />
-                        {this.state.curFSMElement && (
+                        {this.state.curFSMElement ? (
                             <Row>
                                 <InfoBox
                                     element={this.state.curFSMElement}
                                     style={{ width: "100%" }}
                                 />
                             </Row>
+                        ) : (
+                            <div>
+                                <StateTable fsm={this.state.fsm} />
+                            </div>
                         )}
                     </Col>
                 </Row>
@@ -116,6 +190,11 @@ class App extends Component {
                         initElement={this.state.modalInitElement} // if element is not null, then edit the element
                         onModalSave={this.onModalSave}
                         onModalCancel={this.onModalCancel}
+                        videoUrl={this.state.videoUrl}
+                        videoName={this.state.videoName}
+                        videoSeekPos={this.state.playedSeconds}
+                        clipStart={this.clipStart.current ? this.clipStart.current.value : null}
+                        clipEnd={this.clipEnd.current? this.clipEnd.current.value : null}
                     />
                 )}
             </Container>
@@ -129,6 +208,31 @@ class App extends Component {
                 msg: msg,
             },
         });
+    }
+
+    onChooseFile = e => {
+        // clear up urls to prevent leaking memories
+        if (this.state.videoUrl !== null) {
+            URL.revokeObjectURL(this.state.videoUrl);
+            this.clipStart.current.value = null;
+            this.clipEnd.current.value = null;
+        }
+        const url = URL.createObjectURL(e.target.files[0]);
+        this.setState({ videoUrl: url, videoName: e.target.files[0].name });
+    }
+
+    handleProgress = state => {
+        // Time format conversion
+        const pos = state.playedSeconds
+        const numHrs = Math.floor(pos / 3600);
+        const numMin = Math.floor(pos / 60) % 60;
+        const numSec = pos - numHrs * 3600 - numMin * 60;
+        const hmsString = [
+            (numHrs < 10) ? "0" + numHrs : "" + numHrs,
+            (numMin < 10) ? "0" + numMin : "" + numMin,
+            (numSec < 10) ? "0" + Math.floor(numSec * 1000) / 1000 : "" + Math.floor(numSec * 1000) / 1000,
+        ].join(":");
+        this.setState({ playedSeconds: hmsString });
     }
 
     // toolbar callbacks
@@ -283,6 +387,12 @@ class App extends Component {
         ];
         this.setState({
             curFSMElement: fsmElement,
+        });
+    }
+
+    onClickBlank(elementView) {
+        this.setState({
+            curFSMElement: null,
         });
     }
 
