@@ -330,3 +330,75 @@ export const formValuesToElement = function(formValue, fsm, type, initElement) {
             );
     }
 };
+
+export const listToFsm = function(instructions) {
+    let fsm = new fsmPb.StateMachine();
+    let element = null;
+    try {
+        const lines = instructions.replace("1.", "").split(/\r?\n[0-9]+\./);
+        // create start state
+        const startStateForm = {
+            name: "start",
+            isStartState: true,
+            callable: []
+        };
+        formValuesToElement(startStateForm, fsm, FSMElementType.STATE, null);
+        // create states and transitions
+        let stepNum = 1;
+        let lastState = "start";
+        for (let i = 0; i < lines.length; i++) {
+            const audio = lines[i].trim();
+            if (audio === "") {
+                continue;
+            }
+            const stateName = "step" + stepNum;
+            const stateForm = {
+                name: stateName,
+                isStartState: false,
+                callable: [{
+                    name: stateName + "-proc",
+                    type: "GatedTwoStageProcessor",
+                    args: {
+                        classifier_path: "/path/to/classifier",
+                        detector_path: "/path/to/detector",
+                        detector_class_name: "default",
+                        conf_threshold: "0.8",
+                        thumbs_up_required: "true",
+                        transition_word: "-",
+                    }
+                }]
+            };
+            formValuesToElement(stateForm, fsm, FSMElementType.STATE, null);
+
+            const transitionName = lastState + "-to-" + stateName
+            const transitionForm = {
+                name: transitionName,
+                from: lastState,
+                to: stateName,
+                instruction: {
+                    audio: audio,
+                },
+                callable: (lastState === "start") ? [{
+                    name: transitionName + "-pred",
+                    type: "Always",
+                }] : [{
+                    name: transitionName + "-pred",
+                    type: "HasObjectClass",
+                    args: {
+                        class_name: lastState,
+                    }
+                }]
+            }
+            formValuesToElement(transitionForm, fsm, FSMElementType.TRANSITION, null);
+
+            stepNum += 1;
+            lastState = stateName;
+        }
+        // remove last state's processor
+        const completeState = findStatePbByName(lastState, fsm);
+        completeState.setProcessorsList.bind(completeState)([]);
+    } catch (err) {
+        throw err;
+    }
+    return fsm;
+}

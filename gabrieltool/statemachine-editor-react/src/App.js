@@ -12,6 +12,7 @@ import {
     getFSMElementType,
     formValuesToElement,
     allNamesAreValid,
+    listToFsm,
 } from "./utils.js";
 import ElementModal from "./elementModal.js";
 import saveAs from "file-saver";
@@ -19,6 +20,7 @@ import ReactPlayer from "react-player";
 import Form from "react-bootstrap/lib/Form";
 import Button from "react-bootstrap/lib/Button";
 import StateTable from "./stateTable";
+import CreateFromListModal from "./createFromListModal";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -51,8 +53,11 @@ class App extends Component {
         this.onClickBlank = this.onClickBlank.bind(this);
         this.onModalCancel = this.onModalCancel.bind(this);
         this.onModalSave = this.onModalSave.bind(this);
+        this.onListCancel = this.onListCancel.bind(this);
+        this.onListSave = this.onListSave.bind(this);
         this.clipStart = React.createRef();
         this.clipEnd = React.createRef();
+        this.prompt = React.createRef();
         this.state = {
             fsm: new fsmPb.StateMachine(),
             curFSMElement: null,
@@ -63,6 +68,7 @@ class App extends Component {
                 msg: "Welcome to State Machine Editor!",
             },
             showNewElementModal: false,
+            showCreateFromListModal: false,
             newElementModalType: null,
             videoUrl: null,
             videoName: null,
@@ -113,7 +119,6 @@ class App extends Component {
                                                 Use Current Frame
                                             </Button>
                                         </Col>
-
                                     </Form.Group>
                                     <Form.Group as={Row}>
                                         <Form.Label column>Video Clip End</Form.Label>
@@ -138,6 +143,24 @@ class App extends Component {
                                 </Form>
                             )}
                         </div>
+                        <br/>
+                        <h4>Create From Instructions</h4>
+                        <Form.Group>
+                            <Form.Control
+                                as="textarea"
+                                rows={20}
+                                placeholder="1. xxx&#13;&#10;2. xxx"
+                                ref={this.prompt}
+                            />
+                            <Button
+                                variant="primary"
+                                onClick={() => {
+                                    this.setState({ showCreateFromListModal: true })
+                                }}
+                            >
+                                Generate Instructions
+                            </Button>
+                        </Form.Group>
                     </Col>
                     <Col
                         sm={4}
@@ -194,7 +217,15 @@ class App extends Component {
                         videoName={this.state.videoName}
                         videoSeekPos={this.state.playedSeconds}
                         clipStart={this.clipStart.current ? this.clipStart.current.value : null}
-                        clipEnd={this.clipEnd.current? this.clipEnd.current.value : null}
+                        clipEnd={this.clipEnd.current ? this.clipEnd.current.value : null}
+                    />
+                )}
+                {this.state.showCreateFromListModal && (
+                    <CreateFromListModal
+                        show={this.state.showCreateFromListModal}
+                        initList={this.prompt.current ? this.prompt.current.value : null}
+                        onListSave={this.onListSave}
+                        onListCancel={this.onListCancel}
                     />
                 )}
             </Container>
@@ -416,6 +447,29 @@ class App extends Component {
 
     onModalCancel() {
         this.setState({ showNewElementModal: false, modalInitElement: null });
+    }
+
+    onListSave(instructions) {
+        let fsm = null;
+        try {
+            fsm = listToFsm(instructions);
+            this.setState({ fsm: fsm, curFSMElement: null });
+            this.alert("info", "Success! State machine created.");
+            this.setState({
+                showCreateFromListModal: false,
+                modalInitElement: null
+            });
+        } catch (err) {
+            this.setState({
+                showCreateFromListModal: false,
+                modalInitElement: null
+            });
+            this.alert("danger", err);
+        }
+    }
+
+    onListCancel() {
+        this.setState({ showCreateFromListModal: false, modalInitElement: null });
     }
 }
 
