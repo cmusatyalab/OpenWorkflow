@@ -78,124 +78,133 @@ class App extends Component {
 
     render() {
         return (
-            <Container fluid>
-                <h1>OpenWorkflow State Machine Editor</h1>
-                {this.state.alertMsg.msg !== "" && (
-                    <Alert dismissible variant={this.state.alertMsg.type}>
-                        {this.state.alertMsg.msg}
-                    </Alert>
-                )}
-                <Row>
-                    <Col sm={3}>
-                        <h4>Upload Video</h4>
-                        <div className='player-wrapper'>
-                            <input onChange={this.onChooseFile} type='file' accept='video/*' />
-                            <ReactPlayer
-                                url={this.state.videoUrl}
-                                className='react-player'
-                                controls
-                                width='100%'
-                                height='100%'
-                                onProgress={this.handleProgress}
-                            />
-                            {this.state.videoUrl && (
-                                <Form>
-                                    <Form.Group as={Row}>
-                                        <Form.Label column>Video Clip Start</Form.Label>
-                                        <Col>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="HH:mm:ss.xxx"
-                                                ref={this.clipStart}
-                                                readOnly
-                                            />
-                                            <Button
-                                                variant="primary"
-                                                className="fw-btn"
-                                                onClick={() => {
-                                                    this.clipStart.current.value = this.state.playedSeconds
-                                                }}
-                                            >
-                                                Use Current Frame
-                                            </Button>
-                                        </Col>
-                                    </Form.Group>
-                                    <Form.Group as={Row}>
-                                        <Form.Label column>Video Clip End</Form.Label>
-                                        <Col>
-                                            <Form.Control
-                                                type="text"
-                                                placeholder="HH:mm:ss.xxx"
-                                                ref={this.clipEnd}
-                                                readOnly
-                                            />
-                                            <Button
-                                                variant="primary"
-                                                className="fw-btn"
-                                                onClick={() => {
-                                                    this.clipEnd.current.value = this.state.playedSeconds
-                                                }}
-                                            >
-                                                Use Current Frame
-                                            </Button>
-                                        </Col>
-                                    </Form.Group>
-                                </Form>
-                            )}
+            <Container fluid id="container">
+                <div id="row-top">
+                    <h1>OpenWorkflow State Machine Editor</h1>
+                    {this.state.alertMsg.msg !== "" && (
+                        <Alert dismissible variant={this.state.alertMsg.type}>
+                            {this.state.alertMsg.msg}
+                        </Alert>
+                    )}
+                </div>
+                <Row id="row">
+                    <Col sm={3} id="col-left">
+                        <div id="left">
+                            <h4>Upload Video</h4>
+                            <div className='player-wrapper'>
+                                <input onChange={this.onChooseFile} type='file' accept='video/*' />
+                                <ReactPlayer
+                                    url={this.state.videoUrl}
+                                    className='react-player'
+                                    controls
+                                    width='100%'
+                                    height='100%'
+                                    onProgress={this.handleProgress}
+                                />
+                                {this.state.videoUrl && (
+                                    <Form>
+                                        <Form.Group as={Row}>
+                                            <Form.Label column>Video Clip Start</Form.Label>
+                                            <Col>
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="HH:mm:ss.xxx"
+                                                    ref={this.clipStart}
+                                                    readOnly
+                                                />
+                                                <Button
+                                                    variant="primary"
+                                                    className="fw-btn"
+                                                    onClick={() => {
+                                                        this.clipStart.current.value = this.state.playedSeconds
+                                                    }}
+                                                >
+                                                    Use Current Frame
+                                                </Button>
+                                            </Col>
+                                        </Form.Group>
+                                        <Form.Group as={Row}>
+                                            <Form.Label column>Video Clip End</Form.Label>
+                                            <Col>
+                                                <Form.Control
+                                                    type="text"
+                                                    placeholder="HH:mm:ss.xxx"
+                                                    ref={this.clipEnd}
+                                                    readOnly
+                                                />
+                                                <Button
+                                                    variant="primary"
+                                                    className="fw-btn"
+                                                    onClick={() => {
+                                                        this.clipEnd.current.value = this.state.playedSeconds
+                                                    }}
+                                                >
+                                                    Use Current Frame
+                                                </Button>
+                                            </Col>
+                                        </Form.Group>
+                                    </Form>
+                                )}
+                            </div>
+                            <br/>
+                            <h4>Create From Instructions</h4>
+                            <Form.Group>
+                                <Form.Control
+                                    as="textarea"
+                                    rows={20}
+                                    placeholder="1. xxx&#13;&#10;2. xxx"
+                                    ref={this.prompt}
+                                />
+                                <Button
+                                    variant="primary"
+                                    onClick={() => {
+                                        this.setState({ showCreateFromListModal: true })
+                                    }}
+                                >
+                                    Generate Instructions
+                                </Button>
+                            </Form.Group>
                         </div>
-                        <br/>
-                        <h4>Create From Instructions</h4>
-                        <Form.Group>
-                            <Form.Control
-                                as="textarea"
-                                rows={20}
-                                placeholder="1. xxx&#13;&#10;2. xxx"
-                                ref={this.prompt}
-                            />
-                            <Button
-                                variant="primary"
-                                onClick={() => {
-                                    this.setState({ showCreateFromListModal: true })
-                                }}
-                            >
-                                Generate Instructions
-                            </Button>
-                        </Form.Group>
                     </Col>
                     <Col
                         sm={4}
                         ref={this.diagramContainerRef}
+                        id="col-mid"
                         style={{ backgroundColor: "lavender" }}
                     >
-                        <h4>Diagram</h4>
-                        <Diagram
-                            fsm={this.state.fsm}
-                            onClickCell={this.onClickCell}
-                            onClickBlank={this.onClickBlank}
-                            ref={this.diagramRef}
-                            paperWidth={window.innerWidth / 3} // 1/3 of current window's inner width
-                        />
+                        <div id="mid">
+                            <h4>Diagram</h4>
+                            <Diagram
+                                fsm={this.state.fsm}
+                                onClickCell={this.onClickCell}
+                                onClickBlank={this.onClickBlank}
+                                ref={this.diagramRef}
+                                paperWidth={window.innerWidth / 3} // 1/3 of current window's inner width
+                            />
+                        </div>
                     </Col>
-                    <Col sm={5}>
-                        <ToolBar
-                            onImport={this.onImport}
-                            onAdd={this.onAdd}
-                            onExport={this.onExport}
-                            onDelete={this.onDelete}
-                            onEdit={this.onEdit}
-                        />
-                        {this.state.curFSMElement ? (
-                            <Row>
-                                <InfoBox
-                                    element={this.state.curFSMElement}
-                                    style={{ width: "100%" }}
-                                />
-                            </Row>
-                        ) : (
-                            <div>
-                                <StateTable fsm={this.state.fsm} />
-                            </div>
-                        )}
+                    <Col sm={5} id="col-right">
+                        <div id="right">
+                            <ToolBar
+                                onImport={this.onImport}
+                                onAdd={this.onAdd}
+                                onExport={this.onExport}
+                                onDelete={this.onDelete}
+                                onEdit={this.onEdit}
+                            />
+                            {this.state.curFSMElement ? (
+                                <Row>
+                                    <InfoBox
+                                        element={this.state.curFSMElement}
+                                        style={{ width: "100%" }}
+                                    />
+                                </Row>
+                            ) : (
+                                <div>
+                                    <StateTable fsm={this.state.fsm} />
+                                </div>
+                            )}
+                        </div>
                     </Col>
                 </Row>
                 <footer>
