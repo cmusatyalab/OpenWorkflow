@@ -1,6 +1,38 @@
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+
 import procZoo from "./processor-zoo.json";
 import predZoo from "./predicate-zoo.json";
 var fsmPb = require("./wca-state-machine_pb");
+
+const ffmpeg = createFFmpeg({
+    log: true,
+});
+
+export const createThumbnail = async (url, vFilename, pos) => {
+    if (!ffmpeg.isLoaded()) {
+        await ffmpeg.load();
+    }
+    ffmpeg.FS('writeFile', vFilename, await fetchFile(url));
+    const outFile = "out" + vFilename + ".png"
+    await ffmpeg.run('-ss', pos, '-i', vFilename, '-frames:v', '1', outFile);
+    const data = ffmpeg.FS('readFile', outFile);
+    ffmpeg.FS('unlink', vFilename);
+    ffmpeg.FS('unlink', outFile);
+    return data
+};
+
+export const createVideoClip = async (url, vFilename, start, end) => {
+    if (!ffmpeg.isLoaded()) {
+        await ffmpeg.load();
+    }
+    ffmpeg.FS('writeFile', vFilename, await fetchFile(url));
+    const outFile = "out" + vFilename
+    await ffmpeg.run('-ss', start, '-to', end, '-i', vFilename, '-c', 'copy', outFile);
+    const data = ffmpeg.FS('readFile', outFile);
+    ffmpeg.FS('unlink', vFilename);
+    ffmpeg.FS('unlink', outFile);
+    return data
+};
 
 export const FSMElementType = {
     STATE: Symbol("state"),
@@ -331,11 +363,13 @@ export const formValuesToElement = function(formValue, fsm, type, initElement) {
     }
 };
 
-export const listToFsm = function(instructions) {
+export const listToFsm = async function(instructions, url, vFilename) {
     let fsm = new fsmPb.StateMachine();
-    let element = null;
     try {
-        const lines = instructions.replace("1.", "").split(/\r?\n[0-9]+\./);
+        if (instructions.startsWith("1.")) {
+            instructions = instructions.slice("1.".length)
+        }
+        const lines = instructions.split(/\r?\n[0-9]+\./);
         // create start state
         const startStateForm = {
             name: "start",
@@ -347,7 +381,13 @@ export const listToFsm = function(instructions) {
         let stepNum = 1;
         let lastState = "start";
         for (let i = 0; i < lines.length; i++) {
-            const audio = lines[i].trim();
+            const rangePattern = /([0-9]+:[0-9]+:[0-9]+)\s+-\s+([0-9]+:[0-9]+:[0-9]+)/;
+            const range = lines[i].trim().match(rangePattern);
+            let videoClip = null;
+            if (url != null && vFilename != null && range != null && range.length > 0) {
+                videoClip = await createVideoClip(url, vFilename, range[1], range[2]);
+            }
+            const audio = lines[i].replace(rangePattern, "").trim().replace(/^\W+/, "");
             if (audio === "") {
                 continue;
             }
@@ -377,6 +417,7 @@ export const listToFsm = function(instructions) {
                 to: stateName,
                 instruction: {
                     audio: audio,
+                    video: videoClip,
                 },
                 callable: (lastState === "start") ? [{
                     name: transitionName + "-pred",

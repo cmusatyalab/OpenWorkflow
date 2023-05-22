@@ -15,12 +15,9 @@ import {
     getPropertyByString,
     elementToFormValues,
     getAllNames,
+    createThumbnail,
+    createVideoClip,
 } from "./utils.js";
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
-
-const ffmpeg = createFFmpeg({
-    log: true,
-});
 
 /** Helper function to create options for Select elements
  * from a pre-defined callable zoo (procZoo or predZoo)
@@ -124,16 +121,6 @@ class ImageUploadField extends Component {
         };
     }
 
-    createThumbnail = async (url, vFilename, pos) => {
-        if (!ffmpeg.isLoaded()) {
-            await ffmpeg.load();
-        }
-        ffmpeg.FS('writeFile', vFilename, await fetchFile(url));
-        const outFile = "out" + vFilename + ".png"
-        await ffmpeg.run('-ss', pos, '-i', vFilename, '-frames:v', '1', outFile);
-        return ffmpeg.FS('readFile', outFile)
-    };
-
     render() {
         const { field, form, label, url, vFilename, pos } = this.props;
         let res = {};
@@ -177,7 +164,7 @@ class ImageUploadField extends Component {
                         className="fw-btn"
                         onClick={() => {
                             if (url) {
-                                this.createThumbnail(url, vFilename, pos).then(value => {
+                                createThumbnail(url, vFilename, pos).then(value => {
                                     form.setFieldValue(
                                         field.name,
                                         value
@@ -213,16 +200,6 @@ class VideoUploadField extends Component {
             videoInstUrl: this.videoInstUrl,
         };
     }
-
-    createVideoClip = async (url, vFilename, start, end) => {
-        if (!ffmpeg.isLoaded()) {
-            await ffmpeg.load();
-        }
-        ffmpeg.FS('writeFile', vFilename, await fetchFile(url));
-        const outFile = "out" + vFilename
-        await ffmpeg.run('-ss', start, '-to', end, '-i', vFilename, '-c', 'copy', outFile);
-        return ffmpeg.FS('readFile', outFile)
-    };
 
     render() {
         const { field, form, label, url, vFilename, start, end } = this.props;
@@ -274,7 +251,7 @@ class VideoUploadField extends Component {
                                     + parseInt(endTime[1]) * 60
                                     + parseFloat(endTime[2])
                                 if (startSec < endSec) {
-                                    this.createVideoClip(url, vFilename, start, end).then(value => {
+                                    createVideoClip(url, vFilename, start, end).then(value => {
                                         form.setFieldValue(
                                             field.name,
                                             value

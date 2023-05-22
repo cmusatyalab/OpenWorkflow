@@ -9,8 +9,8 @@ import ReactJson from "react-json-view";
 import ReactPlayer from "react-player";
 
 export const getColumnWidth = (rows, accessor, headerText) => {
-  const maxWidth = 100;
-  const magicSpacing = 11;
+  const maxWidth = 150;
+  const magicSpacing = 12;
   const cellLength = Math.max(
     ...rows.map(row => (`${row[accessor]}` || "").length),
     headerText.length

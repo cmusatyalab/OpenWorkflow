@@ -3,7 +3,6 @@ import ReactTable from "react-table";
 import matchSorter from "match-sorter";
 import { getColumnWidth } from "./infoBox.js"
 import "react-table/react-table.css";
-import ReactJson from "react-json-view";
 
 class StateTable extends Component {
     render() {
@@ -14,17 +13,19 @@ class StateTable extends Component {
             if (processorsList === undefined || processorsList.length === 0) {
                 return [{
                     state: stateName,
-                    processor: "",
                     callable_name: "",
-                    callable_args: {}
+                    classifier: "",
+                    detector: "",
+                    detector_class: "",
                 }];
             } else {
                 return processorsList.map(callableItem => {
                     return {
                         state: stateName,
-                        processor: callableItem.getName(),
                         callable_name: callableItem.getCallableName(),
-                        callable_args: JSON.parse(callableItem.getCallableArgs())
+                        classifier: JSON.parse(callableItem.getCallableArgs())["classifier_path"],
+                        detector: JSON.parse(callableItem.getCallableArgs())["detector_path"],
+                        detector_class: JSON.parse(callableItem.getCallableArgs())["detector_class_name"],
                     };
                 })
             }
@@ -39,31 +40,34 @@ class StateTable extends Component {
                 width: getColumnWidth(tableData, "state", "State")
             },
             {
-                Header: "Processor",
-                accessor: "processor",
-                filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, { keys: ["processor"] }),
-                filterAll: true,
-                width: getColumnWidth(tableData, "processor", "Processor")
-            },
-            {
                 Header: "Type",
                 accessor: "callable_name",
                 filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, {
-                        keys: ["callable_name"]
-                    }),
+                    matchSorter(rows, filter.value, { keys: ["callable_name"] }),
                 filterAll: true,
                 width: getColumnWidth(tableData, "callable_name", "Type")
             },
             {
-                Header: "Arguments",
-                accessor: "callable_args",
+                Header: "Classifier",
+                accessor: "classifier",
                 filterMethod: (filter, rows) =>
-                    matchSorter(rows, filter.value, {
-                        keys: ["callable_args"]
-                    }),
-                Cell: row => <ReactJson src={row.value} />,
+                    matchSorter(rows, filter.value, { keys: ["classifier"] }),
+                filterAll: true,
+                width: getColumnWidth(tableData, "classifier", "Classifier")
+            },
+            {
+                Header: "Detector",
+                accessor: "detector",
+                filterMethod: (filter, rows) =>
+                    matchSorter(rows, filter.value, { keys: ["detector"] }),
+                filterAll: true,
+                width: getColumnWidth(tableData, "detector", "Detector")
+            },
+            {
+                Header: "Detector Class",
+                accessor: "detector_class",
+                filterMethod: (filter, rows) =>
+                    matchSorter(rows, filter.value, { keys: ["detector_class"] }),
                 filterAll: true
             }
         ];

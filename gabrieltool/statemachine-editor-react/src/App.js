@@ -459,15 +459,15 @@ class App extends Component {
     }
 
     onListSave(instructions) {
-        let fsm = null;
         try {
-            fsm = listToFsm(instructions);
-            this.setState({ fsm: fsm, curFSMElement: null });
-            this.alert("info", "Success! State machine created.");
-            this.setState({
-                showCreateFromListModal: false,
-                modalInitElement: null
-            });
+            listToFsm(instructions, this.state.videoUrl, this.state.videoName).then(value => {
+                this.setState({ fsm: value, curFSMElement: null });
+                this.alert("info", "Success! State machine created.");
+                this.setState({
+                    showCreateFromListModal: false,
+                    modalInitElement: null
+                });
+            }, reason => { throw new Error(reason) });
         } catch (err) {
             this.setState({
                 showCreateFromListModal: false,
