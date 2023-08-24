@@ -21,6 +21,7 @@ import Form from "react-bootstrap/lib/Form";
 import Button from "react-bootstrap/lib/Button";
 import StateTable from "./stateTable";
 import CreateFromListModal from "./createFromListModal";
+import { generate } from "./openaiUtils";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -73,6 +74,7 @@ class App extends Component {
             videoUrl: null,
             videoName: null,
             playedSeconds: null,
+            gptResponse: null,
         };
     }
 
@@ -158,7 +160,16 @@ class App extends Component {
                                 <Button
                                     variant="primary"
                                     onClick={() => {
-                                        this.setState({ showCreateFromListModal: true })
+                                        try {
+                                            const userMsg = this.prompt.current ? this.prompt.current.value : null
+                                            generate(userMsg).then(response => {
+                                                this.setState({ showCreateFromListModal: true, gptResponse: response })
+                                            }).catch(reason => {
+                                                this.alert("danger", reason + "\n");
+                                            })
+                                        } catch (err) {
+                                            console.error(err)
+                                        }
                                     }}
                                 >
                                     Generate Instructions
@@ -232,7 +243,7 @@ class App extends Component {
                 {this.state.showCreateFromListModal && (
                     <CreateFromListModal
                         show={this.state.showCreateFromListModal}
-                        initList={this.prompt.current ? this.prompt.current.value : null}
+                        initList={this.state.gptResponse}
                         onListSave={this.onListSave}
                         onListCancel={this.onListCancel}
                     />

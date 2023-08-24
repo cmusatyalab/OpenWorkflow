@@ -399,8 +399,8 @@ export const listToFsm = async function(instructions, url, vFilename) {
                     name: stateName + "-proc",
                     type: "GatedTwoStageProcessor",
                     args: {
-                        classifier_path: "/path/to/classifier",
-                        detector_path: "/path/to/detector",
+                        classifier_path: "/home/tensorflow/wca-dev/gabriel-printer/models/classifier",
+                        detector_path: "/home/tensorflow/wca-dev/gabriel-printer/models/detector",
                         detector_class_name: "default",
                         conf_threshold: "0.8",
                         thumbs_up_required: "true",
