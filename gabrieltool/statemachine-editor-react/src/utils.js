@@ -380,11 +380,14 @@ export const listToFsm = async function(instructions, url, vFilename) {
         for (let i = 0; i < lines.length; i++) {
             const rangePattern = /([0-9]+:[0-9]+:[0-9]+)\s+-\s+([0-9]+:[0-9]+:[0-9]+)/;
             const range = lines[i].trim().match(rangePattern);
+            if (range == null) {
+                continue;
+            }
             let videoClip = null;
-            if (url != null && vFilename != null && range != null && range.length > 0) {
+            if (url != null && vFilename != null && range.length > 0) {
                 videoClip = await createVideoClip(url, vFilename, range[1], range[2]);
             }
-            const audio = lines[i].replace(rangePattern, "").trim().replace(/^\W+/, "");
+            const audio = lines[i].slice(range.index + range[0].length).trim().replace(/^\W+/, "");
             if (audio === "") {
                 continue;
             }

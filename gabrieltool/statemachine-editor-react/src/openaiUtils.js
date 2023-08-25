@@ -18,7 +18,7 @@ export const generate = async function(reqBody, taskName) {
 
     try {
         const completion = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4",
             messages: [{
                 role: "user",
                 content: generatePrompt(taskName, inString),
