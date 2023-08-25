@@ -366,10 +366,7 @@ export const formValuesToElement = function(formValue, fsm, type, initElement) {
 export const listToFsm = async function(instructions, url, vFilename) {
     let fsm = new fsmPb.StateMachine();
     try {
-        if (instructions.startsWith("1.")) {
-            instructions = instructions.slice("1.".length)
-        }
-        const lines = instructions.split(/\r?\n[0-9]+\./);
+        const lines = instructions.split(/\r?\n/);
         // create start state
         const startStateForm = {
             name: "start",
@@ -442,4 +439,35 @@ export const listToFsm = async function(instructions, url, vFilename) {
         throw err;
     }
     return fsm;
+}
+
+export const reformatSubtitles = function (srtText) {
+    const srtArr = srtText.split("\n");
+    const reformattedArr = [];
+    for (let i = 0; i < srtArr.length; i++) {
+        const srtLine = srtArr[i].trim();
+        if (srtLine === "") {
+            continue;
+        }
+        if (srtLine.search(/^[0-9]+$/) !== -1) {
+            continue;
+        }
+        if (srtLine.includes("-->")) {
+            const timeStart = srtLine.split("-->")[0].trim().split(",")[0];
+            if (!srtArr[i + 1].includes("[Music]")) {
+                reformattedArr.push(`[${timeStart}] ${srtArr[i + 1].trim()}\n`);
+            }
+            i++;
+        }
+    }
+    console.log(reformattedArr)
+    const reducedArr = [];
+    for (let i = 0; i < reformattedArr.length; i++) {
+        if (i % 2 === 0) {
+            reducedArr.push(reformattedArr[i].trim());
+        } else {
+            reducedArr.push(` ${reformattedArr[i].split("]")[1].trim()}\n`);
+        }
+    }
+    return reducedArr.join("");
 }

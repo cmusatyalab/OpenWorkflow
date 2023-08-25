@@ -13,6 +13,7 @@ import {
     formValuesToElement,
     allNamesAreValid,
     listToFsm,
+    reformatSubtitles,
 } from "./utils.js";
 import ElementModal from "./elementModal.js";
 import saveAs from "file-saver";
@@ -58,6 +59,7 @@ class App extends Component {
         this.onListSave = this.onListSave.bind(this);
         this.clipStart = React.createRef();
         this.clipEnd = React.createRef();
+        this.task = React.createRef();
         this.prompt = React.createRef();
         this.state = {
             fsm: new fsmPb.StateMachine(),
@@ -94,7 +96,7 @@ class App extends Component {
                         <div id="left">
                             <h4>Upload Video</h4>
                             <div className='player-wrapper'>
-                                <input onChange={this.onChooseFile} type='file' accept='video/*' />
+                                <input onChange={this.onChooseVideo} type='file' accept='video/*' />
                                 <ReactPlayer
                                     url={this.state.videoUrl}
                                     className='react-player'
@@ -150,7 +152,12 @@ class App extends Component {
                             </div>
                             <br/>
                             <h4>Create From Instructions</h4>
+                            <input onChange={this.onChooseTextFile} type='file' accept='.srt' />
                             <Form.Group>
+                                <Form.Control
+                                    placeholder="Name of the object to be assembled"
+                                    ref={this.task}
+                                />
                                 <Form.Control
                                     as="textarea"
                                     rows={20}
@@ -161,9 +168,12 @@ class App extends Component {
                                     variant="primary"
                                     onClick={() => {
                                         try {
+                                            this.alert("secondary", "Request sent to ChatGPT. Please wait.")
                                             const userMsg = this.prompt.current ? this.prompt.current.value : null
-                                            generate(userMsg).then(response => {
+                                            const taskName = this.task.current ? this.task.current.value : "an object"
+                                            generate(userMsg, taskName).then(response => {
                                                 this.setState({ showCreateFromListModal: true, gptResponse: response })
+                                                this.alert("success", "ChatGPT response received.")
                                             }).catch(reason => {
                                                 this.alert("danger", reason + "\n");
                                             })
@@ -261,7 +271,7 @@ class App extends Component {
         });
     }
 
-    onChooseFile = e => {
+    onChooseVideo = e => {
         // clear up urls to prevent leaking memories
         if (this.state.videoUrl !== null) {
             URL.revokeObjectURL(this.state.videoUrl);
@@ -270,6 +280,14 @@ class App extends Component {
         }
         const url = URL.createObjectURL(e.target.files[0]);
         this.setState({ videoUrl: url, videoName: e.target.files[0].name });
+    }
+
+    onChooseTextFile = e => {
+        let fr = new FileReader();
+        fr.onloadend = (e => {
+            this.prompt.current.value = reformatSubtitles(fr.result);
+        });
+        fr.readAsText(e.target.files[0])
     }
 
     handleProgress = state => {

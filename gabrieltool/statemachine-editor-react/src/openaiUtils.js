@@ -7,7 +7,7 @@ let configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 delete configuration.baseOptions.headers['User-Agent'];
 
-export const generate = async function(reqBody) {
+export const generate = async function(reqBody, taskName) {
     if (!configuration.apiKey) {
         throw new Error(`OpenAI API key not configured`);
     }
@@ -21,7 +21,7 @@ export const generate = async function(reqBody) {
             model: "gpt-3.5-turbo",
             messages: [{
                 role: "user",
-                content: generatePrompt(inString),
+                content: generatePrompt(taskName, inString),
             }],
             temperature: 0.6,
         });
@@ -36,6 +36,11 @@ export const generate = async function(reqBody) {
     }
 }
 
-function generatePrompt(inString) {
-    return `${inString}`;
+function generatePrompt(taskName, inString) {
+    return "We will build a software application to guide users to assemble " + taskName + " step-by-step." +
+        " I want you to act as an assistant to walk users through the assembly process by giving verbal instructions." +
+        " Please read the below video subtitles with timestamps and create a numbered list of step-by-step guidance " +
+        "on how to complete the assembly task. Each list item should start with a time range in the video, like " +
+        "00:00:15 - 00:03:10. Please list around 20 items, be concise, and make sure not to repeat any steps and not " +
+        "to have overlapping time ranges.\n\n" + inString;
 }
