@@ -363,7 +363,7 @@ export const formValuesToElement = function(formValue, fsm, type, initElement) {
     }
 };
 
-export const listToFsm = async function(instructions, url, vFilename) {
+export const listToFsm = async function(instructions, url, vFilename, defaultCallables) {
     let fsm = new fsmPb.StateMachine();
     try {
         const lines = instructions.split(/\r?\n/);
@@ -395,18 +395,7 @@ export const listToFsm = async function(instructions, url, vFilename) {
             const stateForm = {
                 name: stateName,
                 isStartState: false,
-                callable: [{
-                    name: stateName + "-proc",
-                    type: "GatedTwoStageProcessor",
-                    args: {
-                        classifier_path: "/home/tensorflow/wca-dev/gabriel-printer/models/classifier",
-                        detector_path: "/home/tensorflow/wca-dev/gabriel-printer/models/detector",
-                        detector_class_name: "default",
-                        conf_threshold: "0.8",
-                        thumbs_up_required: "true",
-                        transition_word: "-",
-                    }
-                }]
+                callable: defaultCallables || [],
             };
             formValuesToElement(stateForm, fsm, FSMElementType.STATE, null);
 
@@ -463,7 +452,6 @@ export const reformatSubtitles = function (srtText) {
             i++;
         }
     }
-    console.log(reformattedArr)
     const reducedArr = [];
     for (let i = 0; i < reformattedArr.length; i++) {
         if (i % 2 === 0) {

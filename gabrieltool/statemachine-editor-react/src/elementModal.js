@@ -352,7 +352,7 @@ The UIs to create a "callable" consist of following form fields:
 2. callable type
 3. A field for each callable argument (loaded from callable zoos)
 */
-const createCallableMultiFields = (
+export const createCallableMultiFields = (
     callableTitle,
     zoo,
     values,

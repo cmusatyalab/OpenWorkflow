@@ -23,6 +23,7 @@ import Button from "react-bootstrap/lib/Button";
 import StateTable from "./stateTable";
 import CreateFromListModal from "./createFromListModal";
 import { generate } from "./openaiUtils";
+import DefaultProcessorForm from "./defaultProcessorForm";
 var fsmPb = require("./wca-state-machine_pb");
 
 function loadFsm(fsmData) {
@@ -55,16 +56,21 @@ class App extends Component {
         this.onClickBlank = this.onClickBlank.bind(this);
         this.onModalCancel = this.onModalCancel.bind(this);
         this.onModalSave = this.onModalSave.bind(this);
+        this.onDefaultProcessorSave = this.onDefaultProcessorSave.bind(this);
         this.onListCancel = this.onListCancel.bind(this);
         this.onListSave = this.onListSave.bind(this);
         this.clipStart = React.createRef();
         this.clipEnd = React.createRef();
+        this.apiKey = React.createRef();
         this.task = React.createRef();
+        this.stepsExpected = React.createRef();
         this.prompt = React.createRef();
+        this.instr = React.createRef();
         this.state = {
             fsm: new fsmPb.StateMachine(),
             curFSMElement: null,
             modalInitElement: null,
+            defaultProcCallables: null,
             alertMsg: {
                 show: true,
                 type: "info",
@@ -76,7 +82,7 @@ class App extends Component {
             videoUrl: null,
             videoName: null,
             playedSeconds: null,
-            gptResponse: null,
+            instrList: null,
         };
     }
 
@@ -94,7 +100,7 @@ class App extends Component {
                 <Row id="row">
                     <Col sm={3} id="col-left">
                         <div id="left">
-                            <h4>Upload Video</h4>
+                            <h4>Upload Assembly Video</h4>
                             <div className='player-wrapper'>
                                 <input onChange={this.onChooseVideo} type='file' accept='video/*' />
                                 <ReactPlayer
@@ -151,29 +157,42 @@ class App extends Component {
                                 )}
                             </div>
                             <br/>
-                            <h4>Create From Instructions</h4>
+                            <h4>ChatGPT Workflow Creation</h4>
                             <input onChange={this.onChooseTextFile} type='file' accept='.srt' />
+                            <p>Upload Assembly Video Subtitles (.srt)</p>
                             <Form.Group>
+                                <Form.Control
+                                    placeholder="OpenAI API Key"
+                                    ref={this.apiKey}
+                                />
                                 <Form.Control
                                     placeholder="Name of the object to be assembled"
                                     ref={this.task}
                                 />
                                 <Form.Control
+                                    placeholder="Approximate number of steps required"
+                                    ref={this.stepsExpected}
+                                />
+                                <Form.Control
                                     as="textarea"
-                                    rows={20}
-                                    placeholder="1. xxx&#13;&#10;2. xxx"
+                                    rows={10}
+                                    placeholder="Video transcipts with timestamps (autofilled after uploading subtitles)"
                                     ref={this.prompt}
                                 />
                                 <Button
                                     variant="primary"
+                                    className="btn-block"
                                     onClick={() => {
                                         try {
                                             this.alert("secondary", "Request sent to ChatGPT. Please wait.")
                                             const userMsg = this.prompt.current ? this.prompt.current.value : null
                                             const taskName = this.task.current ? this.task.current.value : "an object"
-                                            generate(userMsg, taskName).then(response => {
-                                                this.setState({ showCreateFromListModal: true, gptResponse: response })
-                                                this.alert("success", "ChatGPT response received.")
+                                            const numSteps = this.stepsExpected.current ? this.stepsExpected.current.value : "15"
+                                            const openaiKey = this.apiKey.current ? this.apiKey.current.value : null
+                                            const timeSent = Date.now()
+                                            generate(userMsg, taskName, numSteps, openaiKey).then(response => {
+                                                this.setState({ showCreateFromListModal: true, instrList: response })
+                                                this.alert("success", `Response time: ${(Date.now() - timeSent) / 1000}s`)
                                             }).catch(reason => {
                                                 this.alert("danger", reason + "\n");
                                             })
@@ -182,9 +201,28 @@ class App extends Component {
                                         }
                                     }}
                                 >
-                                    Generate Instructions
+                                    Create Instruction List With ChatGPT
+                                </Button>
+                                <Form.Control
+                                    as="textarea"
+                                    rows={10}
+                                    placeholder="List of instructions (autofilled with ChatGPT response)"
+                                    ref={this.instr}
+                                />
+                                <Button
+                                    variant="info"
+                                    className="btn-block"
+                                    onClick={() => {
+                                        const userInstr = this.instr.current ? this.instr.current.value : null
+                                        this.setState({ showCreateFromListModal: true, instrList: userInstr })
+                                    }}
+                                >
+                                    Create Workflow With Instructions
                                 </Button>
                             </Form.Group>
+                            <DefaultProcessorForm
+                                onDefaultProcessorSave = {this.onDefaultProcessorSave}
+                            />
                         </div>
                     </Col>
                     <Col
@@ -253,7 +291,7 @@ class App extends Component {
                 {this.state.showCreateFromListModal && (
                     <CreateFromListModal
                         show={this.state.showCreateFromListModal}
-                        initList={this.state.gptResponse}
+                        initList={this.state.instrList}
                         onListSave={this.onListSave}
                         onListCancel={this.onListCancel}
                     />
@@ -487,9 +525,13 @@ class App extends Component {
         this.setState({ showNewElementModal: false, modalInitElement: null });
     }
 
+    onDefaultProcessorSave(formValue) {
+        this.setState({ defaultProcCallables: formValue.callable });
+    }
+
     onListSave(instructions) {
         try {
-            listToFsm(instructions, this.state.videoUrl, this.state.videoName).then(value => {
+            listToFsm(instructions, this.state.videoUrl, this.state.videoName, this.state.defaultProcCallables).then(value => {
                 this.setState({ fsm: value, curFSMElement: null });
                 this.alert("info", "Success! State machine created.");
                 this.setState({
@@ -497,6 +539,7 @@ class App extends Component {
                     modalInitElement: null
                 });
             }, reason => { throw new Error(reason) });
+            this.instr.current.value = instructions;
         } catch (err) {
             this.setState({
                 showCreateFromListModal: false,
