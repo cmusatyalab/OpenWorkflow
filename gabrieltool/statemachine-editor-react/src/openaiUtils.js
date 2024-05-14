@@ -18,13 +18,14 @@ export const generate = async function(promptBody, taskName, numItems, apiKey) {
 
     try {
         const completion = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4",
             messages: [{
                 role: "user",
                 content: generatePrompt(taskName, numItems, contentString),
             }],
-            temperature: 0.6,
+            temperature: 0,
         });
+        console.log(completion)
         return completion.data.choices[0].message.content;
     } catch(error) {
         if (error.response) {

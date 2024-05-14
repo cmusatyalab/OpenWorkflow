@@ -194,7 +194,7 @@ class App extends Component {
                                                 this.setState({ showCreateFromListModal: true, instrList: response })
                                                 this.alert("success", `Response time: ${(Date.now() - timeSent) / 1000}s`)
                                             }).catch(reason => {
-                                                this.alert("danger", reason + "\n");
+                                                this.alert("danger", `Response time: ${(Date.now() - timeSent) / 1000}s ` + reason + "\n");
                                             })
                                         } catch (err) {
                                             console.error(err)
