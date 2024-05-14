@@ -14,6 +14,10 @@
         "labels": "None",
         "conf_threshold": "0.8"
     },
+    "YoloProcessor": {
+        "model_path": "",
+        "conf_threshold": "0.8"
+    },
     "TwoStageProcessor": {
         "classifier_path": "",
         "detector_path": "",

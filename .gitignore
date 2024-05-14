@@ -105,3 +105,4 @@ ENV/
 .vscode
 
 env
+**/.DS_Store
