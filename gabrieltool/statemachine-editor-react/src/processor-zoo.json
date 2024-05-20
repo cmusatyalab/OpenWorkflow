@@ -16,21 +16,25 @@
     },
     "YoloProcessor": {
         "model_path": "",
-        "conf_threshold": "0.8"
+        "conf_threshold": "e.g. 0.8"
+    },
+    "GatingYoloProcessor": {
+        "model_path": "",
+        "conf_threshold": "e.g. 0.8"
     },
     "TwoStageProcessor": {
         "classifier_path": "",
         "detector_path": "",
         "detector_class_name": "",
-        "conf_threshold": "0.4"
+        "conf_threshold": "e.g. 0.4"
     },
     "GatedTwoStageProcessor": {
         "classifier_path": "",
         "detector_path": "",
         "detector_class_name": "",
-        "conf_threshold": "0.4",
-        "thumbs_up_required": "True/False",
-        "transition_word": "-"
+        "conf_threshold": "e.g. 0.4",
+        "thumbs_up_required": "e.g. True/False",
+        "transition_word": "e.g. -"
     },
     "DummyProcessor": {
         "dummy_input": "dummy_input_value"

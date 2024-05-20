@@ -269,6 +269,12 @@ export class Diagram extends Component {
                 ) {
                     cell.attr("circle/fill", "yellow");
                 }
+                if (state.getProcessorsList()
+                    .map(callableItem => callableItem.getCallableName())
+                    .includes("GatingYoloProcessor")
+                ) {
+                    cell.attr("circle/fill", "yellow");
+                }
                 this.addGraphCellWithRef(state.getName(), cell, state);
             }
             return null;
