@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/OpenWorkflow/static/js/runtime~main.8a2de10a.js"
   },
   {
-    "revision": "31636f977583bb97dccc7c21dacd89cf",
+    "revision": "1f9b0828237964fe502dbb4b7f467af6",
     "url": "/OpenWorkflow/index.html"
   }
 ];
